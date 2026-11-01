@@ -20,6 +20,12 @@ import { Training } from "./pages/Training";
 import { Videos } from "./pages/Videos";
 import { MapPage } from "./pages/MapPage";
 import { Path } from "./pages/Path";
+import { Learn, ChapterPage } from "./pages/Learn";
+import { TrainLab } from "./pages/TrainLab";
+import { ArchLab } from "./pages/ArchLab";
+import { Backprop } from "./pages/Backprop";
+import { Scaling } from "./pages/Scaling";
+import { Invent } from "./pages/Invent";
 
 function useHash() {
   const [h, setH] = useState(location.hash || "#/");
@@ -52,19 +58,28 @@ function Shell() {
   useShortcuts(setHelp);
   useEffect(() => { const a = trackPointer(), b = trackTextSelection(); return () => { a(); b(); }; }, []);
   useEffect(() => { loadModel().then(setModel).catch((e) => setErr(String(e))); }, []);
-  useEffect(() => { markVisited(hash); ask.set({ selection: [], region: "", highlight: null, scene: "" }); window.scrollTo(0, 0); }, [hash]);
+  const pageKey = hash.split("/").slice(0, 3).join("/");
+  useEffect(() => { markVisited(hash); ask.set({ selection: [], region: "", highlight: null, scene: "" }); window.scrollTo(0, 0); }, [pageKey]); // eslint-disable-line
 
-  const needsModel = hash.startsWith("#/xray") || hash.startsWith("#/training");
+  const route = (h: string, base: string) => h === base || h.startsWith(base + "/") || h.startsWith(base + "?");
+  const needsModel = route(hash, "#/xray") || route(hash, "#/training");
   let page: React.ReactNode;
   if (needsModel && !model) page = err
     ? <div className="p-10 text-center text-destructive">Couldn't load the model: {err}</div>
     : <div className="flex items-center justify-center gap-2 p-16 text-muted-foreground"><Spinner />Loading TinyGPT (680 KB of weights)…</div>;
-  else if (hash.startsWith("#/xray")) page = <XRay m={model!} />;
-  else if (hash.startsWith("#/training")) page = <Training corpus={model!.meta.corpus_sample} />;
+  else if (hash.startsWith("#/xray")) page = <XRay m={model!} initialScene={hash.split("/")[2]} />;
+  else if (route(hash, "#/training")) page = <Training corpus={model!.meta.corpus_sample} />;
   else if (hash.startsWith("#/videos")) page = <Videos />;
   else if (hash.startsWith("#/path")) page = <Path />;
+  else if (hash.startsWith("#/learn/")) page = <ChapterPage key={hash} id={hash.split("/")[2]} />;
+  else if (hash.startsWith("#/learn")) page = <Learn />;
+  else if (route(hash, "#/train")) page = <TrainLab />;
+  else if (route(hash, "#/lab")) page = <ArchLab />;
+  else if (route(hash, "#/backprop")) page = <Backprop />;
+  else if (route(hash, "#/scaling")) page = <Scaling />;
+  else if (route(hash, "#/invent")) page = <Invent />;
   else page = <MapPage />;
-  const title = NAV.find((n) => isActive(n.href, hash))?.label ?? "Journey";
+  const title = NAV.find((n) => isActive(n.href, hash))?.label ?? "Home";
 
   return (
     <SidebarProvider>

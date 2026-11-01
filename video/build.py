@@ -22,24 +22,48 @@ ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "public", "videos")
 MAX_BYTES = 24 * 1024 * 1024 - 256 * 1024  # stay under Cloudflare Pages' 25 MiB/file with margin
 
-VIDEOS = [
-    dict(id="gpt-in-100s", file="v1_gpt.py", cls="GPTIn100", relates="xray", title="GPT in 100 seconds",
+BUILTIN = [
+    dict(track="inference", order=10, id="gpt-in-100s", file="v1_gpt.py", cls="GPTIn100", relates="xray", title="GPT in 100 seconds",
          subtitle="The whole pipeline on a real tiny GPT: tokens → vectors → attention → probabilities → loop",
          poster=("Attention", 1, 0.75)),
-    dict(id="tokens", file="v2_tokens.py", cls="Tokens", relates="xray", title="Tokens: how a model reads",
+    dict(track="inference", order=20, id="tokens", file="v2_tokens.py", cls="Tokens", relates="xray", title="Tokens: how a model reads",
          subtitle="Byte-pair encoding, merge by merge, with TinyGPT's real 256-token vocab",
          poster=("Encoding a word", 1, 0.97)),
-    dict(id="attention", file="v3_attention.py", cls="Attention", relates="xray", title="Attention, visually",
+    dict(track="inference", order=40, id="attention", file="v3_attention.py", cls="Attention", relates="xray", title="Attention, visually",
          subtitle="Queries, keys, values, softmax — and a real head that copies colors",
          poster=("A real head", 0, 0.95)),
-    dict(id="next-token", file="v4_next.py", cls="NextToken", relates="xray",
+    dict(track="inference", order=70, id="next-token", file="v4_next.py", cls="NextToken", relates="xray",
          title="Next token: logits, softmax & temperature",
          subtitle="How 256 raw scores become one sampled word", poster=("Temperature", 2, 0.97)),
-    dict(id="training", file="v5_training.py", cls="Training", relates="training",
+    dict(track="training", order=10, id="training", file="v5_training.py", cls="Training", relates="training",
          title="How it learned (training in 100 seconds)",
          subtitle="Loss, gradient descent, and real samples from step 0 to step 3000",
          poster=("The loss curve", 0, 0.97)),
 ]
+
+
+def discover():
+    """Every scenes/*.py may declare a module-level `VIDEO = dict(...)` (a pure literal) with the keys
+    id, cls, title, subtitle, relates, track, order, poster=(segment chapter title, chapter-relative index, fraction).
+    The `file` key is filled in automatically. This lets several people add videos without editing this file."""
+    import ast
+    found = []
+    for f in sorted(os.listdir(os.path.join(HERE, "scenes"))):
+        if not f.endswith(".py"):
+            continue
+        tree = ast.parse(open(os.path.join(HERE, "scenes", f)).read())
+        for node in tree.body:
+            if isinstance(node, ast.Assign) and any(getattr(t, "id", "") == "VIDEO" for t in node.targets):
+                d = ast.literal_eval(node.value) if not isinstance(node.value, ast.Call) else \
+                    {k.arg: ast.literal_eval(k.value) for k in node.value.keywords}
+                d["file"] = f
+                found.append(d)
+    return found
+
+
+VIDEOS = BUILTIN + [v for v in discover() if v["id"] not in {b["id"] for b in BUILTIN}]
+TRACKS = ["inference", "training", "design", "research"]
+VIDEOS.sort(key=lambda v: (TRACKS.index(v.get("track", "research")), v.get("order", 999)))
 
 
 def run(cmd, **kw):
@@ -111,6 +135,7 @@ def write_index():
         dur = round(probe_dur(os.path.join(OUT, f"{v['id']}.mp4")), 2)
         entries.append({
             "id": v["id"], "title": v["title"], "subtitle": v["subtitle"], "duration": dur,
+            "track": v.get("track", "research"), "order": v.get("order", 999),
             "src": f"/videos/{v['id']}.mp4", "poster": f"/videos/{v['id']}.jpg", "relates": v["relates"],
             "voice": m["voice"], "chapters": m["chapters"],
             "segments": [{k: s[k] for k in ("start", "end", "text", "scene", "objects")} for s in m["segments"]],

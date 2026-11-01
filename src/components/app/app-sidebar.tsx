@@ -1,4 +1,4 @@
-import { Clapperboard, Compass, Keyboard, Map as MapIcon, Moon, ScanEye, Sun, Telescope, TrendingDown, Laptop } from "lucide-react";
+import { Boxes, Clapperboard, Compass, Cpu, FlaskConical, GitBranch, GraduationCap, Keyboard, Lightbulb, Map as MapIcon, Moon, ScanEye, Sun, Telescope, TrendingDown, Laptop } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
@@ -8,15 +8,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { learner, useStore } from "@/lib/store";
 
 export const NAV = [
-  { href: "#/", label: "Journey", icon: MapIcon, group: "Learn" },
-  { href: "#/xray", label: "Inference X-ray", icon: ScanEye, group: "Learn" },
-  { href: "#/training", label: "Training", icon: TrendingDown, group: "Learn" },
+  { href: "#/", label: "Home", icon: MapIcon, group: "Learn" },
+  { href: "#/learn", label: "Curriculum", icon: GraduationCap, group: "Learn" },
   { href: "#/videos", label: "Videos", icon: Clapperboard, group: "Learn" },
+  { href: "#/xray", label: "Inference X-ray", icon: ScanEye, group: "Labs" },
+  { href: "#/training", label: "Training run", icon: TrendingDown, group: "Labs" },
+  { href: "#/train", label: "Train it yourself", icon: Cpu, group: "Labs" },
+  { href: "#/backprop", label: "Backprop", icon: GitBranch, group: "Labs" },
+  { href: "#/lab", label: "Architecture lab", icon: FlaskConical, group: "Labs" },
+  { href: "#/scaling", label: "Scaling", icon: Boxes, group: "Labs" },
+  { href: "#/invent", label: "Invent your own", icon: Lightbulb, group: "Labs" },
   { href: "#/path", label: "My path", icon: Compass, group: "You" },
 ] as const;
 
 export function isActive(href: string, hash: string) {
-  return href === "#/" ? hash === "#/" || hash === "" : hash.startsWith(href);
+  if (href === "#/") return hash === "#/" || hash === "";
+  return hash === href || hash.startsWith(href + "/") || hash.startsWith(href + "?");
 }
 
 export function AppSidebar({ hash, onShortcuts }: { hash: string; onShortcuts: () => void }) {
@@ -43,7 +50,7 @@ export function AppSidebar({ hash, onShortcuts }: { hash: string; onShortcuts: (
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {(["Learn", "You"] as const).map((g) => (
+        {(["Learn", "Labs", "You"] as const).map((g) => (
           <SidebarGroup key={g}>
             <SidebarGroupLabel>{g}</SidebarGroupLabel>
             <SidebarGroupContent>

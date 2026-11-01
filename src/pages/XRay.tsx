@@ -35,11 +35,11 @@ const COMPONENTS = { tokens: TokensScene, vectors: VectorsScene, attention: Atte
 const SCENE_MS = 4200;
 const ICONS = { tokens: Scissors, vectors: Binary, attention: Eye, layers: Layers, probs: BarChart3, pick: Dices };
 
-export function XRay({ m }: { m: TinyGPT }) {
+export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string }) {
   const [prompt, setPrompt] = useState(PRESETS[0]);
   const [settings, setSettings] = useState<GenSettings>({ n: 6, temperature: 0.8, topK: 8, seed: 7 });
   const [steps, setSteps] = useState<Step[]>(() => generate(m, m.tok.encode(PRESETS[0]).map((t) => t.id), { n: 6, temperature: 0.8, topK: 8, seed: 7 }));
-  const [pos, setPos] = useState(0); // continuous: step*6 + scene + fraction
+  const [pos, setPos] = useState(() => Math.max(0, SCENES.findIndex((s) => s.key === initialScene))); // continuous: step*6 + scene + fraction
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [view, setViewState] = useState<View>({ layer: 1, head: 3, query: null, mlpLayer: 2 });
