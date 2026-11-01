@@ -45,8 +45,8 @@ export function TutorPanel({ className }: { className?: string }) {
           </TabsList>
         </div>
         <TabsContent value="chat" className="flex min-h-0 flex-1 flex-col"><Chat /></TabsContent>
-        <TabsContent value="sees" className="min-h-0 flex-1"><ScrollArea className="h-full"><WhatItSees /></ScrollArea></TabsContent>
-        <TabsContent value="voice" className="min-h-0 flex-1"><ScrollArea className="h-full"><VoiceSettings /></ScrollArea></TabsContent>
+        <TabsContent value="sees" className="min-h-0 flex-1"><ScrollArea className="h-full [&_[data-radix-scroll-area-viewport]>div]:block!"><WhatItSees /></ScrollArea></TabsContent>
+        <TabsContent value="voice" className="min-h-0 flex-1"><ScrollArea className="h-full [&_[data-radix-scroll-area-viewport]>div]:block!"><VoiceSettings /></ScrollArea></TabsContent>
       </Tabs>
     </div>
   );
@@ -102,8 +102,8 @@ function Chat() {
       </div>
     </div>
 
-    <ScrollArea className="min-h-0 flex-1">
-      <div className="space-y-4 p-3">
+    <ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:block!">
+      <div className="min-w-0 space-y-4 p-3">
         {thread.length === 0 && <Intro />}
         {thread.map((t, i) => t.role === "user" ? (
           <div key={i} className="ml-8 flex flex-col items-end gap-1">

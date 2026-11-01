@@ -1,0 +1,4646 @@
+[
+ {
+  "id": "gpt-in-100s",
+  "title": "GPT in 100 seconds",
+  "subtitle": "The whole pipeline on a real tiny GPT: tokens → vectors → attention → probabilities → loop",
+  "duration": 126.23,
+  "src": "/videos/gpt-in-100s.mp4",
+  "poster": "/videos/gpt-in-100s.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The hook"
+   },
+   {
+    "t": 21.07,
+    "title": "Tokens"
+   },
+   {
+    "t": 30.43,
+    "title": "Embeddings"
+   },
+   {
+    "t": 52.53,
+    "title": "Attention"
+   },
+   {
+    "t": 70.93,
+    "title": "Layers"
+   },
+   {
+    "t": 93.2,
+    "title": "Probabilities"
+   },
+   {
+    "t": 107.63,
+    "title": "Sample & repeat"
+   },
+   {
+    "t": 117.77,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 9.17,
+    "text": "Now Tom has the... what? This tiny GPT says red. 87 percent sure. Nobody told it the rules.",
+    "scene": "The prompt 'mia has a red ball. tom has a blue kite. mia gives the ball to tom. now tom has the ___' appears line by line; the blank fills with 'red' and an 87% badge.",
+    "objects": [
+     {
+      "id": "answer",
+      "label": "model's answer \" red\" with p = 0.871",
+      "box": [
+       0.6122,
+       0.5617,
+       0.2219,
+       0.0825
+      ]
+     },
+     {
+      "id": "prompt",
+      "label": "the prompt: 23 tokens of a tiny-world story",
+      "box": [
+       0.2506,
+       0.2664,
+       0.4988,
+       0.3673
+      ]
+     }
+    ]
+   },
+   {
+    "start": 9.17,
+    "end": 21.07,
+    "text": "Three layers. 170 thousand parameters. Trained for 80 seconds on a CPU. That's about a million times smaller than GPT-3. Let's trace exactly how it thinks.",
+    "scene": "Three stat cards: 3 layers, 170,560 parameters, ~80 s of training on a CPU. Punchline flash: about 1,000,000x smaller than GPT-3.",
+    "objects": [
+     {
+      "id": "answer",
+      "label": "model's answer \" red\" with p = 0.871",
+      "box": [
+       0.5843,
+       0.2397,
+       0.1332,
+       0.0495
+      ]
+     },
+     {
+      "id": "prompt",
+      "label": "the prompt: 23 tokens of a tiny-world story",
+      "box": [
+       0.3673,
+       0.0625,
+       0.2993,
+       0.2204
+      ]
+     },
+     {
+      "id": "card-layers",
+      "label": "3 transformer layers (4 heads each, width 64)",
+      "box": [
+       0.0676,
+       0.45,
+       0.2672,
+       0.25
+      ]
+     },
+     {
+      "id": "card-params",
+      "label": "170,560 trainable parameters",
+      "box": [
+       0.3664,
+       0.45,
+       0.2672,
+       0.25
+      ]
+     },
+     {
+      "id": "card-train",
+      "label": "trained 3000 steps, ~80 seconds on a CPU",
+      "box": [
+       0.6652,
+       0.45,
+       0.2672,
+       0.25
+      ]
+     }
+    ]
+   },
+   {
+    "start": 21.07,
+    "end": 30.43,
+    "text": "Step one, chop the text into tokens. Spaces stick to the front of words, and every chunk gets an ID number. 23 tokens.",
+    "scene": "The four prompt lines turn into 23 colored token chips (one row per sentence), each with its ID underneath; the leading space shows as ␣.",
+    "objects": [
+     {
+      "id": "tok-0",
+      "label": "token \"mia\" (id 246), position 0",
+      "box": [
+       0.1956,
+       0.2342,
+       0.0647,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-1",
+      "label": "token \" has\" (id 46), position 1",
+      "box": [
+       0.2702,
+       0.2342,
+       0.0819,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-2",
+      "label": "token \" a\" (id 37), position 2",
+      "box": [
+       0.3619,
+       0.2342,
+       0.0489,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-3",
+      "label": "token \" red\" (id 157), position 3",
+      "box": [
+       0.4206,
+       0.2342,
+       0.0817,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-4",
+      "label": "token \" ball\" (id 183), position 4",
+      "box": [
+       0.5122,
+       0.2342,
+       0.0992,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-5",
+      "label": "token \".\" (id 29), position 5",
+      "box": [
+       0.6212,
+       0.2342,
+       0.0241,
+       0.1125
+      ]
+     },
+     {
+      "id": "tok-6",
+      "label": "token \" tom\" (id 158), position 6",
+      "box": [
+       0.1956,
+       0.3946,
+       0.0826,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-7",
+      "label": "token \" has\" (id 46), position 7",
+      "box": [
+       0.288,
+       0.3946,
+       0.0819,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-8",
+      "label": "token \" a\" (id 37), position 8",
+      "box": [
+       0.3797,
+       0.3946,
+       0.0489,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-9",
+      "label": "token \" blue\" (id 161), position 9",
+      "box": [
+       0.4384,
+       0.3946,
+       0.0983,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-10",
+      "label": "token \" kite\" (id 165), position 10",
+      "box": [
+       0.5466,
+       0.3946,
+       0.0983,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-11",
+      "label": "token \".\" (id 29), position 11",
+      "box": [
+       0.6548,
+       0.3946,
+       0.0241,
+       0.1125
+      ]
+     },
+     {
+      "id": "tok-12",
+      "label": "token \" mia\" (id 172), position 12",
+      "box": [
+       0.1956,
+       0.555,
+       0.0817,
+       0.1125
+      ]
+     },
+     {
+      "id": "tok-13",
+      "label": "token \" gives\" (id 127), position 13",
+      "box": [
+       0.2871,
+       0.555,
+       0.1147,
+       0.1125
+      ]
+     },
+     {
+      "id": "tok-14",
+      "label": "token \" the\" (id 38), position 14",
+      "box": [
+       0.4116,
+       0.555,
+       0.0819,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-15",
+      "label": "token \" ball\" (id 183), position 15",
+      "box": [
+       0.5034,
+       0.555,
+       0.0992,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-16",
+      "label": "token \" to\" (id 65), position 16",
+      "box": [
+       0.6125,
+       0.555,
+       0.0655,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-17",
+      "label": "token \" tom\" (id 158), position 17",
+      "box": [
+       0.6878,
+       0.555,
+       0.0826,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-18",
+      "label": "token \".\" (id 29), position 18",
+      "box": [
+       0.7803,
+       0.555,
+       0.0241,
+       0.1125
+      ]
+     },
+     {
+      "id": "tok-19",
+      "label": "token \" now\" (id 128), position 19",
+      "box": [
+       0.1956,
+       0.7154,
+       0.0833,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-20",
+      "label": "token \" tom\" (id 158), position 20",
+      "box": [
+       0.2888,
+       0.7154,
+       0.0826,
+       0.1129
+      ]
+     },
+     {
+      "id": "tok-21",
+      "label": "token \" has\" (id 46), position 21",
+      "box": [
+       0.3812,
+       0.7154,
+       0.0819,
+       0.1126
+      ]
+     },
+     {
+      "id": "tok-22",
+      "label": "token \" the\" (id 38), position 22",
+      "box": [
+       0.4729,
+       0.7154,
+       0.0819,
+       0.1129
+      ]
+     }
+    ]
+   },
+   {
+    "start": 30.43,
+    "end": 42.7,
+    "text": "Each ID grabs a row from a big lookup table: 64 numbers, called an embedding. Add a second vector for the position, and every token becomes a point in 64-dimensional space.",
+    "scene": "The ' red' chip (id 157) is pulled out; below it a strip of 64 colored cells (its real embedding: orange positive, blue negative), plus the position-3 vector, equals the input vector.",
+    "objects": [
+     {
+      "id": "chip-red",
+      "label": "token \" red\" (id 157) at position 3",
+      "box": [
+       0.5975,
+       0.1393,
+       0.1062,
+       0.1464
+      ]
+     },
+     {
+      "id": "emb-tok",
+      "label": "embedding of \" red\": 64 learned numbers (range -0.28 to 0.28)",
+      "box": [
+       0.3244,
+       0.4781,
+       0.6525,
+       0.0687
+      ]
+     },
+     {
+      "id": "emb-pos",
+      "label": "position embedding for slot 3 (64 numbers)",
+      "box": [
+       0.3244,
+       0.6031,
+       0.6525,
+       0.0687
+      ]
+     },
+     {
+      "id": "emb-sum",
+      "label": "input vector for \" red\" = token embedding + position embedding",
+      "box": [
+       0.3244,
+       0.7281,
+       0.6525,
+       0.0688
+      ]
+     }
+    ]
+   },
+   {
+    "start": 42.7,
+    "end": 52.53,
+    "text": "Squash those 64 numbers down to two, and you can see what it learned. Names land in one neighborhood. Colors land in another. Nobody told it that.",
+    "scene": "A 2-D PCA map of all 256 real token embeddings: names (teal) cluster at the bottom, colors (pink) form a tight cluster near the things (yellow); other tokens are faint gray dots.",
+    "objects": [
+     {
+      "id": "pca",
+      "label": "2-D PCA projection of the 256 learned token embeddings",
+      "box": [
+       0.3242,
+       0.1625,
+       0.5766,
+       0.7625
+      ]
+     },
+     {
+      "id": "cluster-names",
+      "label": "cluster of name tokens (tom, mia, zoe, sam, leo, ...)",
+      "box": [
+       0.6732,
+       0.7296,
+       0.1269,
+       0.168
+      ]
+     },
+     {
+      "id": "cluster-colors",
+      "label": "cluster of color tokens (red, blue, green, yellow, white, ...)",
+      "box": [
+       0.7726,
+       0.4108,
+       0.04,
+       0.0747
+      ]
+     },
+     {
+      "id": "cluster-things",
+      "label": "object tokens (ball, kite, boat, cup, ...) next to the colors",
+      "box": [
+       0.7917,
+       0.4132,
+       0.0906,
+       0.1417
+      ]
+     }
+    ]
+   },
+   {
+    "start": 52.53,
+    "end": 61.4,
+    "text": "Now the tokens talk. In every attention layer, each token looks back at earlier tokens and pulls in whatever looks useful.",
+    "scene": "The 23 tokens slide into a column; on the right, the last token ' the' is the query. Lines fan out from it to earlier tokens (layer 2, averaged over its 4 heads; thickness = attention weight).",
+    "objects": [
+     {
+      "id": "query",
+      "label": "query token: the last \" the\" (position 22)",
+      "box": [
+       0.7055,
+       0.4831,
+       0.0953,
+       0.0837
+      ]
+     },
+     {
+      "id": "tok-0",
+      "label": "token \"mia\" (id 246), position 0; layer-2 average attention from last \" the\": 0.4%",
+      "box": [
+       0.4192,
+       0.0711,
+       0.0386,
+       0.0328
+      ]
+     },
+     {
+      "id": "tok-1",
+      "label": "token \" has\" (id 46), position 1; layer-2 average attention from last \" the\": 0.7%",
+      "box": [
+       0.4045,
+       0.1073,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-2",
+      "label": "token \" a\" (id 37), position 2; layer-2 average attention from last \" the\": 2.3%",
+      "box": [
+       0.4328,
+       0.1496,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-3",
+      "label": "token \" red\" (id 157), position 3; layer-2 average attention from last \" the\": 29.4%",
+      "box": [
+       0.4046,
+       0.1848,
+       0.0532,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-4",
+      "label": "token \" ball\" (id 183), position 4; layer-2 average attention from last \" the\": 15.9%",
+      "box": [
+       0.3896,
+       0.2235,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-5",
+      "label": "token \".\" (id 29), position 5; layer-2 average attention from last \" the\": 1.4%",
+      "box": [
+       0.454,
+       0.2779,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-6",
+      "label": "token \" tom\" (id 158), position 6; layer-2 average attention from last \" the\": 0.4%",
+      "box": [
+       0.4039,
+       0.3015,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-7",
+      "label": "token \" has\" (id 46), position 7; layer-2 average attention from last \" the\": 0.8%",
+      "box": [
+       0.4045,
+       0.3398,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-8",
+      "label": "token \" a\" (id 37), position 8; layer-2 average attention from last \" the\": 3.2%",
+      "box": [
+       0.4328,
+       0.3821,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-9",
+      "label": "token \" blue\" (id 161), position 9; layer-2 average attention from last \" the\": 2.8%",
+      "box": [
+       0.3904,
+       0.4173,
+       0.0674,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-10",
+      "label": "token \" kite\" (id 165), position 10; layer-2 average attention from last \" the\": 1.3%",
+      "box": [
+       0.3904,
+       0.455,
+       0.0674,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-11",
+      "label": "token \".\" (id 29), position 11; layer-2 average attention from last \" the\": 1.9%",
+      "box": [
+       0.454,
+       0.5104,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-12",
+      "label": "token \" mia\" (id 172), position 12; layer-2 average attention from last \" the\": 0.6%",
+      "box": [
+       0.4046,
+       0.5325,
+       0.0532,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-13",
+      "label": "token \" gives\" (id 127), position 13; layer-2 average attention from last \" the\": 3.5%",
+      "box": [
+       0.3763,
+       0.5713,
+       0.0815,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-14",
+      "label": "token \" the\" (id 38), position 14; layer-2 average attention from last \" the\": 14.6%",
+      "box": [
+       0.4045,
+       0.611,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-15",
+      "label": "token \" ball\" (id 183), position 15; layer-2 average attention from last \" the\": 1.0%",
+      "box": [
+       0.3896,
+       0.6498,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-16",
+      "label": "token \" to\" (id 65), position 16; layer-2 average attention from last \" the\": 1.1%",
+      "box": [
+       0.4185,
+       0.689,
+       0.0393,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-17",
+      "label": "token \" tom\" (id 158), position 17; layer-2 average attention from last \" the\": 1.6%",
+      "box": [
+       0.4039,
+       0.7278,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-18",
+      "label": "token \".\" (id 29), position 18; layer-2 average attention from last \" the\": 2.6%",
+      "box": [
+       0.454,
+       0.7816,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-19",
+      "label": "token \" now\" (id 128), position 19; layer-2 average attention from last \" the\": 1.2%",
+      "box": [
+       0.4032,
+       0.8083,
+       0.0546,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-20",
+      "label": "token \" tom\" (id 158), position 20; layer-2 average attention from last \" the\": 1.5%",
+      "box": [
+       0.4039,
+       0.844,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-21",
+      "label": "token \" has\" (id 46), position 21; layer-2 average attention from last \" the\": 1.4%",
+      "box": [
+       0.4045,
+       0.8823,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-22",
+      "label": "token \" the\" (id 38), position 22; layer-2 average attention from last \" the\": 10.4%",
+      "box": [
+       0.4045,
+       0.921,
+       0.0533,
+       0.038
+      ]
+     }
+    ]
+   },
+   {
+    "start": 61.4,
+    "end": 70.93,
+    "text": "One head in layer two has a very clear job. From the last 'the', it puts 93 percent of its attention on 'red'. It's a color copier.",
+    "scene": "Only layer 2 head 4 remains: a thick yellow line from the final ' the' to ' red' (position 3) labeled 93%, thin lines to '.' (2.4%) and ' ball' (1.9%). Flash: 'a color-copying head'.",
+    "objects": [
+     {
+      "id": "query",
+      "label": "query token: the last \" the\" (position 22)",
+      "box": [
+       0.7055,
+       0.4831,
+       0.0953,
+       0.0837
+      ]
+     },
+     {
+      "id": "tok-0",
+      "label": "token \"mia\" (id 246), position 0; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4192,
+       0.0711,
+       0.0386,
+       0.0328
+      ]
+     },
+     {
+      "id": "tok-1",
+      "label": "token \" has\" (id 46), position 1; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4045,
+       0.1073,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-2",
+      "label": "token \" a\" (id 37), position 2; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4328,
+       0.1496,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-3",
+      "label": "token \" red\" (id 157), position 3; L2H4 attention from last \" the\": 93.2%",
+      "box": [
+       0.386,
+       0.1781,
+       0.0718,
+       0.0513
+      ]
+     },
+     {
+      "id": "tok-4",
+      "label": "token \" ball\" (id 183), position 4; L2H4 attention from last \" the\": 1.9%",
+      "box": [
+       0.3896,
+       0.2235,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-5",
+      "label": "token \".\" (id 29), position 5; L2H4 attention from last \" the\": 0.1%",
+      "box": [
+       0.454,
+       0.2779,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-6",
+      "label": "token \" tom\" (id 158), position 6; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4039,
+       0.3015,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-7",
+      "label": "token \" has\" (id 46), position 7; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4045,
+       0.3398,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-8",
+      "label": "token \" a\" (id 37), position 8; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4328,
+       0.3821,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-9",
+      "label": "token \" blue\" (id 161), position 9; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.3904,
+       0.4173,
+       0.0674,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-10",
+      "label": "token \" kite\" (id 165), position 10; L2H4 attention from last \" the\": 0.2%",
+      "box": [
+       0.3904,
+       0.455,
+       0.0674,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-11",
+      "label": "token \".\" (id 29), position 11; L2H4 attention from last \" the\": 0.2%",
+      "box": [
+       0.454,
+       0.5104,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-12",
+      "label": "token \" mia\" (id 172), position 12; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4046,
+       0.5325,
+       0.0532,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-13",
+      "label": "token \" gives\" (id 127), position 13; L2H4 attention from last \" the\": 0.5%",
+      "box": [
+       0.3763,
+       0.5713,
+       0.0815,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-14",
+      "label": "token \" the\" (id 38), position 14; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4045,
+       0.611,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-15",
+      "label": "token \" ball\" (id 183), position 15; L2H4 attention from last \" the\": 0.9%",
+      "box": [
+       0.3896,
+       0.6498,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-16",
+      "label": "token \" to\" (id 65), position 16; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4185,
+       0.689,
+       0.0393,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-17",
+      "label": "token \" tom\" (id 158), position 17; L2H4 attention from last \" the\": 0.1%",
+      "box": [
+       0.4039,
+       0.7278,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-18",
+      "label": "token \".\" (id 29), position 18; L2H4 attention from last \" the\": 2.4%",
+      "box": [
+       0.454,
+       0.7816,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-19",
+      "label": "token \" now\" (id 128), position 19; L2H4 attention from last \" the\": 0.3%",
+      "box": [
+       0.4032,
+       0.8083,
+       0.0546,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-20",
+      "label": "token \" tom\" (id 158), position 20; L2H4 attention from last \" the\": 0.1%",
+      "box": [
+       0.4039,
+       0.844,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-21",
+      "label": "token \" has\" (id 46), position 21; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4045,
+       0.8823,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-22",
+      "label": "token \" the\" (id 38), position 22; L2H4 attention from last \" the\": 0.0%",
+      "box": [
+       0.4045,
+       0.921,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "arc-red",
+      "label": "attention L2H4: \" the\" (pos 22) → \" red\" (pos 3) = 93.2%",
+      "box": [
+       0.4684,
+       0.2037,
+       0.2315,
+       0.3213
+      ]
+     },
+     {
+      "id": "arc-4",
+      "label": "attention L2H4: \" the\" → \" ball\" (pos 4) = 1.9%",
+      "box": [
+       0.4684,
+       0.2425,
+       0.2315,
+       0.2825
+      ]
+     },
+     {
+      "id": "arc-18",
+      "label": "attention L2H4: \" the\" → \".\" (pos 18) = 2.4%",
+      "box": [
+       0.4684,
+       0.525,
+       0.2315,
+       0.26
+      ]
+     }
+    ]
+   },
+   {
+    "start": 70.93,
+    "end": 82.97,
+    "text": "Attention moves information between tokens. Then a small MLP chews on each token by itself. Attention plus MLP is one layer. This model stacks three.",
+    "scene": "Diagram: vectors → three layer panels, each containing an attention box and an MLP box → scores.",
+    "objects": [
+     {
+      "id": "layer-1",
+      "label": "layer 1: 4-head attention + MLP (64 → 256 → 64)",
+      "box": [
+       0.1864,
+       0.2692,
+       0.1716,
+       0.3241
+      ]
+     },
+     {
+      "id": "layer-2",
+      "label": "layer 2: 4-head attention + MLP (64 → 256 → 64)",
+      "box": [
+       0.4142,
+       0.269,
+       0.1716,
+       0.3245
+      ]
+     },
+     {
+      "id": "layer-3",
+      "label": "layer 3: 4-head attention + MLP (64 → 256 → 64)",
+      "box": [
+       0.642,
+       0.269,
+       0.1716,
+       0.3245
+      ]
+     }
+    ]
+   },
+   {
+    "start": 82.97,
+    "end": 93.2,
+    "text": "Peek at its best guess after each layer. After layer one, it's 'the'. After layer two, 'white'. Only the final MLP locks in red, at 87 percent.",
+    "scene": "Under each layer panel, the model's top guess for the next token if we stopped there (logit lens): layer 1 ' the' 33%, layer 2 ' white' 12%, layer 3 ' red' 87%.",
+    "objects": [
+     {
+      "id": "layer-1",
+      "label": "layer 1: 4-head attention + MLP (64 → 256 → 64)",
+      "box": [
+       0.1864,
+       0.2692,
+       0.1716,
+       0.3241
+      ]
+     },
+     {
+      "id": "layer-2",
+      "label": "layer 2: 4-head attention + MLP (64 → 256 → 64)",
+      "box": [
+       0.4142,
+       0.269,
+       0.1716,
+       0.3245
+      ]
+     },
+     {
+      "id": "layer-3",
+      "label": "layer 3: 4-head attention + MLP (64 → 256 → 64)",
+      "box": [
+       0.642,
+       0.269,
+       0.1716,
+       0.3245
+      ]
+     },
+     {
+      "id": "lens-1",
+      "label": "logit lens after layer 1: top guess \" the\" at 32.6%",
+      "box": [
+       0.2312,
+       0.662,
+       0.0819,
+       0.1296
+      ]
+     },
+     {
+      "id": "lens-2",
+      "label": "logit lens after layer 2: top guess \" white\" at 11.6%",
+      "box": [
+       0.4426,
+       0.6622,
+       0.1147,
+       0.1296
+      ]
+     },
+     {
+      "id": "lens-3",
+      "label": "logit lens after layer 3: top guess \" red\" at 87.1%",
+      "box": [
+       0.687,
+       0.6622,
+       0.0817,
+       0.1296
+      ]
+     }
+    ]
+   },
+   {
+    "start": 93.2,
+    "end": 107.63,
+    "text": "The final vector gets scored against all 256 tokens, and softmax turns those scores into probabilities. Red gets 87 percent, white 6, purple 5, and everything else gets crumbs.",
+    "scene": "Horizontal probability bars for the next token: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, ' black' 0.3%, ' ava' 0.2%, all 251 others combined ~1.4%.",
+    "objects": [
+     {
+      "id": "bar-red",
+      "label": "P(\" red\") = 87.07%",
+      "box": [
+       0.206,
+       0.3062,
+       0.6227,
+       0.0625
+      ]
+     },
+     {
+      "id": "bar-white",
+      "label": "P(\" white\") = 5.89%",
+      "box": [
+       0.1729,
+       0.4038,
+       0.2225,
+       0.0625
+      ]
+     },
+     {
+      "id": "bar-purple",
+      "label": "P(\" purple\") = 5.08%",
+      "box": [
+       0.1565,
+       0.5012,
+       0.2272,
+       0.0625
+      ]
+     },
+     {
+      "id": "bar-black",
+      "label": "P(\" black\") = 0.28%",
+      "box": [
+       0.1718,
+       0.5988,
+       0.1952,
+       0.0625
+      ]
+     },
+     {
+      "id": "bar-ava",
+      "label": "P(\" ava\") = 0.15%",
+      "box": [
+       0.206,
+       0.6962,
+       0.1542,
+       0.0625
+      ]
+     },
+     {
+      "id": "bar-others",
+      "label": "all other 251 tokens together = 1.54%",
+      "box": [
+       0.1084,
+       0.7938,
+       0.26,
+       0.0625
+      ]
+     }
+    ]
+   },
+   {
+    "start": 107.63,
+    "end": 117.77,
+    "text": "Pick a winner, append it, and run the whole thing again. Red. Ball. Period. Newline. Once upon a time. One token at a time.",
+    "scene": "The context '… now tom has the' gets new chips appended one by one (the model's top pick each step: ' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time'); the row slides left as it grows, with a loop arrow feeding the output back in.",
+    "objects": [
+     {
+      "id": "loop",
+      "label": "autoregressive loop: the output token is appended and fed back as input",
+      "box": [
+       0.1344,
+       0.5125,
+       0.7594,
+       0.2193
+      ]
+     },
+     {
+      "id": "gen-0",
+      "label": "generated token 1: \" red\" (id 157), p = 87.1%",
+      "box": [
+       0.3017,
+       0.3878,
+       0.0817,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-1",
+      "label": "generated token 2: \" ball\" (id 183), p = 99.4%",
+      "box": [
+       0.3932,
+       0.3878,
+       0.0992,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-2",
+      "label": "generated token 3: \".\" (id 29), p = 100.0%",
+      "box": [
+       0.5023,
+       0.3878,
+       0.0241,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-3",
+      "label": "generated token 4: \"\n\" (id 1), p = 100.0%",
+      "box": [
+       0.5363,
+       0.3878,
+       0.0413,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-4",
+      "label": "generated token 5: \"once\" (id 106), p = 17.7%",
+      "box": [
+       0.5874,
+       0.3878,
+       0.0807,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-5",
+      "label": "generated token 6: \" upon\" (id 108), p = 99.9%",
+      "box": [
+       0.6779,
+       0.3878,
+       0.0982,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-6",
+      "label": "generated token 7: \" a\" (id 37), p = 99.9%",
+      "box": [
+       0.7859,
+       0.3878,
+       0.0489,
+       0.0743
+      ]
+     },
+     {
+      "id": "gen-7",
+      "label": "generated token 8: \" time\" (id 110), p = 99.9%",
+      "box": [
+       0.8447,
+       0.3878,
+       0.0983,
+       0.0743
+      ]
+     }
+    ]
+   },
+   {
+    "start": 117.77,
+    "end": 125.63,
+    "text": "That's GPT. Text in, probabilities out, one token at a time. Now go poke it in the X-ray.",
+    "scene": "Summary pipeline: text → tokens → vectors → attention ×3 → probabilities → sample, with a 'repeat' arrow looping back. Final card: 'now go poke it in the X-ray'.",
+    "objects": [
+     {
+      "id": "step-text",
+      "label": "pipeline step: text",
+      "box": [
+       0.0613,
+       0.4054,
+       0.0763,
+       0.0891
+      ]
+     },
+     {
+      "id": "step-tokens",
+      "label": "pipeline step: tokens",
+      "box": [
+       0.1671,
+       0.4054,
+       0.1157,
+       0.0891
+      ]
+     },
+     {
+      "id": "step-vectors",
+      "label": "pipeline step: vectors",
+      "box": [
+       0.3124,
+       0.4054,
+       0.1262,
+       0.0891
+      ]
+     },
+     {
+      "id": "step-attention",
+      "label": "pipeline step: attention ×3",
+      "box": [
+       0.468,
+       0.4054,
+       0.1885,
+       0.0891
+      ]
+     },
+     {
+      "id": "step-probs",
+      "label": "pipeline step: probs",
+      "box": [
+       0.6861,
+       0.4054,
+       0.101,
+       0.0891
+      ]
+     },
+     {
+      "id": "step-sample",
+      "label": "pipeline step: sample",
+      "box": [
+       0.8167,
+       0.4054,
+       0.122,
+       0.0891
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the X-ray view to inspect the model live",
+      "box": [
+       0.1854,
+       0.7607,
+       0.6293,
+       0.0786
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "tokens",
+  "title": "Tokens: how a model reads",
+  "subtitle": "Byte-pair encoding, merge by merge, with TinyGPT's real 256-token vocab",
+  "duration": 121.5,
+  "src": "/videos/tokens.mp4",
+  "poster": "/videos/tokens.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The problem"
+   },
+   {
+    "t": 5.73,
+    "title": "Characters"
+   },
+   {
+    "t": 26.67,
+    "title": "Byte-pair encoding"
+   },
+   {
+    "t": 59.63,
+    "title": "Encoding a word"
+   },
+   {
+    "t": 78.23,
+    "title": "Weird splits"
+   },
+   {
+    "t": 102.67,
+    "title": "Scale"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 5.73,
+    "text": "Models can't read letters. They only eat numbers. So how does a word like Wednesday get in?",
+    "scene": "The word 'wednesday' in big letters above a box labelled 'the model — only eats numbers', with an arrow and '[ ?, ?, ? ]' between them.",
+    "objects": [
+     {
+      "id": "word",
+      "label": "the word \"wednesday\"",
+      "box": [
+       0.2372,
+       0.272,
+       0.5256,
+       0.156
+      ]
+     },
+     {
+      "id": "model",
+      "label": "TinyGPT only accepts integer token ids (0–255)",
+      "box": [
+       0.3734,
+       0.6312,
+       0.2531,
+       0.1875
+      ]
+     }
+    ]
+   },
+   {
+    "start": 5.73,
+    "end": 18.53,
+    "text": "The simplest trick is one number per character. Our model starts with 35 base symbols. 26 letters, space, newline, six punctuation marks, and an unknown token.",
+    "scene": "A grid of the 35 base tokens with their ids: <unk> (0), newline (1), space (2), a–z (3–28), and . , ? ! : ' (29–34).",
+    "objects": [
+     {
+      "id": "base-unk",
+      "label": "token 0: <unk> (unknown character)",
+      "box": [
+       0.1721,
+       0.2529,
+       0.0971,
+       0.1129
+      ]
+     },
+     {
+      "id": "base-nl",
+      "label": "token 1: newline",
+      "box": [
+       0.2738,
+       0.2533,
+       0.0413,
+       0.1122
+      ]
+     },
+     {
+      "id": "base-space",
+      "label": "token 2: space",
+      "box": [
+       0.3513,
+       0.2531,
+       0.0339,
+       0.1125
+      ]
+     },
+     {
+      "id": "base-letters",
+      "label": "tokens 3–28: the letters a–z",
+      "box": [
+       0.204,
+       0.2529,
+       0.6239,
+       0.5566
+      ]
+     },
+     {
+      "id": "base-punct",
+      "label": "tokens 29–34: . , ? ! : '",
+      "box": [
+       0.3562,
+       0.6967,
+       0.3925,
+       0.1129
+      ]
+     }
+    ]
+   },
+   {
+    "start": 18.53,
+    "end": 26.67,
+    "text": "But then Wednesday costs ten tokens, and the model has to re-spell every common word from scratch. Slow, and wasteful.",
+    "scene": "' wednesday' (with its leading space, shown as ␣) split into 10 single-character chips with ids 2, 25, 7, 6, 16, 7, 21, 6, 3, 27. Flash: '10 tokens for one word?!'",
+    "objects": [
+     {
+      "id": "ch-0",
+      "label": "character token \" \" (id 2)",
+      "box": [
+       0.2551,
+       0.3816,
+       0.0414,
+       0.1364
+      ]
+     },
+     {
+      "id": "ch-1",
+      "label": "character token \"w\" (id 25)",
+      "box": [
+       0.3078,
+       0.3816,
+       0.0421,
+       0.1368
+      ]
+     },
+     {
+      "id": "ch-2",
+      "label": "character token \"e\" (id 7)",
+      "box": [
+       0.3612,
+       0.3816,
+       0.038,
+       0.136
+      ]
+     },
+     {
+      "id": "ch-3",
+      "label": "character token \"d\" (id 6)",
+      "box": [
+       0.4104,
+       0.3816,
+       0.0375,
+       0.1364
+      ]
+     },
+     {
+      "id": "ch-4",
+      "label": "character token \"n\" (id 16)",
+      "box": [
+       0.4592,
+       0.3816,
+       0.0375,
+       0.1364
+      ]
+     },
+     {
+      "id": "ch-5",
+      "label": "character token \"e\" (id 7)",
+      "box": [
+       0.5079,
+       0.3816,
+       0.038,
+       0.136
+      ]
+     },
+     {
+      "id": "ch-6",
+      "label": "character token \"s\" (id 21)",
+      "box": [
+       0.5571,
+       0.3816,
+       0.0379,
+       0.1364
+      ]
+     },
+     {
+      "id": "ch-7",
+      "label": "character token \"d\" (id 6)",
+      "box": [
+       0.6062,
+       0.3816,
+       0.0375,
+       0.1364
+      ]
+     },
+     {
+      "id": "ch-8",
+      "label": "character token \"a\" (id 3)",
+      "box": [
+       0.655,
+       0.3816,
+       0.0383,
+       0.1364
+      ]
+     },
+     {
+      "id": "ch-9",
+      "label": "character token \"y\" (id 27)",
+      "box": [
+       0.7045,
+       0.3816,
+       0.0403,
+       0.1364
+      ]
+     }
+    ]
+   },
+   {
+    "start": 26.67,
+    "end": 41.23,
+    "text": "Byte-pair encoding fixes this. Scan the training text and count every pair of neighbors. The winner is space t, 13,558 times. Merge it into a brand new token, and repeat.",
+    "scene": "A corpus snippet at the top; bars of the most frequent adjacent pairs in the first 400k characters: '␣+t' 13,558, 'h+e' 11,868, '␣+a' 10,413, 't+h' 10,372. The winner becomes new token #35 '␣t'.",
+    "objects": [
+     {
+      "id": "pair-t",
+      "label": "pair \" \" + \"t\" appears 13,558 times",
+      "box": [
+       0.1428,
+       0.3988,
+       0.6749,
+       0.065
+      ]
+     },
+     {
+      "id": "pair-he",
+      "label": "pair \"h\" + \"e\" appears 11,868 times",
+      "box": [
+       0.1445,
+       0.505,
+       0.6114,
+       0.065
+      ]
+     },
+     {
+      "id": "pair-a",
+      "label": "pair \" \" + \"a\" appears 10,413 times",
+      "box": [
+       0.1432,
+       0.6112,
+       0.5642,
+       0.065
+      ]
+     },
+     {
+      "id": "pair-th",
+      "label": "pair \"t\" + \"h\" appears 10,372 times",
+      "box": [
+       0.1434,
+       0.7175,
+       0.5654,
+       0.065
+      ]
+     },
+     {
+      "id": "snippet",
+      "label": "a slice of the synthetic tiny-world training corpus",
+      "box": [
+       0.1639,
+       0.1438,
+       0.6722,
+       0.0399
+      ]
+     },
+     {
+      "id": "new-t",
+      "label": "merge #1 creates token 35: \"␣t\"",
+      "box": [
+       0.8669,
+       0.373,
+       0.0633,
+       0.1364
+      ]
+     }
+    ]
+   },
+   {
+    "start": 41.23,
+    "end": 49.93,
+    "text": "The first four merges already build 'the', with its space. Each merge is a rule, and the rules are kept in the order they were learned.",
+    "scene": "Left: the first four merge rules (␣+t→␣t id 35, h+e→he id 36, ␣+a→␣a id 37, ␣t+he→␣the id 38). Right: '␣the' fusing from 4 characters into one token, id 38.",
+    "objects": [
+     {
+      "id": "rule-1",
+      "label": "merge rule #1: \" \" + \"t\" → \" t\" (id 35)",
+      "box": [
+       0.0753,
+       0.294,
+       0.2956,
+       0.0799
+      ]
+     },
+     {
+      "id": "rule-2",
+      "label": "merge rule #2: \"h\" + \"e\" → \"he\" (id 36)",
+      "box": [
+       0.0753,
+       0.4214,
+       0.2973,
+       0.0799
+      ]
+     },
+     {
+      "id": "rule-3",
+      "label": "merge rule #3: \" \" + \"a\" → \" a\" (id 37)",
+      "box": [
+       0.0753,
+       0.5488,
+       0.299,
+       0.0799
+      ]
+     },
+     {
+      "id": "rule-4",
+      "label": "merge rule #4: \" t\" + \"he\" → \" the\" (id 38)",
+      "box": [
+       0.0753,
+       0.6761,
+       0.3712,
+       0.0799
+      ]
+     },
+     {
+      "id": "the",
+      "label": "token \" the\" = id 38, built by rules 1, 2 and 4",
+      "box": [
+       0.6981,
+       0.4566,
+       0.11,
+       0.1368
+      ]
+     }
+    ]
+   },
+   {
+    "start": 49.93,
+    "end": 59.63,
+    "text": "Do that 221 times, and you get 35 plus 221. A vocabulary of exactly 256 tokens.",
+    "scene": "Big equation: 35 base symbols + 221 merges = 256 vocab size.",
+    "objects": [
+     {
+      "id": "eq-base",
+      "label": "35 base symbols",
+      "box": [
+       0.1539,
+       0.4002,
+       0.1624,
+       0.2043
+      ]
+     },
+     {
+      "id": "eq-merges",
+      "label": "221 learned merge rules",
+      "box": [
+       0.398,
+       0.401,
+       0.1473,
+       0.1953
+      ]
+     },
+     {
+      "id": "eq-vocab",
+      "label": "vocab size 256 (fits in one byte)",
+      "box": [
+       0.6502,
+       0.4002,
+       0.1706,
+       0.1966
+      ]
+     }
+    ]
+   },
+   {
+    "start": 59.63,
+    "end": 69.73,
+    "text": "To encode new text, start from characters and replay the merges in the order they were learned. Space w goes first, then a y, then e d.",
+    "scene": "' wednesday' as 10 character chips; below, a panel shows the merge being applied. Merges fire in learned order: ␣+w → ␣w (rank 9), a+y → ay (rank 10), e+d → ed (rank 13).",
+    "objects": [
+     {
+      "id": "rule-now",
+      "label": "merge rule #13: \"e\" + \"d\" → \"ed\" (id 47)",
+      "box": [
+       0.2938,
+       0.6956,
+       0.4125,
+       0.0464
+      ]
+     },
+     {
+      "id": "wed-0",
+      "label": "token \" w\" (id 43)",
+      "box": [
+       0.2961,
+       0.3193,
+       0.0652,
+       0.1364
+      ]
+     },
+     {
+      "id": "wed-1",
+      "label": "token \"ed\" (id 47)",
+      "box": [
+       0.3726,
+       0.3193,
+       0.0611,
+       0.136
+      ]
+     },
+     {
+      "id": "wed-2",
+      "label": "token \"n\" (id 16)",
+      "box": [
+       0.4449,
+       0.3193,
+       0.0375,
+       0.1364
+      ]
+     },
+     {
+      "id": "wed-3",
+      "label": "token \"e\" (id 7)",
+      "box": [
+       0.4936,
+       0.3193,
+       0.038,
+       0.136
+      ]
+     },
+     {
+      "id": "wed-4",
+      "label": "token \"s\" (id 21)",
+      "box": [
+       0.5428,
+       0.3193,
+       0.0379,
+       0.1364
+      ]
+     },
+     {
+      "id": "wed-5",
+      "label": "token \"d\" (id 6)",
+      "box": [
+       0.5919,
+       0.3193,
+       0.0375,
+       0.1364
+      ]
+     },
+     {
+      "id": "wed-6",
+      "label": "token \"ay\" (id 44)",
+      "box": [
+       0.6407,
+       0.3193,
+       0.0632,
+       0.136
+      ]
+     }
+    ]
+   },
+   {
+    "start": 69.73,
+    "end": 78.23,
+    "text": "Then e s. Then d plus ay makes day, and es plus day makes esday. Ten characters, four tokens.",
+    "scene": "Remaining merges: e+s → es, d+ay → day, es+day → esday. Final result: ␣w (43) · ed (47) · n (16) · esday (202) — 4 tokens.",
+    "objects": [
+     {
+      "id": "wed-0",
+      "label": "token \" w\" (id 43)",
+      "box": [
+       0.3348,
+       0.3191,
+       0.0652,
+       0.1364
+      ]
+     },
+     {
+      "id": "wed-1",
+      "label": "token \"ed\" (id 47)",
+      "box": [
+       0.4113,
+       0.3191,
+       0.0611,
+       0.136
+      ]
+     },
+     {
+      "id": "wed-2",
+      "label": "token \"n\" (id 16)",
+      "box": [
+       0.4836,
+       0.3191,
+       0.0375,
+       0.1364
+      ]
+     },
+     {
+      "id": "wed-3",
+      "label": "token \"esday\" (id 202)",
+      "box": [
+       0.5323,
+       0.3191,
+       0.1329,
+       0.1368
+      ]
+     },
+     {
+      "id": "wed-count",
+      "label": "\" wednesday\" → 4 tokens: \" w\", \"ed\", \"n\", \"esday\"",
+      "box": [
+       0.2621,
+       0.6928,
+       0.4758,
+       0.052
+      ]
+     }
+    ]
+   },
+   {
+    "start": 78.23,
+    "end": 93.67,
+    "text": "Notice the splits ignore grammar. 'esday' exists because Tuesday and Wednesday share it. Jumping becomes space, j, um, p, ing. The model never sees inside a token.",
+    "scene": "Examples: ' tuesday' → ␣t · u · esday (shares 'esday', id 202, with wednesday); ' jumping' → ␣ · j · um · p · ing.",
+    "objects": [
+     {
+      "id": "split-tuesday",
+      "label": "\" tuesday\" → \" t\" (35) · \"u\" (23) · \"esday\" (202)",
+      "box": [
+       0.1518,
+       0.2553,
+       0.493,
+       0.1304
+      ]
+     },
+     {
+      "id": "split-jumping",
+      "label": "\" jumping\" → \" \" (2) · \"j\" (12) · \"um\" (145) · \"p\" (18) · \"ing\" (168)",
+      "box": [
+       0.1532,
+       0.4491,
+       0.5401,
+       0.1304
+      ]
+     }
+    ]
+   },
+   {
+    "start": 93.67,
+    "end": 102.67,
+    "text": "Frequent words get a token all to themselves. Space red is just ID 157, one single chunk.",
+    "scene": "' red' → a single token, id 157.",
+    "objects": [
+     {
+      "id": "split-tuesday",
+      "label": "\" tuesday\" → \" t\" (35) · \"u\" (23) · \"esday\" (202)",
+      "box": [
+       0.1518,
+       0.2553,
+       0.493,
+       0.1304
+      ]
+     },
+     {
+      "id": "split-jumping",
+      "label": "\" jumping\" → \" \" (2) · \"j\" (12) · \"um\" (145) · \"p\" (18) · \"ing\" (168)",
+      "box": [
+       0.1532,
+       0.4491,
+       0.5401,
+       0.1304
+      ]
+     },
+     {
+      "id": "split-red",
+      "label": "\" red\" → one token, id 157",
+      "box": [
+       0.2375,
+       0.6428,
+       0.2719,
+       0.1301
+      ]
+     }
+    ]
+   },
+   {
+    "start": 102.67,
+    "end": 113.43,
+    "text": "Our vocab has 256 entries. GPT-2 had 50,257. Newer models go past 100 thousand. Same algorithm, bigger table.",
+    "scene": "Vocab-size bars to scale: TinyGPT 256 (a sliver), GPT-2 50,257, newer LLMs 100k+. Flash: 'same algorithm, bigger table'.",
+    "objects": [
+     {
+      "id": "vocab-0",
+      "label": "TinyGPT vocab size: 256",
+      "box": [
+       0.1046,
+       0.3062,
+       0.2221,
+       0.0875
+      ]
+     },
+     {
+      "id": "vocab-1",
+      "label": "GPT-2 vocab size: 50,257",
+      "box": [
+       0.1382,
+       0.4625,
+       0.4503,
+       0.0875
+      ]
+     },
+     {
+      "id": "vocab-2",
+      "label": "newer LLMs: vocabularies of 100,000+ tokens (e.g. ~100k–128k+)",
+      "box": [
+       0.0557,
+       0.6188,
+       0.8606,
+       0.0875
+      ]
+     }
+    ]
+   },
+   {
+    "start": 113.43,
+    "end": 121.0,
+    "text": "A bigger vocab means shorter sequences, but a bigger embedding table. It's a knob you'll get to turn when you build your own.",
+    "scene": "Trade-off: bigger vocab → fewer tokens per sentence but a bigger embedding table (TinyGPT 256×64 = 16,384 numbers; GPT-2 50,257×768 = 38.6 million).",
+    "objects": [
+     {
+      "id": "tradeoff",
+      "label": "trade-off: bigger vocab = shorter sequences but more embedding parameters",
+      "box": [
+       0.3017,
+       0.1644,
+       0.3967,
+       0.2462
+      ]
+     },
+     {
+      "id": "emb-tiny",
+      "label": "TinyGPT embedding table: 256 × 64 = 16,384 numbers",
+      "box": [
+       0.2396,
+       0.5917,
+       0.5204,
+       0.0466
+      ]
+     },
+     {
+      "id": "emb-gpt2",
+      "label": "GPT-2 (small) embedding table: 50,257 × 768 = 38,597,376 numbers",
+      "box": [
+       0.2396,
+       0.6758,
+       0.5208,
+       0.0438
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "attention",
+  "title": "Attention, visually",
+  "subtitle": "Queries, keys, values, softmax — and a real head that copies colors",
+  "duration": 102.83,
+  "src": "/videos/attention.mp4",
+  "poster": "/videos/attention.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The question"
+   },
+   {
+    "t": 6.67,
+    "title": "Query, key, value"
+   },
+   {
+    "t": 19.0,
+    "title": "Scores"
+   },
+   {
+    "t": 38.2,
+    "title": "Softmax"
+   },
+   {
+    "t": 52.23,
+    "title": "Causal mask"
+   },
+   {
+    "t": 62.0,
+    "title": "A real head"
+   },
+   {
+    "t": 82.2,
+    "title": "Many heads"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 6.67,
+    "text": "How does the word 'the' know to look back at 'red'? Attention. Let's build it from three arrows.",
+    "scene": "The prompt start 'mia has a red ball' … 'tom has the' with a yellow curved arrow from the last ' the' back to ' red' and a question mark.",
+    "objects": [
+     {
+      "id": "tok-the",
+      "label": "the last token \" the\" (position 22)",
+      "box": [
+       0.834,
+       0.5081,
+       0.0953,
+       0.0837
+      ]
+     },
+     {
+      "id": "tok-red",
+      "label": "token \" red\" (position 3)",
+      "box": [
+       0.325,
+       0.5081,
+       0.095,
+       0.0837
+      ]
+     }
+    ]
+   },
+   {
+    "start": 6.67,
+    "end": 19.0,
+    "text": "Every token turns its vector into three new ones. A query that asks, what am I looking for. A key that says, here's what I've got. And a value, the info it hands over if it gets picked.",
+    "scene": "The token ' the' spawns three arrows: query (blue) 'what am I looking for?', key (teal) 'what do I contain?', value (orange) 'what do I hand over if picked?' — each = x · a learned matrix.",
+    "objects": [
+     {
+      "id": "src",
+      "label": "token \" the\" — its vector x feeds three learned matrices",
+      "box": [
+       0.0941,
+       0.4534,
+       0.1086,
+       0.0932
+      ]
+     },
+     {
+      "id": "q",
+      "label": "query vector: what this token is looking for",
+      "box": [
+       0.183,
+       0.338,
+       0.6636,
+       0.0531
+      ]
+     },
+     {
+      "id": "k",
+      "label": "key vector: what this token offers to be found by",
+      "box": [
+       0.183,
+       0.4849,
+       0.5774,
+       0.0552
+      ]
+     },
+     {
+      "id": "v",
+      "label": "value vector: the information it passes on",
+      "box": [
+       0.183,
+       0.6338,
+       0.7605,
+       0.0531
+      ]
+     }
+    ]
+   },
+   {
+    "start": 19.0,
+    "end": 30.53,
+    "text": "To score a match, take the dot product of a query with each earlier key. Pointing the same way scores high. At right angles, zero. Opposite, negative.",
+    "scene": "Toy 2-D plane: a blue query arrow and a teal key arrow sweeping around it; a live readout of q · k goes high when aligned, 0 at right angles, negative when opposite.",
+    "objects": [
+     {
+      "id": "plane",
+      "label": "toy 2-D space for query/key vectors",
+      "box": [
+       0.0465,
+       0.2656,
+       0.4008,
+       0.5938
+      ]
+     },
+     {
+      "id": "qvec",
+      "label": "query q = (2.0, 1.0)",
+      "box": [
+       0.2469,
+       0.4438,
+       0.1336,
+       0.1188
+      ]
+     },
+     {
+      "id": "readout",
+      "label": "live dot product q · k",
+      "box": [
+       0.616,
+       0.1731,
+       0.2644,
+       0.0537
+      ]
+     }
+    ]
+   },
+   {
+    "start": 30.53,
+    "end": 38.2,
+    "text": "Do it for every earlier token, and you get one score each. Red's key lines up with the query, so it scores highest.",
+    "scene": "Three toy keys for ' red', ' mia', ' ball' drawn in the plane; a table of dot products: ' red' +4.8, ' mia' +0.2, ' ball' −0.8.",
+    "objects": [
+     {
+      "id": "plane",
+      "label": "toy 2-D space for query/key vectors",
+      "box": [
+       0.0465,
+       0.2656,
+       0.4008,
+       0.5938
+      ]
+     },
+     {
+      "id": "qvec",
+      "label": "query q = (2.0, 1.0)",
+      "box": [
+       0.2469,
+       0.4438,
+       0.1336,
+       0.1188
+      ]
+     },
+     {
+      "id": "score-red",
+      "label": "toy score q·k for \" red\" = +4.8",
+      "box": [
+       0.6362,
+       0.3402,
+       0.1751,
+       0.0474
+      ]
+     },
+     {
+      "id": "key-red",
+      "label": "toy key vector for \" red\" = (1.8, 1.2)",
+      "box": [
+       0.2469,
+       0.42,
+       0.1202,
+       0.1425
+      ]
+     },
+     {
+      "id": "score-mia",
+      "label": "toy score q·k for \" mia\" = +0.2",
+      "box": [
+       0.6362,
+       0.4376,
+       0.1749,
+       0.0498
+      ]
+     },
+     {
+      "id": "key-mia",
+      "label": "toy key vector for \" mia\" = (-0.6, 1.4)",
+      "box": [
+       0.2056,
+       0.3962,
+       0.0413,
+       0.1662
+      ]
+     },
+     {
+      "id": "score-ball",
+      "label": "toy score q·k for \" ball\" = -0.8",
+      "box": [
+       0.6362,
+       0.5374,
+       0.1917,
+       0.0474
+      ]
+     },
+     {
+      "id": "key-ball",
+      "label": "toy key vector for \" ball\" = (0.4, -1.6)",
+      "box": [
+       0.2469,
+       0.5625,
+       0.0315,
+       0.19
+      ]
+     }
+    ]
+   },
+   {
+    "start": 38.2,
+    "end": 46.47,
+    "text": "Divide by the square root of the vector size, then softmax. Every score becomes a positive weight, and the weights add up to one.",
+    "scene": "Score bars (q·k/√2: ' red' +3.39, ' mia' +0.14, ' ball' −0.57) morph into softmax weight bars: ' red' 94.5%, ' mia' 3.7%, ' ball' 1.8%.",
+    "objects": [
+     {
+      "id": "w-red",
+      "label": "toy attention weight on \" red\" = 94.5%",
+      "box": [
+       0.1804,
+       0.3438,
+       0.603,
+       0.0625
+      ]
+     },
+     {
+      "id": "w-mia",
+      "label": "toy attention weight on \" mia\" = 3.7%",
+      "box": [
+       0.1804,
+       0.4688,
+       0.1976,
+       0.0625
+      ]
+     },
+     {
+      "id": "w-ball",
+      "label": "toy attention weight on \" ball\" = 1.8%",
+      "box": [
+       0.1616,
+       0.5938,
+       0.205,
+       0.0625
+      ]
+     },
+     {
+      "id": "formula",
+      "label": "scaled dot-product score: q·k / √d",
+      "box": [
+       0.2741,
+       0.1737,
+       0.3112,
+       0.0525
+      ]
+     }
+    ]
+   },
+   {
+    "start": 46.47,
+    "end": 52.23,
+    "text": "The output is the weighted sum of the values. So it's mostly the value of whatever matched best.",
+    "scene": "Left: the three weights shrink to the side. Right: toy value vectors (orange) for ' red', ' mia', ' ball'; scaled by their weights and added tip to tail, they give the yellow output arrow — almost exactly red's value.",
+    "objects": [
+     {
+      "id": "w-red",
+      "label": "toy attention weight on \" red\" = 94.5%",
+      "box": [
+       0.0468,
+       0.3781,
+       0.3738,
+       0.0388
+      ]
+     },
+     {
+      "id": "w-mia",
+      "label": "toy attention weight on \" mia\" = 3.7%",
+      "box": [
+       0.0468,
+       0.4556,
+       0.1225,
+       0.0388
+      ]
+     },
+     {
+      "id": "w-ball",
+      "label": "toy attention weight on \" ball\" = 1.8%",
+      "box": [
+       0.0352,
+       0.5331,
+       0.1271,
+       0.0388
+      ]
+     },
+     {
+      "id": "values",
+      "label": "toy value vectors v for ' red', ' mia', ' ball'",
+      "box": [
+       0.471,
+       0.3028,
+       0.3922,
+       0.4569
+      ]
+     },
+     {
+      "id": "output",
+      "label": "output = Σ weight·value = (0.60, 1.67) ≈ v_red",
+      "box": [
+       0.6021,
+       0.3512,
+       0.1133,
+       0.2738
+      ]
+     }
+    ]
+   },
+   {
+    "start": 52.23,
+    "end": 62.0,
+    "text": "One rule. No peeking at the future. A causal mask blocks every token from looking at anything after it, which keeps next-token training honest.",
+    "scene": "The real 23×23 attention matrix of layer 2 head 4 on the prompt: lower triangle colored by weight, the upper triangle (future positions) blocked in dark red and outlined.",
+    "objects": [
+     {
+      "id": "matrix",
+      "label": "real attention matrix, layer 2 head 4 (23 × 23)",
+      "box": [
+       0.549,
+       0.1934,
+       0.38,
+       0.6756
+      ]
+     },
+     {
+      "id": "mask",
+      "label": "causal mask: positions after the query get weight 0 (score −∞)",
+      "box": [
+       0.5656,
+       0.1934,
+       0.3871,
+       0.6462
+      ]
+     },
+     {
+      "id": "last-row",
+      "label": "last row: what the final \" the\" attends to",
+      "box": [
+       0.5476,
+       0.8372,
+       0.3829,
+       0.0344
+      ]
+     },
+     {
+      "id": "cell-red",
+      "label": "row \" the\" (22), column \" red\" (3): weight 93.2%",
+      "box": [
+       0.5965,
+       0.8359,
+       0.0207,
+       0.0369
+      ]
+     }
+    ]
+   },
+   {
+    "start": 62.0,
+    "end": 73.27,
+    "text": "Now the real thing. Layer two, head four, on our prompt. From the final 'the', it puts 93 percent of its attention on 'red', way back at position three.",
+    "scene": "All 23 prompt tokens in a column; lines fan from the final ' the' (query) to earlier tokens. The line to ' red' (position 3) is thick and yellow: score 4.28 → 93%. Others: '.' 2.4%, ' ball' 1.9%.",
+    "objects": [
+     {
+      "id": "query",
+      "label": "query: the final \" the\" (position 22)",
+      "box": [
+       0.6892,
+       0.4441,
+       0.0997,
+       0.0868
+      ]
+     },
+     {
+      "id": "arc-red",
+      "label": "L2H4: \" the\" → \" red\" (pos 3): score 4.28, weight 93.2%",
+      "box": [
+       0.4473,
+       0.2037,
+       0.2487,
+       0.2838
+      ]
+     },
+     {
+      "id": "arc-4",
+      "label": "L2H4: \" the\" → \" ball\" (pos 4): weight 1.9%",
+      "box": [
+       0.4473,
+       0.2425,
+       0.2363,
+       0.245
+      ]
+     },
+     {
+      "id": "arc-15",
+      "label": "L2H4: \" the\" → \" ball\" (pos 15): weight 0.9%",
+      "box": [
+       0.4473,
+       0.4875,
+       0.2363,
+       0.1813
+      ]
+     },
+     {
+      "id": "arc-18",
+      "label": "L2H4: \" the\" → \".\" (pos 18): weight 2.4%",
+      "box": [
+       0.4473,
+       0.4875,
+       0.2363,
+       0.2975
+      ]
+     },
+     {
+      "id": "tok-0",
+      "label": "token \"mia\" (id 246), position 0: weight 0.0%",
+      "box": [
+       0.3981,
+       0.0711,
+       0.0386,
+       0.0328
+      ]
+     },
+     {
+      "id": "tok-1",
+      "label": "token \" has\" (id 46), position 1: weight 0.0%",
+      "box": [
+       0.3834,
+       0.1073,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-2",
+      "label": "token \" a\" (id 37), position 2: weight 0.0%",
+      "box": [
+       0.4117,
+       0.1496,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-3",
+      "label": "token \" red\" (id 157), position 3: weight 93.2%",
+      "box": [
+       0.3649,
+       0.1781,
+       0.0718,
+       0.0513
+      ]
+     },
+     {
+      "id": "tok-4",
+      "label": "token \" ball\" (id 183), position 4: weight 1.9%",
+      "box": [
+       0.3685,
+       0.2235,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-5",
+      "label": "token \".\" (id 29), position 5: weight 0.1%",
+      "box": [
+       0.4329,
+       0.2779,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-6",
+      "label": "token \" tom\" (id 158), position 6: weight 0.0%",
+      "box": [
+       0.3828,
+       0.3015,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-7",
+      "label": "token \" has\" (id 46), position 7: weight 0.0%",
+      "box": [
+       0.3834,
+       0.3398,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-8",
+      "label": "token \" a\" (id 37), position 8: weight 0.0%",
+      "box": [
+       0.4117,
+       0.3821,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-9",
+      "label": "token \" blue\" (id 161), position 9: weight 0.0%",
+      "box": [
+       0.3693,
+       0.4173,
+       0.0674,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-10",
+      "label": "token \" kite\" (id 165), position 10: weight 0.2%",
+      "box": [
+       0.3693,
+       0.455,
+       0.0674,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-11",
+      "label": "token \".\" (id 29), position 11: weight 0.2%",
+      "box": [
+       0.4329,
+       0.5104,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-12",
+      "label": "token \" mia\" (id 172), position 12: weight 0.0%",
+      "box": [
+       0.3835,
+       0.5325,
+       0.0532,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-13",
+      "label": "token \" gives\" (id 127), position 13: weight 0.5%",
+      "box": [
+       0.3553,
+       0.5713,
+       0.0815,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-14",
+      "label": "token \" the\" (id 38), position 14: weight 0.0%",
+      "box": [
+       0.3834,
+       0.611,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-15",
+      "label": "token \" ball\" (id 183), position 15: weight 0.9%",
+      "box": [
+       0.3685,
+       0.6498,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-16",
+      "label": "token \" to\" (id 65), position 16: weight 0.0%",
+      "box": [
+       0.3974,
+       0.689,
+       0.0393,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-17",
+      "label": "token \" tom\" (id 158), position 17: weight 0.1%",
+      "box": [
+       0.3828,
+       0.7278,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-18",
+      "label": "token \".\" (id 29), position 18: weight 2.4%",
+      "box": [
+       0.4329,
+       0.7816,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-19",
+      "label": "token \" now\" (id 128), position 19: weight 0.3%",
+      "box": [
+       0.3821,
+       0.8083,
+       0.0546,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-20",
+      "label": "token \" tom\" (id 158), position 20: weight 0.1%",
+      "box": [
+       0.3828,
+       0.844,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-21",
+      "label": "token \" has\" (id 46), position 21: weight 0.0%",
+      "box": [
+       0.3834,
+       0.8823,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-22",
+      "label": "token \" the\" (id 38), position 22: weight 0.0%",
+      "box": [
+       0.3834,
+       0.921,
+       0.0533,
+       0.038
+      ]
+     }
+    ]
+   },
+   {
+    "start": 73.27,
+    "end": 82.2,
+    "text": "So red's value gets copied forward, right to the spot where the model has to name a color. Nobody programmed that. It fell out of training.",
+    "scene": "An orange 'value' dot travels from ' red' along the yellow line into the final ' the'. Flash: 'nobody programmed this'.",
+    "objects": [
+     {
+      "id": "query",
+      "label": "query: the final \" the\" (position 22)",
+      "box": [
+       0.6892,
+       0.4441,
+       0.0997,
+       0.0868
+      ]
+     },
+     {
+      "id": "arc-red",
+      "label": "L2H4: \" the\" → \" red\" (pos 3): score 4.28, weight 93.2%",
+      "box": [
+       0.4473,
+       0.2037,
+       0.2487,
+       0.2838
+      ]
+     },
+     {
+      "id": "arc-4",
+      "label": "L2H4: \" the\" → \" ball\" (pos 4): weight 1.9%",
+      "box": [
+       0.4473,
+       0.2425,
+       0.2363,
+       0.245
+      ]
+     },
+     {
+      "id": "arc-15",
+      "label": "L2H4: \" the\" → \" ball\" (pos 15): weight 0.9%",
+      "box": [
+       0.4473,
+       0.4875,
+       0.2363,
+       0.1813
+      ]
+     },
+     {
+      "id": "arc-18",
+      "label": "L2H4: \" the\" → \".\" (pos 18): weight 2.4%",
+      "box": [
+       0.4473,
+       0.4875,
+       0.2363,
+       0.2975
+      ]
+     },
+     {
+      "id": "tok-0",
+      "label": "token \"mia\" (id 246), position 0: weight 0.0%",
+      "box": [
+       0.3981,
+       0.0711,
+       0.0386,
+       0.0328
+      ]
+     },
+     {
+      "id": "tok-1",
+      "label": "token \" has\" (id 46), position 1: weight 0.0%",
+      "box": [
+       0.3834,
+       0.1073,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-2",
+      "label": "token \" a\" (id 37), position 2: weight 0.0%",
+      "box": [
+       0.4117,
+       0.1496,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-3",
+      "label": "token \" red\" (id 157), position 3: weight 93.2%",
+      "box": [
+       0.3649,
+       0.1781,
+       0.0718,
+       0.0513
+      ]
+     },
+     {
+      "id": "tok-4",
+      "label": "token \" ball\" (id 183), position 4: weight 1.9%",
+      "box": [
+       0.3685,
+       0.2235,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-5",
+      "label": "token \".\" (id 29), position 5: weight 0.1%",
+      "box": [
+       0.4329,
+       0.2779,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-6",
+      "label": "token \" tom\" (id 158), position 6: weight 0.0%",
+      "box": [
+       0.3828,
+       0.3015,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-7",
+      "label": "token \" has\" (id 46), position 7: weight 0.0%",
+      "box": [
+       0.3834,
+       0.3398,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-8",
+      "label": "token \" a\" (id 37), position 8: weight 0.0%",
+      "box": [
+       0.4117,
+       0.3821,
+       0.025,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-9",
+      "label": "token \" blue\" (id 161), position 9: weight 0.0%",
+      "box": [
+       0.3693,
+       0.4173,
+       0.0674,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-10",
+      "label": "token \" kite\" (id 165), position 10: weight 0.2%",
+      "box": [
+       0.3693,
+       0.455,
+       0.0674,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-11",
+      "label": "token \".\" (id 29), position 11: weight 0.2%",
+      "box": [
+       0.4329,
+       0.5104,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-12",
+      "label": "token \" mia\" (id 172), position 12: weight 0.0%",
+      "box": [
+       0.3835,
+       0.5325,
+       0.0532,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-13",
+      "label": "token \" gives\" (id 127), position 13: weight 0.5%",
+      "box": [
+       0.3553,
+       0.5713,
+       0.0815,
+       0.0399
+      ]
+     },
+     {
+      "id": "tok-14",
+      "label": "token \" the\" (id 38), position 14: weight 0.0%",
+      "box": [
+       0.3834,
+       0.611,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-15",
+      "label": "token \" ball\" (id 183), position 15: weight 0.9%",
+      "box": [
+       0.3685,
+       0.6498,
+       0.0682,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-16",
+      "label": "token \" to\" (id 65), position 16: weight 0.0%",
+      "box": [
+       0.3974,
+       0.689,
+       0.0393,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-17",
+      "label": "token \" tom\" (id 158), position 17: weight 0.1%",
+      "box": [
+       0.3828,
+       0.7278,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-18",
+      "label": "token \".\" (id 29), position 18: weight 2.4%",
+      "box": [
+       0.4329,
+       0.7816,
+       0.0038,
+       0.0067
+      ]
+     },
+     {
+      "id": "tok-19",
+      "label": "token \" now\" (id 128), position 19: weight 0.3%",
+      "box": [
+       0.3821,
+       0.8083,
+       0.0546,
+       0.0309
+      ]
+     },
+     {
+      "id": "tok-20",
+      "label": "token \" tom\" (id 158), position 20: weight 0.1%",
+      "box": [
+       0.3828,
+       0.844,
+       0.0539,
+       0.0369
+      ]
+     },
+     {
+      "id": "tok-21",
+      "label": "token \" has\" (id 46), position 21: weight 0.0%",
+      "box": [
+       0.3834,
+       0.8823,
+       0.0533,
+       0.038
+      ]
+     },
+     {
+      "id": "tok-22",
+      "label": "token \" the\" (id 38), position 22: weight 0.0%",
+      "box": [
+       0.3834,
+       0.921,
+       0.0533,
+       0.038
+      ]
+     }
+    ]
+   },
+   {
+    "start": 82.2,
+    "end": 95.7,
+    "text": "Each layer has four heads, and each one learns its own habit. Layer one, head four stares at 'now'. Layer two, head one looks at 'ball'. Twelve heads, twelve habits.",
+    "scene": "A 3×4 grid of all 12 heads. Each panel shows that head's real attention from the final ' the' over the 23 positions as a mini bar chart, plus its top target (e.g. L1H4 → ' now' 87%, L2H1 → ' ball' 60%, L2H4 → ' red' 93%).",
+    "objects": [
+     {
+      "id": "head-L1H1",
+      "label": "layer 1 head 1: from the final \" the\", top target \" to\" (pos 16) = 38.6%",
+      "box": [
+       0.0447,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L1H2",
+      "label": "layer 1 head 2: from the final \" the\", top target \" has\" (pos 21) = 65.3%",
+      "box": [
+       0.2768,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L1H3",
+      "label": "layer 1 head 3: from the final \" the\", top target \" now\" (pos 19) = 19.9%",
+      "box": [
+       0.5088,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L1H4",
+      "label": "layer 1 head 4: from the final \" the\", top target \" now\" (pos 19) = 87.0%",
+      "box": [
+       0.7408,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H1",
+      "label": "layer 2 head 1: from the final \" the\", top target \" ball\" (pos 4) = 60.1%",
+      "box": [
+       0.0447,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H2",
+      "label": "layer 2 head 2: from the final \" the\", top target \" the\" (pos 22) = 29.3%",
+      "box": [
+       0.2768,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H3",
+      "label": "layer 2 head 3: from the final \" the\", top target \" the\" (pos 14) = 33.8%",
+      "box": [
+       0.5088,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H4",
+      "label": "layer 2 head 4: from the final \" the\", top target \" red\" (pos 3) = 93.2%",
+      "box": [
+       0.7408,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H1",
+      "label": "layer 3 head 1: from the final \" the\", top target \" a\" (pos 2) = 32.7%",
+      "box": [
+       0.0447,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H2",
+      "label": "layer 3 head 2: from the final \" the\", top target \" the\" (pos 22) = 10.7%",
+      "box": [
+       0.2768,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H3",
+      "label": "layer 3 head 3: from the final \" the\", top target \" the\" (pos 22) = 49.5%",
+      "box": [
+       0.5088,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H4",
+      "label": "layer 3 head 4: from the final \" the\", top target \" now\" (pos 19) = 10.4%",
+      "box": [
+       0.7408,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     }
+    ]
+   },
+   {
+    "start": 95.7,
+    "end": 102.33,
+    "text": "Many heads, many habits, all running in parallel. Go find your favorite head in the X-ray.",
+    "scene": "The 12-head grid stays up; final card: 'go find your favorite head in the X-ray'.",
+    "objects": [
+     {
+      "id": "head-L1H1",
+      "label": "layer 1 head 1: from the final \" the\", top target \" to\" (pos 16) = 38.6%",
+      "box": [
+       0.0447,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L1H2",
+      "label": "layer 1 head 2: from the final \" the\", top target \" has\" (pos 21) = 65.3%",
+      "box": [
+       0.2768,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L1H3",
+      "label": "layer 1 head 3: from the final \" the\", top target \" now\" (pos 19) = 19.9%",
+      "box": [
+       0.5088,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L1H4",
+      "label": "layer 1 head 4: from the final \" the\", top target \" now\" (pos 19) = 87.0%",
+      "box": [
+       0.7408,
+       0.1775,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H1",
+      "label": "layer 2 head 1: from the final \" the\", top target \" ball\" (pos 4) = 60.1%",
+      "box": [
+       0.0447,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H2",
+      "label": "layer 2 head 2: from the final \" the\", top target \" the\" (pos 22) = 29.3%",
+      "box": [
+       0.2768,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H3",
+      "label": "layer 2 head 3: from the final \" the\", top target \" the\" (pos 14) = 33.8%",
+      "box": [
+       0.5088,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L2H4",
+      "label": "layer 2 head 4: from the final \" the\", top target \" red\" (pos 3) = 93.2%",
+      "box": [
+       0.7408,
+       0.4175,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H1",
+      "label": "layer 3 head 1: from the final \" the\", top target \" a\" (pos 2) = 32.7%",
+      "box": [
+       0.0447,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H2",
+      "label": "layer 3 head 2: from the final \" the\", top target \" the\" (pos 22) = 10.7%",
+      "box": [
+       0.2768,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H3",
+      "label": "layer 3 head 3: from the final \" the\", top target \" the\" (pos 22) = 49.5%",
+      "box": [
+       0.5088,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "head-L3H4",
+      "label": "layer 3 head 4: from the final \" the\", top target \" now\" (pos 19) = 10.4%",
+      "box": [
+       0.7408,
+       0.6575,
+       0.2145,
+       0.2025
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the X-ray to explore every head",
+      "box": [
+       0.0904,
+       0.4315,
+       0.8191,
+       0.137
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "next-token",
+  "title": "Next token: logits, softmax & temperature",
+  "subtitle": "How 256 raw scores become one sampled word",
+  "duration": 103.4,
+  "src": "/videos/next-token.mp4",
+  "poster": "/videos/next-token.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "256 numbers"
+   },
+   {
+    "t": 7.37,
+    "title": "Logits"
+   },
+   {
+    "t": 19.23,
+    "title": "Softmax"
+   },
+   {
+    "t": 31.47,
+    "title": "Temperature"
+   },
+   {
+    "t": 55.03,
+    "title": "Top-k"
+   },
+   {
+    "t": 65.8,
+    "title": "The dice roll"
+   },
+   {
+    "t": 78.7,
+    "title": "When it's unsure"
+   },
+   {
+    "t": 94.27,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 7.37,
+    "text": "The model never outputs a word. It outputs 256 numbers. Here's how those turn into one word.",
+    "scene": "A wall of 256 thin bars — the model's real raw scores for every token in the vocab after the prompt; the tallest (pink) is ' red'.",
+    "objects": [
+     {
+      "id": "wall",
+      "label": "all 256 logits for the prompt (min -5.88, max 10.37)",
+      "box": [
+       0.0574,
+       0.2898,
+       0.8852,
+       0.447
+      ]
+     },
+     {
+      "id": "wall-red",
+      "label": "logit for \" red\" = 10.37 (the highest)",
+      "box": [
+       0.5711,
+       0.2305,
+       0.062,
+       0.3445
+      ]
+     }
+    ]
+   },
+   {
+    "start": 7.37,
+    "end": 19.23,
+    "text": "These raw scores are called logits. For our prompt, red scores 10.4, white 7.7, purple 7.5. Two thirds of the vocab sits below zero.",
+    "scene": "Bar chart of the six highest logits: ' red' 10.37, ' white' 7.68, ' purple' 7.53, ' black' 4.62, ' ava' 3.98, ',' 3.72; the other 250 range from 3.61 down to −5.88.",
+    "objects": [
+     {
+      "id": "logit-red",
+      "label": "logit for \" red\" = 10.37",
+      "box": [
+       0.1734,
+       0.2212,
+       0.6909,
+       0.0575
+      ]
+     },
+     {
+      "id": "logit-white",
+      "label": "logit for \" white\" = 7.68",
+      "box": [
+       0.138,
+       0.3062,
+       0.5782,
+       0.0575
+      ]
+     },
+     {
+      "id": "logit-purple",
+      "label": "logit for \" purple\" = 7.53",
+      "box": [
+       0.1204,
+       0.3912,
+       0.588,
+       0.0575
+      ]
+     },
+     {
+      "id": "logit-black",
+      "label": "logit for \" black\" = 4.62",
+      "box": [
+       0.1367,
+       0.4762,
+       0.4303,
+       0.0575
+      ]
+     },
+     {
+      "id": "logit-ava",
+      "label": "logit for \" ava\" = 3.98",
+      "box": [
+       0.1734,
+       0.5612,
+       0.3626,
+       0.0575
+      ]
+     },
+     {
+      "id": "logit-,",
+      "label": "logit for \",\" = 3.72",
+      "box": [
+       0.2351,
+       0.6462,
+       0.2881,
+       0.0575
+      ]
+     },
+     {
+      "id": "logit-rest",
+      "label": "the remaining 250 logits",
+      "box": [
+       0.0802,
+       0.7417,
+       0.3774,
+       0.0365
+      ]
+     }
+    ]
+   },
+   {
+    "start": 19.23,
+    "end": 31.47,
+    "text": "Softmax turns them into probabilities. Raise e to each logit, then divide by the total. Exponentials blow small gaps up into big ones, so red ends up with 87 percent.",
+    "scene": "The logit bars morph into probability bars: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, ' black' 0.28%, ' ava' 0.15%, ',' 0.11%, all 250 others together ~1.4%. Formula: p = exp(logit) / sum of exp over all 256.",
+    "objects": [
+     {
+      "id": "bar-red",
+      "label": "P(\" red\") = 87.07% at T = 1",
+      "box": [
+       0.1734,
+       0.2212,
+       0.6151,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-white",
+      "label": "P(\" white\") = 5.89% at T = 1",
+      "box": [
+       0.138,
+       0.3062,
+       0.2504,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-purple",
+      "label": "P(\" purple\") = 5.08% at T = 1",
+      "box": [
+       0.1204,
+       0.3912,
+       0.2642,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-black",
+      "label": "P(\" black\") = 0.28% at T = 1",
+      "box": [
+       0.1367,
+       0.4762,
+       0.2248,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-ava",
+      "label": "P(\" ava\") = 0.15% at T = 1",
+      "box": [
+       0.1734,
+       0.5612,
+       0.1799,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-,",
+      "label": "P(\",\") = 0.11% at T = 1",
+      "box": [
+       0.2351,
+       0.6462,
+       0.1127,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-others",
+      "label": "all 250 other tokens together = 1.42% at T = 1",
+      "box": [
+       0.0802,
+       0.7312,
+       0.2828,
+       0.0575
+      ]
+     }
+    ]
+   },
+   {
+    "start": 31.47,
+    "end": 37.7,
+    "text": "Temperature divides every logit before the softmax. At temperature one, nothing changes.",
+    "scene": "A big 'T = 1.0' dial appears top right; the bars stay at their T = 1 values.",
+    "objects": [
+     {
+      "id": "bar-red",
+      "label": "P(\" red\") = 87.07% at T = 1",
+      "box": [
+       0.1734,
+       0.2212,
+       0.6151,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-white",
+      "label": "P(\" white\") = 5.89% at T = 1",
+      "box": [
+       0.138,
+       0.3062,
+       0.2504,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-purple",
+      "label": "P(\" purple\") = 5.08% at T = 1",
+      "box": [
+       0.1204,
+       0.3912,
+       0.2642,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-black",
+      "label": "P(\" black\") = 0.28% at T = 1",
+      "box": [
+       0.1367,
+       0.4762,
+       0.2248,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-ava",
+      "label": "P(\" ava\") = 0.15% at T = 1",
+      "box": [
+       0.1734,
+       0.5612,
+       0.1799,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-,",
+      "label": "P(\",\") = 0.11% at T = 1",
+      "box": [
+       0.2351,
+       0.6462,
+       0.1127,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-others",
+      "label": "all 250 other tokens together = 1.42% at T = 1",
+      "box": [
+       0.0802,
+       0.7312,
+       0.2828,
+       0.0575
+      ]
+     },
+     {
+      "id": "dial",
+      "label": "temperature T = 1.0 (logits used as-is)",
+      "box": [
+       0.7501,
+       0.1038,
+       0.1469,
+       0.0674
+      ]
+     }
+    ]
+   },
+   {
+    "start": 37.7,
+    "end": 46.83,
+    "text": "Turn it down to 0.3, and the gaps get stretched. Red jumps to 99.98 percent. Basically deterministic.",
+    "scene": "T slides to 0.3: ' red' grows to 99.98%, every other bar collapses to ~0.",
+    "objects": [
+     {
+      "id": "bar-red",
+      "label": "P(\" red\") = 99.98% at T = 0.3",
+      "box": [
+       0.1734,
+       0.2212,
+       0.7096,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-white",
+      "label": "P(\" white\") = 0.01% at T = 0.3",
+      "box": [
+       0.138,
+       0.3062,
+       0.2176,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-purple",
+      "label": "P(\" purple\") = 0.01% at T = 0.3",
+      "box": [
+       0.1204,
+       0.3912,
+       0.2351,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-black",
+      "label": "P(\" black\") = 0.00% at T = 0.3",
+      "box": [
+       0.1367,
+       0.4762,
+       0.225,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-ava",
+      "label": "P(\" ava\") = 0.00% at T = 0.3",
+      "box": [
+       0.1734,
+       0.5612,
+       0.1883,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-,",
+      "label": "P(\",\") = 0.00% at T = 0.3",
+      "box": [
+       0.2351,
+       0.6462,
+       0.1266,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-others",
+      "label": "all 250 other tokens together = 0.00% at T = 0.3",
+      "box": [
+       0.0802,
+       0.7312,
+       0.2815,
+       0.0575
+      ]
+     },
+     {
+      "id": "dial",
+      "label": "temperature T = 0.3 (sharper)",
+      "box": [
+       0.7501,
+       0.1038,
+       0.1566,
+       0.0674
+      ]
+     }
+    ]
+   },
+   {
+    "start": 46.83,
+    "end": 55.03,
+    "text": "Crank it to 2, and everything flattens. Red drops to 32 percent, and almost half the probability leaks into the long tail of junk.",
+    "scene": "T slides to 2.0: ' red' falls to 32.4%, ' white' 8.4%, ' purple' 7.8%, and the 250 others together reach 47.1%.",
+    "objects": [
+     {
+      "id": "bar-red",
+      "label": "P(\" red\") = 32.37% at T = 2",
+      "box": [
+       0.1734,
+       0.2212,
+       0.3517,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-white",
+      "label": "P(\" white\") = 8.42% at T = 2",
+      "box": [
+       0.138,
+       0.3062,
+       0.2652,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-purple",
+      "label": "P(\" purple\") = 7.82% at T = 2",
+      "box": [
+       0.1204,
+       0.3912,
+       0.2745,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-black",
+      "label": "P(\" black\") = 1.82% at T = 2",
+      "box": [
+       0.1367,
+       0.4762,
+       0.2269,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-ava",
+      "label": "P(\" ava\") = 1.32% at T = 2",
+      "box": [
+       0.1734,
+       0.5612,
+       0.1876,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-,",
+      "label": "P(\",\") = 1.16% at T = 2",
+      "box": [
+       0.2351,
+       0.6462,
+       0.118,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-others",
+      "label": "all 250 other tokens together = 47.08% at T = 2",
+      "box": [
+       0.0802,
+       0.7312,
+       0.5066,
+       0.0575
+      ]
+     },
+     {
+      "id": "dial",
+      "label": "temperature T = 2.0 (flatter)",
+      "box": [
+       0.7501,
+       0.1038,
+       0.1565,
+       0.0674
+      ]
+     }
+    ]
+   },
+   {
+    "start": 55.03,
+    "end": 65.8,
+    "text": "Top k is the safety net. Keep only the k best tokens, zero out the rest, and renormalize. With k equals 3, the junk is gone, and red is back to 67 percent.",
+    "scene": "At T = 2 with top-k = 3: only ' red', ' white', ' purple' survive and renormalize to 66.6%, 17.3%, 16.1%; everything else drops to 0.",
+    "objects": [
+     {
+      "id": "bar-red",
+      "label": "P(\" red\") = 66.59% at T = 2, top-k = 3",
+      "box": [
+       0.1734,
+       0.2212,
+       0.5229,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-white",
+      "label": "P(\" white\") = 17.32% at T = 2, top-k = 3",
+      "box": [
+       0.138,
+       0.3062,
+       0.2993,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-purple",
+      "label": "P(\" purple\") = 16.09% at T = 2, top-k = 3",
+      "box": [
+       0.1204,
+       0.3912,
+       0.3073,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-black",
+      "label": "P(\" black\") = 0.00% at T = 2, top-k = 3",
+      "box": [
+       0.1367,
+       0.4762,
+       0.225,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-ava",
+      "label": "P(\" ava\") = 0.00% at T = 2, top-k = 3",
+      "box": [
+       0.1734,
+       0.5612,
+       0.1883,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-,",
+      "label": "P(\",\") = 0.00% at T = 2, top-k = 3",
+      "box": [
+       0.2351,
+       0.6462,
+       0.1266,
+       0.0575
+      ]
+     },
+     {
+      "id": "bar-others",
+      "label": "all 250 other tokens together = 0.00% at T = 2, top-k = 3",
+      "box": [
+       0.0802,
+       0.7312,
+       0.2815,
+       0.0575
+      ]
+     },
+     {
+      "id": "dial",
+      "label": "temperature T = 2.0 (flatter)",
+      "box": [
+       0.7501,
+       0.1038,
+       0.1565,
+       0.0674
+      ]
+     },
+     {
+      "id": "topk",
+      "label": "top-k = 3: only the 3 most likely tokens can be sampled",
+      "box": [
+       0.7522,
+       0.2149,
+       0.1544,
+       0.0589
+      ]
+     }
+    ]
+   },
+   {
+    "start": 65.8,
+    "end": 78.7,
+    "text": "Then we roll a weighted die. Lay the probabilities end to end, throw a dart, and take whatever it lands on. Here are 20 rolls at temperature one. 18 reds, plus the odd purple and white.",
+    "scene": "The T = 1 probabilities laid end to end as a strip (' red' 87% takes most of it, then ' white', ' purple', and a sliver for everything else). 20 random darts land on it; the picked tokens appear below: 18× ' red', plus 1× ' purple', 1× ' white'.",
+    "objects": [
+     {
+      "id": "strip",
+      "label": "probabilities laid end to end (T = 1): a dart's landing spot picks the token",
+      "box": [
+       0.0781,
+       0.3031,
+       0.8438,
+       0.0938
+      ]
+     },
+     {
+      "id": "roll-0",
+      "label": "roll 1: \" red\" (p = 87.1%)",
+      "box": [
+       0.0308,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-1",
+      "label": "roll 2: \" red\" (p = 87.1%)",
+      "box": [
+       0.118,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-2",
+      "label": "roll 3: \" red\" (p = 87.1%)",
+      "box": [
+       0.2052,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-3",
+      "label": "roll 4: \" red\" (p = 87.1%)",
+      "box": [
+       0.2923,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-4",
+      "label": "roll 5: \" red\" (p = 87.1%)",
+      "box": [
+       0.3795,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-5",
+      "label": "roll 6: \" white\" (p = 5.9%)",
+      "box": [
+       0.4667,
+       0.6102,
+       0.108,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-6",
+      "label": "roll 7: \" red\" (p = 87.1%)",
+      "box": [
+       0.5845,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-7",
+      "label": "roll 8: \" red\" (p = 87.1%)",
+      "box": [
+       0.6716,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-8",
+      "label": "roll 9: \" red\" (p = 87.1%)",
+      "box": [
+       0.7588,
+       0.6102,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-9",
+      "label": "roll 10: \" purple\" (p = 5.1%)",
+      "box": [
+       0.846,
+       0.6102,
+       0.1232,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-10",
+      "label": "roll 11: \" red\" (p = 87.1%)",
+      "box": [
+       0.0308,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-11",
+      "label": "roll 12: \" red\" (p = 87.1%)",
+      "box": [
+       0.118,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-12",
+      "label": "roll 13: \" red\" (p = 87.1%)",
+      "box": [
+       0.2052,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-13",
+      "label": "roll 14: \" red\" (p = 87.1%)",
+      "box": [
+       0.2923,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-14",
+      "label": "roll 15: \" red\" (p = 87.1%)",
+      "box": [
+       0.3795,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-15",
+      "label": "roll 16: \" red\" (p = 87.1%)",
+      "box": [
+       0.482,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-16",
+      "label": "roll 17: \" red\" (p = 87.1%)",
+      "box": [
+       0.5845,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-17",
+      "label": "roll 18: \" red\" (p = 87.1%)",
+      "box": [
+       0.6716,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-18",
+      "label": "roll 19: \" red\" (p = 87.1%)",
+      "box": [
+       0.7588,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     },
+     {
+      "id": "roll-19",
+      "label": "roll 20: \" red\" (p = 87.1%)",
+      "box": [
+       0.8689,
+       0.7188,
+       0.0773,
+       0.071
+      ]
+     }
+    ]
+   },
+   {
+    "start": 78.7,
+    "end": 94.27,
+    "text": "Sampling matters most when the model is torn. Zoe has a yellow shoe. What color is the shoe? Yellow, 47 percent. Pink, 46. A coin flip. Sample at temperature one, and it names the wrong color more often than not.",
+    "scene": "A real mistake: for 'zoe has a yellow shoe. q: what color is the shoe? a: the shoe is' the model gives ' yellow' 47.1%, ' pink' 45.9%, ' black' 3.1%, ' purple' 1.1%. Flash: 'coin flip'.",
+    "objects": [
+     {
+      "id": "zoe-prompt",
+      "label": "prompt: zoe has a yellow shoe. q: what color is the shoe? a: the shoe is",
+      "box": [
+       0.0494,
+       0.1935,
+       0.4512,
+       0.1881
+      ]
+     },
+     {
+      "id": "zoe-yellow",
+      "label": "P(\" yellow\") = 47.1%",
+      "box": [
+       0.2384,
+       0.4962,
+       0.4615,
+       0.0575
+      ]
+     },
+     {
+      "id": "zoe-pink",
+      "label": "P(\" pink\") = 45.9%",
+      "box": [
+       0.2738,
+       0.5812,
+       0.4317,
+       0.0575
+      ]
+     },
+     {
+      "id": "zoe-black",
+      "label": "P(\" black\") = 3.1%",
+      "box": [
+       0.2563,
+       0.6662,
+       0.2133,
+       0.0575
+      ]
+     },
+     {
+      "id": "zoe-purple",
+      "label": "P(\" purple\") = 1.1%",
+      "box": [
+       0.24,
+       0.7512,
+       0.2154,
+       0.0575
+      ]
+     },
+     {
+      "id": "wrong",
+      "label": "at T = 1 the sampled color is wrong with probability 52.9%",
+      "box": [
+       0.5806,
+       0.2602,
+       0.345,
+       0.0547
+      ]
+     }
+    ]
+   },
+   {
+    "start": 94.27,
+    "end": 102.9,
+    "text": "Low temperature, safe and repetitive. High temperature, creative and chaotic. Go turn the dial yourself in the X-ray.",
+    "scene": "A temperature slider: 'low T — safe · repetitive' on the left, 'high T — creative · chaotic' on the right; the knob slides both ways. Final card: 'go turn the dial yourself in the X-ray'.",
+    "objects": [
+     {
+      "id": "low",
+      "label": "low temperature: sharper distribution, more predictable text",
+      "box": [
+       0.1419,
+       0.3617,
+       0.2099,
+       0.1266
+      ]
+     },
+     {
+      "id": "high",
+      "label": "high temperature: flatter distribution, more surprising text",
+      "box": [
+       0.636,
+       0.3584,
+       0.2342,
+       0.1331
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the X-ray to try temperature and top-k live",
+      "box": [
+       0.1372,
+       0.7659,
+       0.7257,
+       0.0683
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "training",
+  "title": "How it learned (training in 100 seconds)",
+  "subtitle": "Loss, gradient descent, and real samples from step 0 to step 3000",
+  "duration": 111.0,
+  "src": "/videos/training.mp4",
+  "poster": "/videos/training.jpg",
+  "relates": "training",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "Gibberish to stories"
+   },
+   {
+    "t": 7.23,
+    "title": "Random start"
+   },
+   {
+    "t": 19.57,
+    "title": "The loss"
+   },
+   {
+    "t": 42.77,
+    "title": "Gradient descent"
+   },
+   {
+    "t": 65.97,
+    "title": "The loss curve"
+   },
+   {
+    "t": 78.9,
+    "title": "What it wrote"
+   },
+   {
+    "t": 102.67,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 7.23,
+    "text": "At step zero, this model wrote this. 80 seconds of training later, it wrote this. What happened in between?",
+    "scene": "Two real samples from the prompt 'mia has a red ball. tom': at step 0 the continuation is gibberish ('sh hill w timog say litam…'); at step 3000 it is a coherent story ending 'now tom has the red ball.'",
+    "objects": [
+     {
+      "id": "sample-0",
+      "label": "real sample at step 0 (loss 5.56): random gibberish",
+      "box": [
+       0.1248,
+       0.2005,
+       0.7023,
+       0.2495
+      ]
+     },
+     {
+      "id": "sample-3000",
+      "label": "real sample at step 3000 (loss 0.46): coherent text",
+      "box": [
+       0.1248,
+       0.55,
+       0.7504,
+       0.2495
+      ]
+     }
+    ]
+   },
+   {
+    "start": 7.23,
+    "end": 19.57,
+    "text": "Every weight starts as tiny random noise. So at first, it spreads its bets almost evenly over all 256 tokens. Its loss is 5.56, almost exactly what pure guessing scores.",
+    "scene": "256 near-equal bars (each ≈ 0.39%): the untrained model's flat guess. Below: real loss at step 0 = 5.56 vs ln 256 = 5.55 for uniform guessing.",
+    "objects": [
+     {
+      "id": "flat",
+      "label": "untrained model: ~uniform probability over 256 tokens (illustration)",
+      "box": [
+       0.0785,
+       0.3441,
+       0.8429,
+       0.1619
+      ]
+     },
+     {
+      "id": "loss0",
+      "label": "real loss at step 0 = 5.5593 vs ln(256) = 5.5452",
+      "box": [
+       0.0719,
+       0.6873,
+       0.8563,
+       0.0504
+      ]
+     }
+    ]
+   },
+   {
+    "start": 19.57,
+    "end": 29.4,
+    "text": "Training is one game. At every position, predict the next token. The score is cross-entropy, minus the log of the probability you gave the right answer.",
+    "scene": "Tokens of 'mia has a red ball.' on top, each with an arrow down to the token that follows it (the target). Formula: cross-entropy loss = −log(p[correct next token]).",
+    "objects": [
+     {
+      "id": "pair-0",
+      "label": "after \"mia\" the correct next token is \" has\"",
+      "box": [
+       0.2167,
+       0.232,
+       0.0908,
+       0.286
+      ]
+     },
+     {
+      "id": "pair-1",
+      "label": "after \" has\" the correct next token is \" a\"",
+      "box": [
+       0.3328,
+       0.232,
+       0.0908,
+       0.286
+      ]
+     },
+     {
+      "id": "pair-2",
+      "label": "after \" a\" the correct next token is \" red\"",
+      "box": [
+       0.44,
+       0.232,
+       0.0906,
+       0.286
+      ]
+     },
+     {
+      "id": "pair-3",
+      "label": "after \" red\" the correct next token is \" ball\"",
+      "box": [
+       0.5369,
+       0.232,
+       0.1106,
+       0.286
+      ]
+     },
+     {
+      "id": "pair-4",
+      "label": "after \" ball\" the correct next token is \".\"",
+      "box": [
+       0.6727,
+       0.232,
+       0.1106,
+       0.286
+      ]
+     },
+     {
+      "id": "formula",
+      "label": "cross-entropy loss = −log p(correct token)",
+      "box": [
+       0.0462,
+       0.7324,
+       0.9075,
+       0.0602
+      ]
+     }
+    ]
+   },
+   {
+    "start": 29.4,
+    "end": 42.77,
+    "text": "Give the right token 87 percent, and the loss is 0.14. Give it one in 256, and it's 5.55. Confidently wrong is the most expensive of all.",
+    "scene": "Plot of loss = −log p: p = 0.87 → 0.14 (pink), p = 1/256 → 5.55 (blue), p = 0.001 → 6.91 (orange, 'confidently wrong').",
+    "objects": [
+     {
+      "id": "curve",
+      "label": "loss = −log(p)",
+      "box": [
+       0.3001,
+       0.2614,
+       0.4917,
+       0.5761
+      ]
+     },
+     {
+      "id": "pt-0",
+      "label": "p = 0.87 → loss 0.14",
+      "box": [
+       0.6091,
+       0.7121,
+       0.153,
+       0.1264
+      ]
+     },
+     {
+      "id": "pt-1",
+      "label": "p = 0.003906 → loss 5.55",
+      "box": [
+       0.2945,
+       0.3695,
+       0.159,
+       0.0913
+      ]
+     },
+     {
+      "id": "pt-2",
+      "label": "p = 0.001 → loss 6.91",
+      "box": [
+       0.2931,
+       0.1979,
+       0.3072,
+       0.0847
+      ]
+     }
+    ]
+   },
+   {
+    "start": 42.77,
+    "end": 54.9,
+    "text": "Gradient descent works out which way to nudge each of the 170,560 weights to shrink the loss, takes a small step, and repeats. Like a ball rolling downhill.",
+    "scene": "A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step shown with a slope arrow, settling near a low point.",
+    "objects": [
+     {
+      "id": "landscape",
+      "label": "loss as a function of one weight (illustrative)",
+      "box": [
+       0.1484,
+       0.2801,
+       0.7031,
+       0.4647
+      ]
+     },
+     {
+      "id": "ball",
+      "label": "current weights; each step moves against the gradient",
+      "box": [
+       0.4153,
+       0.7022,
+       0.0239,
+       0.0425
+      ]
+     }
+    ]
+   },
+   {
+    "start": 54.9,
+    "end": 65.97,
+    "text": "Each step grades 64 random snippets of 64 tokens at once. That's 4,096 predictions per step, for 3000 steps.",
+    "scene": "A 64×64 grid of tiny squares = 4,096 next-token predictions per training step; × 3,000 steps ≈ 12.3 million graded guesses.",
+    "objects": [
+     {
+      "id": "batch",
+      "label": "one batch: 64 snippets × 64 tokens = 4,096 predictions",
+      "box": [
+       0.0698,
+       0.2103,
+       0.3682,
+       0.6545
+      ]
+     },
+     {
+      "id": "total",
+      "label": "3,000 steps × 4,096 ≈ 12,288,000 predictions",
+      "box": [
+       0.4727,
+       0.5595,
+       0.4765,
+       0.1572
+      ]
+     }
+    ]
+   },
+   {
+    "start": 65.97,
+    "end": 78.9,
+    "text": "Here's the real loss curve. It starts at 5.56, right at chance, crashes below 1 by step 150, then slowly grinds down to about 0.46.",
+    "scene": "The real training curve from training.json (121 points every 25 steps): train loss (yellow) and validation loss (dashed teal) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and flatten out near 0.46 at step 3000.",
+    "objects": [
+     {
+      "id": "chance",
+      "label": "uniform-guessing loss ln(256) = 5.55",
+      "box": [
+       0.1625,
+       0.2661,
+       0.7383,
+       0.0545
+      ]
+     },
+     {
+      "id": "loss-curve",
+      "label": "training loss: 5.56 at step 0 → 0.46 at step 3000",
+      "box": [
+       0.1625,
+       0.2647,
+       0.7383,
+       0.5336
+      ]
+     },
+     {
+      "id": "val-curve",
+      "label": "validation loss on held-out text: 5.55 → 0.46",
+      "box": [
+       0.1625,
+       0.2654,
+       0.7383,
+       0.5336
+      ]
+     },
+     {
+      "id": "legend",
+      "label": "yellow = training loss, dashed teal = validation loss",
+      "box": [
+       0.6358,
+       0.1708,
+       0.265,
+       0.0292
+      ]
+     },
+     {
+      "id": "pt-150",
+      "label": "step 150: train loss 0.990",
+      "box": [
+       0.1938,
+       0.6897,
+       0.1788,
+       0.0609
+      ]
+     },
+     {
+      "id": "pt-3000",
+      "label": "step 3000: train loss 0.460, val 0.461",
+      "box": [
+       0.7502,
+       0.7154,
+       0.1746,
+       0.0905
+      ]
+     }
+    ]
+   },
+   {
+    "start": 78.9,
+    "end": 91.67,
+    "text": "And here's what it wrote along the way, from the same prompt. Step zero, alphabet soup. Step 100, real words, broken grammar. Step 300, actual sentences.",
+    "scene": "One panel morphing through real samples: step 0 (loss 5.56) gibberish → step 100 (loss 1.82) real words, broken grammar → step 300 (loss 0.69) well-formed sentences.",
+    "objects": [
+     {
+      "id": "sample",
+      "label": "real sample at step 300: mia has a red ball. tom has a green drum. leo gives the book to max. n…",
+      "box": [
+       0.1325,
+       0.4303,
+       0.7349,
+       0.1894
+      ]
+     },
+     {
+      "id": "step",
+      "label": "step 300, training loss 0.69",
+      "box": [
+       0.338,
+       0.1581,
+       0.324,
+       0.0589
+      ]
+     }
+    ]
+   },
+   {
+    "start": 91.67,
+    "end": 102.67,
+    "text": "At step 1000, it still handed Tom the yellow ball. Wrong. By step 3000, it's the red ball. Correct, and nobody told it why.",
+    "scene": "Step 1000 sample ends 'now tom has the yellow ball' (highlighted pink — wrong, mia gave him the red ball); step 3000 sample ends 'now tom has the red ball' (highlighted teal — correct).",
+    "objects": [
+     {
+      "id": "sample",
+      "label": "real sample at step 3000: …now tom has the red ball (correct)",
+      "box": [
+       0.1261,
+       0.4303,
+       0.7477,
+       0.1894
+      ]
+     },
+     {
+      "id": "step",
+      "label": "step 3000, training loss 0.46",
+      "box": [
+       0.3261,
+       0.1581,
+       0.3477,
+       0.0589
+      ]
+     },
+     {
+      "id": "verdict",
+      "label": "the step-3000 model tracks who has which ball",
+      "box": [
+       0.7267,
+       0.1673,
+       0.1512,
+       0.0404
+      ]
+     }
+    ]
+   },
+   {
+    "start": 102.67,
+    "end": 110.4,
+    "text": "Nobody wrote a single rule. Predict, measure the miss, nudge, repeat. Next up, train your own.",
+    "scene": "The training loop as pills: predict → measure the miss → nudge the weights → repeat, with an arrow looping back. Final card: 'next: train your own'.",
+    "objects": [
+     {
+      "id": "loop-predict",
+      "label": "training loop step: predict",
+      "box": [
+       0.0828,
+       0.3946,
+       0.1131,
+       0.0858
+      ]
+     },
+     {
+      "id": "loop-measure",
+      "label": "training loop step: measure the miss",
+      "box": [
+       0.231,
+       0.3946,
+       0.2496,
+       0.0858
+      ]
+     },
+     {
+      "id": "loop-nudge",
+      "label": "training loop step: nudge the weights",
+      "box": [
+       0.5158,
+       0.3946,
+       0.2606,
+       0.0858
+      ]
+     },
+     {
+      "id": "loop-repeat",
+      "label": "training loop step: repeat",
+      "box": [
+       0.8115,
+       0.3946,
+       0.1057,
+       0.0858
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "next: train your own model in the Training lab",
+      "box": [
+       0.2371,
+       0.7702,
+       0.5257,
+       0.0847
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

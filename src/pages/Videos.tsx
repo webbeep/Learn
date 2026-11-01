@@ -58,6 +58,23 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
   const [rate, setRate] = useState(1);
   const [showObjs, setShowObjs] = useState(false);
   const [watched, setWatched] = useState(readWatched);
+  // Download the whole (small) file and play it from memory: seeking then works on any host,
+  // even ones that don't honor HTTP range requests.
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(0);
+  useEffect(() => {
+    let url = "", alive = true;
+    (async () => {
+      try {
+        const res = await fetch(v.src); const total = +(res.headers.get("content-length") || 0);
+        const reader = res.body!.getReader(); const chunks: Uint8Array[] = []; let got = 0;
+        for (;;) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); got += value.length; if (alive && total) setLoaded(got / total); }
+        url = URL.createObjectURL(new Blob(chunks as BlobPart[], { type: "video/mp4" }));
+        if (alive) setBlobUrl(url);
+      } catch { if (alive) setBlobUrl(v.src); }
+    })();
+    return () => { alive = false; if (url) URL.revokeObjectURL(url); };
+  }, [v.src]);
   const seg = useMemo(() => v.segments.find((s) => time >= s.start && time < s.end) ?? [...v.segments].reverse().find((s) => s.start <= time) ?? v.segments[0], [v, time]);
   const segIdx = v.segments.indexOf(seg);
   const chapter = [...v.chapters].reverse().find((c) => c.t <= time + 0.01) ?? v.chapters[0];
@@ -101,13 +118,16 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
   const objs = !playing ? seg?.objects ?? [] : [];
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="@container"><div className="grid gap-4 @5xl:grid-cols-[minmax(0,1fr)_340px]">
       <div className="min-w-0 space-y-3">
-        <div ref={frame} className="group relative overflow-hidden rounded-xl border bg-black shadow-sm">
-          <video ref={video} src={v.src} poster={v.poster} className="block aspect-video w-full" preload="metadata" playsInline muted={muted}
+        <div ref={frame} className="group @container/frame relative overflow-hidden rounded-xl border bg-black shadow-sm">
+          <video ref={video} src={blobUrl ?? undefined} poster={v.poster} className="block aspect-video w-full" preload="metadata" playsInline muted={muted}
             onClick={toggle} onTimeUpdate={onTime} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onRateChange={() => setRate(video.current!.playbackRate)} />
+          {!blobUrl && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-white/10"><div className="h-full bg-red-500 transition-[width]" style={{ width: `${loaded * 100}%` }} /></div>
+          )}
           {/* clickable objects in the paused frame */}
-          {objs.map((o) => (
+          {[...objs].sort((a, b) => b.box[2] * b.box[3] - a.box[2] * a.box[3]).map((o) => (
             <div key={o.id} data-ask-id={`video-${v.id}-${o.id}`} data-ask={`In the video "${v.title}" at ${fmt(time)}: ${o.label}`}
               className={cn("absolute rounded-md border-2 border-transparent transition-colors hover:border-pin hover:bg-pin/10", showObjs && "border-dashed border-pin/70")}
               style={{ left: `${o.box[0] * 100}%`, top: `${o.box[1] * 100}%`, width: `${o.box[2] * 100}%`, height: `${o.box[3] * 100}%` }}
@@ -115,7 +135,7 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
           ))}
           {cc && seg && time > 0 && (
             <div className="pointer-events-none absolute inset-x-0 bottom-14 flex justify-center px-6 group-hover:bottom-16">
-              <span className="max-w-[80%] rounded bg-black/75 px-2.5 py-1 text-center text-sm text-white md:text-base">{seg.text}</span>
+              <span className="max-w-[80%] rounded bg-black/75 px-[1.2cqw] py-[0.5cqw] text-center text-[clamp(11px,1.9cqw,20px)] leading-snug text-white">{seg.text}</span>
             </div>
           )}
           {!playing && (
@@ -158,11 +178,11 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
         </div>
       </div>
 
-      <Card className="min-h-0 gap-0 py-0 xl:max-h-[calc(100svh-9rem)]">
+      <Card className="min-h-0 gap-0 py-0 @5xl:max-h-[calc(100svh-9rem)]">
         <Tabs defaultValue="chapters" className="flex min-h-0 flex-1 flex-col gap-0">
           <div className="border-b p-2"><TabsList className="w-full"><TabsTrigger value="chapters"><ListVideo />Chapters</TabsTrigger><TabsTrigger value="transcript"><ScrollText />Transcript</TabsTrigger></TabsList></div>
           <TabsContent value="chapters" className="min-h-0 flex-1">
-            <ScrollArea className="h-full max-h-[60vh] xl:max-h-none">
+            <ScrollArea className="h-full max-h-[60vh] @5xl:max-h-none">
               <div className="p-2">
                 {v.chapters.map((c, i) => (
                   <button key={c.t} onClick={() => seek(c.t + 0.01)} className={cn("flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-muted", chapter === c && "bg-muted font-medium")}>
@@ -190,7 +210,7 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
           </TabsContent>
         </Tabs>
       </Card>
-    </div>
+    </div></div>
   );
 }
 

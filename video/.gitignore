@@ -1,0 +1,5 @@
+.cache/
+media/
+build/
+frames/
+__pycache__/

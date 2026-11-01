@@ -21,7 +21,8 @@
 .md h1, .md h2, .md h3, .md h4 { font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
 .ptr-chip { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; min-width: 18px; height: 18px; margin: 0 2px; padding: 0 4px; font-size: 11px; border-radius: 6px;
   color: var(--viz-pin); background: color-mix(in oklch, var(--viz-pin) 16%, transparent); border: 1px solid color-mix(in oklch, var(--viz-pin) 45%, transparent); vertical-align: 1px; }
-.try-chip { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; font-size: 12.5px; padding: 1px 8px; margin: 2px 0; border-radius: 999px;
+.md { overflow-wrap: anywhere; }
+.try-chip { display: inline; text-align: left; white-space: normal; gap: 4px; align-items: center; cursor: pointer; font-size: 12.5px; padding: 1px 8px; margin: 2px 0; border-radius: 999px;
   color: var(--viz-b); background: color-mix(in oklch, var(--viz-b) 14%, transparent); border: 1px solid color-mix(in oklch, var(--viz-b) 50%, transparent); }
 
 /* tokens */
