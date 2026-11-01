@@ -139,7 +139,7 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
             </div>
           )}
           {!playing && (
-            <div className="pointer-events-none absolute top-3 left-3 flex gap-2">
+            <div className="pointer-events-none absolute top-3 right-3 flex gap-2">
               {time === 0 ? <Badge className="pointer-events-auto cursor-pointer" onClick={toggle}><Play className="fill-current" />Play · {fmt(v.duration)}</Badge>
                 : <Badge variant="secondary" className="bg-black/70 text-white"><MousePointerClick />Paused: click anything in the frame</Badge>}
             </div>
