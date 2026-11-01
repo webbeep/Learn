@@ -1,0 +1,47 @@
+import { phase, show, tokColor } from "../lib/viz";
+import type { SceneProps } from "./types";
+
+export function TokensScene({ m, step, si, t }: SceneProps) {
+  const pieces = m.tok.encode(m.tok.decode(step.ctx));
+  // trust ids from ctx (identical to re-encoding in practice, but ctx is the truth)
+  const toks = step.ctx.map((id, i) => ({ id, text: m.meta.vocab[id], merges: pieces[i]?.id === id ? pieces[i].merges : [] }));
+  const nChars = toks.reduce((a, b) => a + b.text.length, 0);
+  const shown = Math.ceil(phase(t, 0.05, 0.6) * toks.length);
+  const used = new Map<number, number>(); toks.forEach((x) => used.set(x.id, (used.get(x.id) ?? 0) + 1));
+  return (
+    <div className="scene tokens-scene">
+      <div className="lane">
+        <div className="lane-label">What you typed{si > 0 ? " (+ what the model wrote so far)" : ""}</div>
+        <div className="raw-text mono">
+          {toks.map((x, i) => (
+            <span key={i} className={i === toks.length - 1 && si > 0 ? "fresh" : ""} style={{ background: i < shown ? tokColor(x.id, 22) : "transparent" }}>{x.text}</span>
+          ))}
+        </div>
+      </div>
+      <div className="arrow-down">✂️ split into {toks.length} tokens ({nChars} characters → {toks.length} pieces)</div>
+      <div className="lane">
+        <div className="lane-label">Tokens — the only thing the model ever sees</div>
+        <div className="token-row">
+          {toks.map((x, i) => (
+            <div key={i} className={`tok ${i < shown ? "in" : ""} ${i === toks.length - 1 && si > 0 ? "fresh" : ""}`} style={{ transitionDelay: `${(i % 30) * 15}ms`, borderColor: tokColor(x.id) }}
+              data-ask-id={`tok-${i}`}
+              data-ask={`token #${i} "${show(x.text)}" = id ${x.id}${x.merges.length ? `, built by merges ${x.merges.join(", ")}` : ", a single character"}`}>
+              <span className="mono" style={{ color: tokColor(x.id, 75) }}>{show(x.text)}</span>
+              <small>{x.id}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="lane" style={{ opacity: phase(t, 0.5, 0.8) }}>
+        <div className="lane-label">The whole vocabulary: {m.cfg.vocab_size} tokens (lit = in your text). GPT-4-class models have ~100,000.</div>
+        <div className="vocab-grid">
+          {m.meta.vocab.map((v, id) => (
+            <div key={id} className={`vcell ${used.has(id) ? "on" : ""}`} style={used.has(id) ? { background: tokColor(id, 45) } : undefined}
+              data-ask-id={`vocab-${id}`} data-ask={`vocabulary entry id ${id} = "${show(v)}"${used.has(id) ? ` (appears ${used.get(id)}× in the text)` : " (not in the text)"}`}
+              title={`${id}: ${show(v)}`}>{show(v)}</div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
