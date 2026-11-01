@@ -1,20 +1,26 @@
 // Shared visual helpers.
 import { show } from "../model/tokenizer";
+import { isDark } from "./theme";
 export { show };
 
-export const tokColor = (id: number, l = 62) => `hsl(${(id * 137.508) % 360} 70% ${l}%)`;
+/** Stable color per token id. `l` is the lightness used in dark mode; light mode mirrors it. */
+export const tokColor = (id: number, l = 62) => {
+  const light = isDark() ? l : Math.max(18, Math.min(92, 108 - l));
+  return `hsl(${(id * 137.508) % 360} ${isDark() ? 70 : 62}% ${light}%)`;
+};
 
 /** Diverging color for a signed value, blue (−) → dark (0) → orange (+). */
 export function div(v: number, scale = 1) {
   const t = Math.max(-1, Math.min(1, v / scale));
-  const base = [28, 33, 48], pos = [255, 150, 60], neg = [80, 150, 255];
+  const base = isDark() ? [32, 34, 42] : [244, 244, 246];
+  const pos = isDark() ? [255, 150, 60] : [234, 108, 20], neg = isDark() ? [80, 150, 255] : [37, 99, 235];
   const c = t >= 0 ? pos : neg, a = Math.abs(t) ** 0.8;
   return `rgb(${base.map((b, i) => Math.round(b + (c[i] - b) * a)).join(",")})`;
 }
 /** Sequential color 0..1 dark → bright yellow. */
 export function seq(v: number) {
   const t = Math.max(0, Math.min(1, v)) ** 0.6;
-  const a = [24, 28, 44], b = [255, 214, 90];
+  const a = isDark() ? [30, 32, 40] : [244, 244, 246], b = isDark() ? [255, 214, 90] : [217, 119, 6];
   return `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * t)).join(",")})`;
 }
 export const pct = (p: number) => (p >= 0.995 ? "100%" : p < 0.001 ? "<0.1%" : `${(p * 100).toFixed(p < 0.1 ? 1 : 0)}%`);

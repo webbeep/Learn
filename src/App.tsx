@@ -1,73 +1,98 @@
 import { useEffect, useRef, useState } from "react";
+import { ThemeProvider, useTheme } from "next-themes";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { AppSidebar, NAV, isActive } from "@/components/app/app-sidebar";
+import { SiteHeader } from "@/components/app/site-header";
 import { loadModel, type TinyGPT } from "./model/gpt";
-import { ask, learner, markVisited, useStore } from "./lib/store";
-import { AskPanel, AskPopover } from "./ask/AskPanel";
+import { ask, markVisited, useStore } from "./lib/store";
+import { setVizDark } from "./lib/theme";
+import { AskPopover, TutorPanel } from "./ask/AskPanel";
 import { MarkStyles, RegionLayer, useClickToAsk } from "./ask/Interact";
 import { ShortcutHelp, VoiceHUD, useShortcuts } from "./ask/Shortcuts";
 import { trackPointer, trackTextSelection } from "./lib/conversation";
 import { XRay } from "./pages/XRay";
 import { Training } from "./pages/Training";
-import { Watch } from "./pages/Watch";
+import { Videos } from "./pages/Videos";
 import { MapPage } from "./pages/MapPage";
 import { Path } from "./pages/Path";
-
-const ROUTES = [
-  { href: "#/", label: "Journey", icon: "🗺️" },
-  { href: "#/xray", label: "X-ray", icon: "🔬" },
-  { href: "#/training", label: "Training", icon: "📉" },
-  { href: "#/watch", label: "Watch", icon: "🎬" },
-  { href: "#/path", label: "My path", icon: "🧭" },
-];
 
 function useHash() {
   const [h, setH] = useState(location.hash || "#/");
   useEffect(() => { const f = () => setH(location.hash || "#/"); window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
-  return h;
+  return h === "#/watch" ? "#/videos" : h;
 }
 
 export default function App() {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <TooltipProvider delayDuration={300}>
+        <Shell />
+        <Toaster position="top-center" />
+      </TooltipProvider>
+    </ThemeProvider>
+  );
+}
+
+function Shell() {
   const hash = useHash();
+  const { resolvedTheme } = useTheme();
+  setVizDark(resolvedTheme !== "light"); // JS-computed viz colors follow the theme
   const [model, setModel] = useState<TinyGPT | null>(null);
   const [err, setErr] = useState("");
+  const [help, setHelp] = useState(false);
   const main = useRef<HTMLElement>(null);
   const panelOpen = useStore(ask, (s) => s.open);
-  const nWishes = useStore(learner, (s) => s.wishes.filter((w) => !w.done).length);
-  const [help, setHelp] = useState(false);
+  const isMobile = useIsMobile();
   useClickToAsk(main);
   useShortcuts(setHelp);
   useEffect(() => { const a = trackPointer(), b = trackTextSelection(); return () => { a(); b(); }; }, []);
   useEffect(() => { loadModel().then(setModel).catch((e) => setErr(String(e))); }, []);
-  useEffect(() => { markVisited(hash); ask.set({ selection: [], region: "", highlight: null }); window.scrollTo(0, 0); }, [hash]);
+  useEffect(() => { markVisited(hash); ask.set({ selection: [], region: "", highlight: null, scene: "" }); window.scrollTo(0, 0); }, [hash]);
 
+  const needsModel = hash.startsWith("#/xray") || hash.startsWith("#/training");
   let page: React.ReactNode;
-  if (hash.startsWith("#/watch")) page = <Watch />;
+  if (needsModel && !model) page = err
+    ? <div className="p-10 text-center text-destructive">Couldn't load the model: {err}</div>
+    : <div className="flex items-center justify-center gap-2 p-16 text-muted-foreground"><Spinner />Loading TinyGPT (680 KB of weights)…</div>;
+  else if (hash.startsWith("#/xray")) page = <XRay m={model!} />;
+  else if (hash.startsWith("#/training")) page = <Training corpus={model!.meta.corpus_sample} />;
+  else if (hash.startsWith("#/videos")) page = <Videos />;
   else if (hash.startsWith("#/path")) page = <Path />;
-  else if (hash.startsWith("#/xray") || hash.startsWith("#/training")) {
-    page = err ? <div className="loading error">Couldn't load the model: {err}</div> : !model ? <div className="loading">Loading TinyGPT (680 KB of weights)…</div>
-      : hash.startsWith("#/xray") ? <XRay m={model} /> : <Training corpus={model.meta.corpus_sample} />;
-  } else page = <MapPage />;
+  else page = <MapPage />;
+  const title = NAV.find((n) => isActive(n.href, hash))?.label ?? "Journey";
 
   return (
-    <div className={`app ${panelOpen ? "with-panel" : ""}`}>
-      <header className="topbar">
-        <a href="#/" className="brand">🔭 <b>Top-Down</b> AI</a>
-        <nav>
-          {ROUTES.map((r) => (
-            <a key={r.href} href={r.href} className={(r.href === "#/" ? hash === "#/" || hash === "" : hash.startsWith(r.href)) ? "on" : ""}>
-              <span>{r.icon}</span> <span className="nav-label">{r.label}</span>{r.href === "#/path" && nWishes > 0 && <sup>{nWishes}</sup>}
-            </a>
-          ))}
-        </nav>
-        <button className="ghost" onClick={() => setHelp(true)} title="Keyboard & voice shortcuts"><kbd>?</kbd></button>
-        <button className="primary" onClick={() => ask.set({ open: !panelOpen })}>💬 <span className="nav-label">Ask</span></button>
-      </header>
-      <main ref={main}>{page}</main>
-      <AskPanel />
+    <SidebarProvider>
+      <AppSidebar hash={hash} onShortcuts={() => setHelp(true)} />
+      <SidebarInset className="min-w-0">
+        <SiteHeader title={title} />
+        <div className="flex min-h-0 flex-1">
+          <div ref={main as React.RefObject<HTMLDivElement>} key={resolvedTheme} className="min-w-0 flex-1 px-4 py-5 md:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-6xl">{page}</div>
+          </div>
+          {panelOpen && !isMobile && (
+            <aside className="sticky top-14 h-[calc(100svh-3.5rem)] w-[380px] shrink-0 border-l xl:w-[420px]"><TutorPanel /></aside>
+          )}
+        </div>
+      </SidebarInset>
+      {isMobile && (
+        <Sheet open={panelOpen} onOpenChange={(o) => ask.set({ open: o })}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md [&>button.absolute]:hidden">
+            <SheetTitle className="sr-only">Tutor</SheetTitle>
+            <TutorPanel />
+          </SheetContent>
+        </Sheet>
+      )}
       <AskPopover />
       <RegionLayer main={main} />
       <MarkStyles />
       <VoiceHUD />
-      {help && <ShortcutHelp onClose={() => setHelp(false)} />}
-    </div>
+      <ShortcutHelp open={help} onOpenChange={setHelp} />
+    </SidebarProvider>
   );
 }

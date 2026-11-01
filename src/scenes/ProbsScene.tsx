@@ -1,3 +1,6 @@
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { softmax, topK } from "../model/gpt";
 import { pct, phase, show, tokColor } from "../lib/viz";
@@ -21,7 +24,7 @@ export function ProbsScene({ m, step, si, t, settings, regenerate }: SceneProps)
           return (
             <div className="pr" key={p.id} data-ask-id={`prob-${p.id}`} data-ask={`candidate "${show(m.meta.vocab[p.id])}": logit ${lg.toFixed(2)}, probability ${pct(p.p)} at temperature ${temp.toFixed(2)}`}>
               <span className="mono" style={{ color: tokColor(p.id, 75) }}>{show(m.meta.vocab[p.id])}</span>
-              <span className="bar"><i style={{ width: `${grow * Math.max(1, ((lg - minL) / (maxL - minL)) * 100)}%`, background: "var(--muted)" }} /><b>{lg.toFixed(1)}</b></span>
+              <span className="bar"><i style={{ width: `${grow * Math.max(1, ((lg - minL) / (maxL - minL)) * 100)}%`, background: "var(--muted-foreground)" }} /><b>{lg.toFixed(1)}</b></span>
               <span className="arrow">→</span>
               <span className="bar"><i style={{ width: `${soft * Math.max(0.5, p.p * 100)}%`, background: tokColor(p.id, 50) }} /><b>{pct(p.p)}</b></span>
             </div>
@@ -31,10 +34,10 @@ export function ProbsScene({ m, step, si, t, settings, regenerate }: SceneProps)
       </div>
       <div className="temp-box">
         <label>🌡️ What-if temperature <b>{temp.toFixed(2)}</b>
-          <input type="range" min={0.05} max={3} step={0.05} value={temp} onChange={(e) => setTemp(+e.target.value)} />
+          <Slider min={0.05} max={3} step={0.05} value={[temp]} onValueChange={([v]) => setTemp(v)} className="my-2" />
         </label>
         <div className="small muted">Low = confident & repetitive. High = flatter, more surprising (and more wrong). softmax(score / temperature).</div>
-        {Math.abs(temp - settings.temperature) > 0.01 && <button onClick={() => regenerate({ temperature: temp }, si)}>Regenerate from this token with temperature {temp.toFixed(2)}</button>}
+        {Math.abs(temp - settings.temperature) > 0.01 && <Button size="sm" onClick={() => regenerate({ temperature: temp }, si)}><RefreshCw />Regenerate at {temp.toFixed(2)}</Button>}
       </div>
     </div>
   );

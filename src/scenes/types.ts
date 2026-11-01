@@ -9,11 +9,11 @@ export interface SceneProps {
   extra: { neighbours: number[][] };
 }
 export const SCENES = [
-  { key: "tokens", icon: "✂️", title: "Text → Tokens" },
-  { key: "vectors", icon: "🔢", title: "Tokens → Vectors" },
+  { key: "tokens", icon: "✂️", title: "Tokens" },
+  { key: "vectors", icon: "🔢", title: "Vectors" },
   { key: "attention", icon: "👀", title: "Attention" },
-  { key: "layers", icon: "🧠", title: "Layers think" },
-  { key: "probs", icon: "📊", title: "Scores → Probabilities" },
-  { key: "pick", icon: "🎲", title: "Pick & repeat" },
+  { key: "layers", icon: "🧠", title: "Layers" },
+  { key: "probs", icon: "📊", title: "Probabilities" },
+  { key: "pick", icon: "🎲", title: "Pick next" },
 ] as const;
 export type SceneKey = (typeof SCENES)[number]["key"];

@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { ask, select, setScreen } from "../lib/store";
 
 const VIDEOS = [
@@ -27,7 +31,7 @@ function loadYT() {
 }
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-export function Watch() {
+export function FurtherWatching() {
   const [cur, setCur] = useState(VIDEOS[0]);
   const player = useRef<any>(null);
   const holder = useRef<HTMLDivElement>(null);
@@ -50,7 +54,7 @@ export function Watch() {
     return () => clearInterval(iv);
   }, []);
   useEffect(() => {
-    setScreen("Watch", cur.title, `Video: "${cur.title}" by ${cur.who}. Learner is at ${fmt(time)}. (You cannot see the video frame; use your knowledge of this well-known video and ask the learner to describe the frame if needed.) Note: ${cur.note}`);
+    setScreen("Videos", cur.title, `Video: "${cur.title}" by ${cur.who}. Learner is at ${fmt(time)}. (You cannot see the video frame; use your knowledge of this well-known video and ask the learner to describe the frame if needed.) Note: ${cur.note}`);
   }, [cur, Math.floor(time / 5)]); // eslint-disable-line
 
   function pauseAsk() {
@@ -59,31 +63,30 @@ export function Watch() {
   }
 
   return (
-    <div className="page watch">
-      <h1>Watch, pause, ask</h1>
-      <p className="lead">Hand-picked videos that match what you explore in the app. Pause at any moment and ask about <i>that exact moment</i> — the tutor knows these videos and knows where you are.</p>
-      <div className="watch-grid">
-        <div>
-          <div className="video" ref={holder} />
-          <div className="row" style={{ marginTop: 10 }}>
-            <button className="primary" onClick={() => { player.current?.pauseVideo?.(); pauseAsk(); ask.set({ open: true }); }}>⏸ Pause & ask about {fmt(time)}</button>
-            <span className="muted small">{cur.note}</span>
-          </div>
+    <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="space-y-3">
+        <div className="aspect-video overflow-hidden rounded-xl border bg-black [&>div]:size-full [&_iframe]:size-full" ref={holder} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={() => { player.current?.pauseVideo?.(); pauseAsk(); ask.set({ open: true }); }}><MessageSquare />Pause & ask about {fmt(time)}</Button>
+          <span className="text-sm text-muted-foreground">{cur.note}</span>
         </div>
-        <div className="video-list">
+        <p className="text-xs text-muted-foreground">The tutor knows these well-known videos and the timestamp, but it can't see YouTube's frames. Our own series can be clicked when paused.</p>
+      </div>
+      <ScrollArea className="h-[70vh] rounded-xl border">
+        <div className="space-y-4 p-3">
           {["Big picture", "Build it", "Dive down"].map((lvl) => (
-            <div key={lvl}>
-              <div className="lane-label">{lvl}</div>
+            <div key={lvl} className="space-y-1.5">
+              <div className="px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{lvl}</div>
               {VIDEOS.filter((v) => v.level === lvl).map((v) => (
-                <button key={v.id} className={`video-item ${v.id === cur.id ? "on" : ""}`} onClick={() => setCur(v)}>
-                  <img src={`https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`} alt="" loading="lazy" />
-                  <span><b>{v.title}</b><br /><span className="muted small">{v.who}</span></span>
+                <button key={v.id} onClick={() => setCur(v)} className={cn("flex w-full gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-muted", v.id === cur.id && "bg-muted")}>
+                  <img src={`https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`} alt="" loading="lazy" className="aspect-video w-28 shrink-0 rounded-md object-cover" />
+                  <span className="min-w-0 text-sm leading-snug"><span className="line-clamp-2 font-medium">{v.title}</span><span className="text-xs text-muted-foreground">{v.who}</span></span>
                 </button>
               ))}
             </div>
           ))}
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 }

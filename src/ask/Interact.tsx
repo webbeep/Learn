@@ -49,12 +49,12 @@ export function RegionLayer({ main }: { main: React.RefObject<HTMLElement> }) {
     afterHighlight({ x: (L + R) / 2, y: B });
   };
   return (
-    <div className="region-layer"
+    <div className="fixed inset-0 z-40 cursor-crosshair touch-none bg-black/20"
       onPointerDown={(e) => { start.current = { x: e.clientX, y: e.clientY }; setRect({ x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY }); (e.target as Element).setPointerCapture(e.pointerId); }}
       onPointerMove={(e) => start.current && setRect({ x0: start.current.x, y0: start.current.y, x1: e.clientX, y1: e.clientY })}
       onPointerUp={finish}>
-      <div className="region-hint">Drag a box over anything you're curious about · Esc to cancel</div>
-      {rect && <div className="region-rect" style={{ left: Math.min(rect.x0, rect.x1), top: Math.min(rect.y0, rect.y1), width: Math.abs(rect.x1 - rect.x0), height: Math.abs(rect.y1 - rect.y0) }} />}
+      <div className="pointer-events-none fixed top-16 left-1/2 -translate-x-1/2 rounded-full bg-pin px-4 py-1.5 text-sm font-medium text-black shadow-lg">Drag a box over anything you're curious about · Esc to cancel</div>
+      {rect && <div className="pointer-events-none fixed rounded-md border-2 border-dashed border-pin bg-pin/10" style={{ left: Math.min(rect.x0, rect.x1), top: Math.min(rect.y0, rect.y1), width: Math.abs(rect.x1 - rect.x0), height: Math.abs(rect.y1 - rect.y0) }} />}
     </div>
   );
 }
@@ -65,8 +65,8 @@ export function MarkStyles() {
   const hi = useStore(ask, (s) => s.highlight);
   const q = (id: string) => `main [data-ask-id="${CSS.escape(id)}"]`;
   const css = [
-    sel.length ? `${sel.map((s) => q(s.id)).join(",")}{outline:2px solid var(--sel);outline-offset:1px;stroke:var(--sel)!important;stroke-width:2px;}` : "",
-    hi ? `${q(hi)}{outline:3px solid var(--pin);outline-offset:2px;stroke:var(--pin)!important;stroke-width:3px;filter:drop-shadow(0 0 6px var(--pin));animation:pulse 0.9s ease-in-out infinite alternate}` : "",
+    sel.length ? `${sel.map((s) => q(s.id)).join(",")}{outline:2px solid var(--viz-sel);outline-offset:1px;border-radius:4px;stroke:var(--viz-sel)!important;stroke-width:2px;}` : "",
+    hi ? `${q(hi)}{outline:3px solid var(--viz-pin);outline-offset:2px;border-radius:4px;stroke:var(--viz-pin)!important;stroke-width:3px;filter:drop-shadow(0 0 6px var(--viz-pin));animation:pulse-pin 0.9s ease-in-out infinite alternate}` : "",
     "main svg [data-ask-id]{outline:none!important}",
     "main svg [data-ask-id] text{stroke:none!important}",
   ].join("\n");

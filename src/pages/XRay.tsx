@@ -3,6 +3,17 @@ import type { TinyGPT } from "../model/gpt";
 import { generate, neighbours, type GenSettings, type Step } from "../model/generate";
 import { ask, learner, setScreen, useStore } from "../lib/store";
 import { show, tokColor } from "../lib/viz";
+import { Binary, BarChart3, ChevronLeft, ChevronRight, Dices, Eye, Layers, MessageSquare, Pause, Play, Scissors, SkipBack, SkipForward, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { SCENES, type View, type SceneProps } from "../scenes/types";
 import { caption, describe } from "../scenes/captions";
 import { TokensScene } from "../scenes/TokensScene";
@@ -22,6 +33,7 @@ const PRESETS = [
 ];
 const COMPONENTS = { tokens: TokensScene, vectors: VectorsScene, attention: AttentionScene, layers: LayersScene, probs: ProbsScene, pick: PickScene };
 const SCENE_MS = 4200;
+const ICONS = { tokens: Scissors, vectors: Binary, attention: Eye, layers: Layers, probs: BarChart3, pick: Dices };
 
 export function XRay({ m }: { m: TinyGPT }) {
   const [prompt, setPrompt] = useState(PRESETS[0]);
@@ -88,63 +100,91 @@ export function XRay({ m }: { m: TinyGPT }) {
   const promptLen = steps[0] ? steps[0].ctx.length : 0;
 
   return (
-    <div className="xray">
-      <form className="prompt-bar" onSubmit={(e) => { e.preventDefault(); run(prompt, settings); }}>
-        <textarea value={prompt} rows={2} onChange={(e) => setPrompt(e.target.value)} placeholder="Type a prompt (lowercase tiny-world English)…"
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); run(prompt, settings); } }} />
-        <div className="prompt-tools">
-          <select value="" onChange={(e) => { if (e.target.value) { setPrompt(e.target.value); run(e.target.value, settings); } }}>
-            <option value="">Try a preset…</option>
-            {PRESETS.map((p) => <option key={p} value={p}>{p.length > 48 ? "…" + p.slice(-46) : p}</option>)}
-          </select>
-          <label title="How many tokens to generate">tokens <input type="number" min={1} max={30} value={settings.n} onChange={(e) => setSettings({ ...settings, n: Math.max(1, Math.min(30, +e.target.value)) })} /></label>
-          <label title="0 = always pick the top token">temp <input type="number" min={0} max={3} step={0.1} value={settings.temperature} onChange={(e) => setSettings({ ...settings, temperature: +e.target.value })} /></label>
-          <label title="Only sample among the k most likely tokens">top-k <input type="number" min={1} max={50} value={settings.topK} onChange={(e) => setSettings({ ...settings, topK: Math.max(1, +e.target.value) })} /></label>
-          <button className="primary" type="submit">▶ Run</button>
-        </div>
-      </form>
+    <div className="@container space-y-4 pb-6">
+      <Card className="gap-3 py-4">
+        <CardContent className="space-y-3 px-4">
+          <form className="flex flex-col gap-3 @4xl:flex-row" onSubmit={(e) => { e.preventDefault(); run(prompt, settings); }}>
+            <Textarea value={prompt} rows={2} onChange={(e) => setPrompt(e.target.value)} placeholder="Type a prompt (lowercase tiny-world English)…"
+              className="min-h-16 flex-1 resize-none font-mono text-sm"
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); run(prompt, settings); } }} />
+            <div className="flex flex-wrap items-end gap-2 @4xl:w-[360px] @4xl:content-start">
+              <Select value="" onValueChange={(v) => { setPrompt(v); run(v, settings); }}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Try a preset prompt…" /></SelectTrigger>
+                <SelectContent>{PRESETS.map((p) => <SelectItem key={p} value={p} className="font-mono text-xs">{p.length > 52 ? "…" + p.slice(-50) : p}</SelectItem>)}</SelectContent>
+              </Select>
+              {([["Tokens", "n", 1, 30, 1, "How many tokens to generate"], ["Temp", "temperature", 0, 3, 0.1, "0 = always pick the top token"], ["Top-k", "topK", 1, 50, 1, "Only sample among the k most likely tokens"]] as const).map(([label, key, min, max, step, tip]) => (
+                <div key={key} className="grid w-[72px] gap-1" title={tip}>
+                  <Label className="text-xs text-muted-foreground">{label}</Label>
+                  <Input type="number" min={min} max={max} step={step} value={settings[key]} className="h-8 tabular-nums"
+                    onChange={(e) => setSettings({ ...settings, [key]: Math.max(min, Math.min(max, +e.target.value)) })} />
+                </div>
+              ))}
+              <Button type="submit" className="ml-auto"><Play />Run</Button>
+            </div>
+          </form>
+          <div className="rounded-lg border bg-muted/40 px-3 py-2.5 font-mono text-sm leading-7 whitespace-pre-wrap">
+            <span className="text-muted-foreground">{m.tok.decode(steps[0].ctx.slice(0, promptLen))}</span>
+            {steps.map((s, i) => (
+              <span key={i} onClick={() => { setPos(i * N + 5); setPlaying(false); }}
+                className={cn("cursor-pointer rounded-sm transition-opacity", i === si && "ring-2 ring-pin", i > si && "opacity-30")}
+                style={{ background: i <= si ? tokColor(s.chosen, 25) : undefined }} title={`Generated token ${i + 1}. Click to jump here.`}>{m.meta.vocab[s.chosen]}</span>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="output-line mono">
-        <span className="muted">{m.tok.decode(steps[0].ctx.slice(0, promptLen))}</span>
-        {steps.map((s, i) => (
-          <span key={i} onClick={() => { setPos(i * N + 5); setPlaying(false); }} className={`gen ${i === si ? "cur" : ""} ${i > si ? "future" : ""}`}
-            style={{ background: i <= si ? tokColor(s.chosen, 25) : undefined }} title={`token ${i + 1}: click to jump`}>{m.meta.vocab[s.chosen]}</span>
-        ))}
-      </div>
-
-      <nav className="pipeline">
-        {SCENES.map((s, i) => (
-          <button key={s.key} className={i === sc ? "on" : i < sc ? "done" : ""} onClick={() => { setPos(si * N + i); setPlaying(false); }}>
-            <span className="ico">{s.icon}</span><span>{i + 1}. {s.title}</span>
-            {i === sc && <span className="prog" style={{ width: `${t * 100}%` }} />}
-          </button>
-        ))}
+      <nav className="grid grid-cols-3 gap-2 @3xl:grid-cols-6">
+        {SCENES.map((s, i) => {
+          const Icon = ICONS[s.key];
+          return (
+            <button key={s.key} onClick={() => { setPos(si * N + i); setPlaying(false); }}
+              className={cn("relative flex items-center gap-2.5 overflow-hidden rounded-lg border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted/60",
+                i === sc && "border-foreground/30 bg-muted ring-1 ring-foreground/10", i < sc && "text-muted-foreground")}>
+              <span className={cn("hidden size-7 shrink-0 items-center justify-center rounded-md border text-xs @xl:flex", i === sc ? "bg-primary text-primary-foreground" : "bg-background")}><Icon className="size-3.5" /></span>
+              <span className="min-w-0 leading-tight"><span className="block text-[11px] text-muted-foreground">Step {i + 1}</span><span className="block truncate text-sm font-medium">{s.title}</span></span>
+              {i === sc && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-pin" style={{ width: `${t * 100}%` }} />}
+            </button>
+          );
+        })}
       </nav>
 
-      <div className="stage" key={`${key}`}>
-        <Scene {...props} />
-      </div>
-
-      <div className="caption">
-        <span className="cap-text">{caption(key, m, step, view, depth === "math")}</span>
-        <button className="ghost small" onClick={() => learner.set({ depth: depth === "math" ? "intuition" : "math" })}>{depth === "math" ? "🧸 intuition" : "∑ show the math"}</button>
-      </div>
-
-      <div className="player">
-        <button onClick={() => { setPos(Math.max(0, (si - 1) * N)); }} title="Previous token">⏮</button>
-        <button onClick={() => setPos((p) => Math.max(0, Math.floor(p) - 1))} title="Previous scene (←)">◀</button>
-        <button className="play" onClick={() => { if (pos >= total - 0.01) setPos(0); setPlaying(!playing); }} title="Play / pause (space)">{playing ? "⏸" : "▶"}</button>
-        <button onClick={() => setPos((p) => Math.min(total - 0.001, Math.floor(p) + 1))} title="Next scene (→)">▶︎|</button>
-        <button onClick={() => setPos(Math.min(total - 0.001, (si + 1) * N))} title="Next token">⏭</button>
-        <div className="scrub">
-          <input type="range" min={0} max={total - 0.001} step={0.01} value={pos} onChange={(e) => { setPos(+e.target.value); setPlaying(false); }} />
-          <div className="marks">{steps.map((s, i) => <span key={i} style={{ left: `${((i + 0.5) / steps.length) * 100}%` }} className={i === si ? "cur" : ""}>{show(m.meta.vocab[s.chosen])}</span>)}</div>
+      <Card className="py-0">
+        <div className="stage p-4 md:p-5" key={key}><Scene {...props} /></div>
+        <div className="flex items-start gap-3 border-t bg-muted/30 px-4 py-3 md:px-5">
+          <Sparkles className="mt-0.5 size-4 shrink-0 text-pin" />
+          <p className="flex-1 text-[15px] leading-relaxed text-pretty">{caption(key, m, step, view, depth === "math")}</p>
+          <div className="flex shrink-0 items-center gap-2">
+            <Label htmlFor="math" className="text-xs text-muted-foreground">Show the math</Label>
+            <Switch id="math" checked={depth === "math"} onCheckedChange={(c) => learner.set({ depth: c ? "math" : "intuition" })} />
+          </div>
         </div>
-        <select value={speed} onChange={(e) => setSpeed(+e.target.value)} title="Speed">
-          {[0.5, 1, 1.5, 2, 4].map((s) => <option key={s} value={s}>{s}×</option>)}
-        </select>
-        <button onClick={() => ask.set({ regionMode: true })} title="Drag a box over anything to ask about it">✏️ Highlight</button>
-        <button className="primary" onClick={() => { setPlaying(false); ask.set({ open: true }); }}>💬 Ask</button>
+      </Card>
+
+      <div className="sticky bottom-3 z-20 flex justify-center">
+        <div className="flex w-full max-w-4xl items-center gap-1.5 rounded-xl border bg-popover/90 p-2 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-popover/75">
+          <ButtonGroup>
+            <Button variant="outline" size="icon-sm" onClick={() => setPos(Math.max(0, (si - 1) * N))} title="Previous token"><SkipBack /></Button>
+            <Button variant="outline" size="icon-sm" onClick={() => setPos((p) => Math.max(0, Math.floor(p) - 1))} title="Previous scene (←)"><ChevronLeft /></Button>
+          </ButtonGroup>
+          <Button size="icon" className="rounded-full" onClick={() => { if (pos >= total - 0.01) setPos(0); setPlaying(!playing); }} title="Play / pause (Space)">
+            {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
+          </Button>
+          <ButtonGroup>
+            <Button variant="outline" size="icon-sm" onClick={() => setPos((p) => Math.min(total - 0.001, Math.floor(p) + 1))} title="Next scene (→)"><ChevronRight /></Button>
+            <Button variant="outline" size="icon-sm" onClick={() => setPos(Math.min(total - 0.001, (si + 1) * N))} title="Next token"><SkipForward /></Button>
+          </ButtonGroup>
+          <div className="relative mx-2 flex-1 pb-4">
+            <Slider min={0} max={total - 0.001} step={0.01} value={[pos]} onValueChange={([v]) => { setPos(v); setPlaying(false); }} />
+            <div className="absolute inset-x-0 bottom-0 hidden h-3 @xl:block">{steps.map((s, i) => (
+              <span key={i} className={cn("absolute -translate-x-1/2 font-mono text-[10px] whitespace-nowrap", i === si ? "text-pin" : "text-muted-foreground")} style={{ left: `${((i + 0.5) / steps.length) * 100}%` }}>{show(m.meta.vocab[s.chosen])}</span>
+            ))}</div>
+          </div>
+          <Select value={String(speed)} onValueChange={(v) => setSpeed(+v)}>
+            <SelectTrigger size="sm" className="w-[68px]"><SelectValue /></SelectTrigger>
+            <SelectContent>{[0.5, 1, 1.5, 2, 4].map((s) => <SelectItem key={s} value={String(s)}>{s}×</SelectItem>)}</SelectContent>
+          </Select>
+          <Button variant="secondary" size="sm" className="hidden sm:inline-flex" onClick={() => { setPlaying(false); ask.set({ open: true }); }}><MessageSquare />Ask</Button>
+        </div>
       </div>
     </div>
   );

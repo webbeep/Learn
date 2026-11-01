@@ -1,3 +1,5 @@
+import { Dices, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { pct, phase, show, tokColor } from "../lib/viz";
 import type { SceneProps } from "./types";
 
@@ -20,11 +22,11 @@ export function PickScene({ m, step, steps, si, t, settings, regenerate }: Scene
           </g>
         ))}
         <g transform={`translate(${(greedy ? segs[0].p / 2 : step.r) * W * needle},0)`} data-ask-id="pick-needle" data-ask={`random number r = ${step.r.toFixed(3)} → picks "${show(text[step.chosen])}"`}>
-          <path d="M0,-6 L-9,-26 L9,-26 Z" fill="var(--pin)" />
-          <line x1={0} x2={0} y1={-6} y2={52} stroke="var(--pin)" strokeWidth={3} />
-          <text x={0} y={-30} textAnchor={step.r < 0.05 ? "start" : step.r > 0.95 ? "end" : "middle"} fontSize={14} fill="var(--pin)">r={step.r.toFixed(2)}</text>
+          <path d="M0,-6 L-9,-26 L9,-26 Z" fill="var(--viz-pin)" />
+          <line x1={0} x2={0} y1={-6} y2={52} stroke="var(--viz-pin)" strokeWidth={3} />
+          <text x={0} y={-30} textAnchor={step.r < 0.05 ? "start" : step.r > 0.95 ? "end" : "middle"} fontSize={14} fill="var(--viz-pin)">r={step.r.toFixed(2)}</text>
         </g>
-        <text x={0} y={70} fontSize={12} fill="var(--muted)">0</text><text x={W} y={70} fontSize={12} textAnchor="end" fill="var(--muted)">1</text>
+        <text x={0} y={70} fontSize={12} fill="var(--muted-foreground)">0</text><text x={W} y={70} fontSize={12} textAnchor="end" fill="var(--muted-foreground)">1</text>
       </svg>
       <div className={`picked ${landed ? "in" : ""}`}>
         <span className="muted">next token:</span>
@@ -39,8 +41,8 @@ export function PickScene({ m, step, steps, si, t, settings, regenerate }: Scene
         That's all "generation" is — {si + 1} of {steps.length} loops done.
         {chosenIdx > 0 && <span> Note: it did <i>not</i> pick the most likely token — that's sampling randomness.</span>}
         <div className="row" style={{ marginTop: 8 }}>
-          <button onClick={() => regenerate({ seed: settings.seed + 1 }, si)}>🎲 Re-roll from here</button>
-          <button onClick={() => regenerate({ temperature: 0 }, si)}>Always pick the top (temperature 0)</button>
+          <Button variant="outline" size="sm" onClick={() => regenerate({ seed: settings.seed + 1 }, si)}><Dices />Re-roll from here</Button>
+          <Button variant="outline" size="sm" onClick={() => regenerate({ temperature: 0 }, si)}><Target />Always pick the top (temperature 0)</Button>
         </div>
       </div>
     </div>

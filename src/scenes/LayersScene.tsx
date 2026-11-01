@@ -1,3 +1,4 @@
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useMemo } from "react";
 import { norm, type Pred } from "../model/gpt";
 import { div, pct, phase, show, tokColor } from "../lib/viz";
@@ -40,8 +41,10 @@ export function LayersScene({ m, step, t, view, setView }: SceneProps) {
 
       <div className="mlp-row" style={{ opacity: phase(t, 0.65, 0.85) }}>
         <div>
-          <div className="controls"><span className="muted small">MLP neurons of layer</span>
-            {tr.layers.map((_, l) => <button key={l} className={l === view.mlpLayer ? "on" : ""} onClick={() => setView({ mlpLayer: l })}>{l + 1}</button>)}
+          <div className="controls"><span className="text-xs text-muted-foreground">MLP neurons of layer</span>
+            <ToggleGroup type="single" variant="outline" size="sm" value={String(view.mlpLayer)} onValueChange={(v) => v && setView({ mlpLayer: +v })}>
+              {tr.layers.map((_, l) => <ToggleGroupItem key={l} value={String(l)} className="w-8">{l + 1}</ToggleGroupItem>)}
+            </ToggleGroup>
           </div>
           <div className="neuron-grid">
             {Array.from(acts, (a, n) => (
