@@ -1,6 +1,6 @@
 // Provider-agnostic chat call. Uses Claude if ANTHROPIC_API_KEY is set,
 // otherwise DeepSeek (OpenAI-compatible API).
-export interface Env { DEEPSEEK_API_KEY?: string; ANTHROPIC_API_KEY?: string; ANTHROPIC_MODEL?: string; DEEPSEEK_MODEL?: string }
+export interface Env { AI?: Ai; DEEPSEEK_API_KEY?: string; ANTHROPIC_API_KEY?: string; ANTHROPIC_MODEL?: string; DEEPSEEK_MODEL?: string }
 export interface Msg { role: "user" | "assistant"; content: string }
 
 export function provider(env: Env) {

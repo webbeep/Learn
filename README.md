@@ -23,6 +23,18 @@ exactly what you selected.
 - The tutor can **point** at elements with `[[element-id]]` (hover the ◎ chip to highlight the element) and suggest **experiments** with `[[try: prompt]]`, which you can click to run.
 - `functions/api/profile.ts` rebuilds your learner profile every few questions and adds ideas to the build list.
 
+## Talk to it
+
+- **🎙 Voice in:** press <kbd>V</kbd> and talk (it sends when you go quiet), or hold <kbd>V</kbd> for push-to-talk. You can also use the mic button.
+  It uses the browser's live speech recognition, or **Whisper on Workers AI** (`/api/transcribe`), which is more accurate and works in every browser.
+- **🔊 Voice out:** spoken answers use a natural **Deepgram Aura** voice from Workers AI (`/api/speak`) or the browser's voices.
+  Sentences are spoken while the answer is still streaming. When you speak, the tutor switches to a conversational style.
+- **Hands-free mode:** after each spoken answer it starts listening again.
+- **When you highlight** text, or drag a box with <kbd>H</kbd>: show options (🎙 Talk / ⌨️ Type / ✨ Explain), start listening, or explain right away. Pick one under ⚙.
+- **It knows what you're looking at:** it receives only the elements visible in the window, your selection or highlighted text,
+  and what your mouse is over (so "what's *this*?" works). 👁 in the panel shows exactly what it receives.
+- Shortcuts: <kbd>V</kbd> talk · <kbd>H</kbd> highlight · <kbd>E</kbd> explain · <kbd>/</kbd> type · <kbd>A</kbd> panel · <kbd>M</kbd> mute · <kbd>Esc</kbd> stop · <kbd>?</kbd> help.
+
 ## The model
 
 `train/` contains everything: a synthetic "tiny world" corpus (`corpus.py`), a BPE tokenizer (`bpe.py`), and a GPT

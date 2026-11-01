@@ -24,6 +24,14 @@ export interface Profile {
   next: { title: string; why: string; where: string; try?: string }[]; build: string[]; updated: number;
 }
 export interface Wish { id: string; ts: number; text: string; source: string; done?: boolean }
+export interface Prefs {
+  stt: "auto" | "browser" | "whisper"; // speech recognition engine
+  speak: "off" | "voice" | "always"; // read answers aloud
+  ttsEngine: "browser" | "natural"; browserVoice: string; naturalVoice: string; rate: number;
+  onHighlight: "manual" | "listen" | "explain"; // what happens after you highlight something
+  handsFree: boolean; // keep the conversation going by voice
+}
+export const DEFAULT_PREFS: Prefs = { stt: "auto", speak: "voice", ttsEngine: "natural", browserVoice: "", naturalVoice: "luna", rate: 1.05, onHighlight: "manual", handsFree: false };
 export interface Learner {
   goal: string;
   depth: "intuition" | "balanced" | "math";
@@ -32,14 +40,18 @@ export interface Learner {
   profile: Profile | null;
   wishes: Wish[];
   visited: Record<string, number>;
+  prefs: Prefs;
 }
 const KEY = "topdown-ai-learner-v1";
 const DEFAULT: Learner = {
   goal: "Understand LLMs top-down, then train models from scratch and invent a brand-new kind of AI model/training framework.",
-  depth: "balanced", length: "medium", history: [], profile: null, wishes: [], visited: {},
+  depth: "balanced", length: "medium", history: [], profile: null, wishes: [], visited: {}, prefs: DEFAULT_PREFS,
 };
 function load(): Learner {
-  try { return { ...DEFAULT, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch { return DEFAULT; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+    return { ...DEFAULT, ...saved, prefs: { ...DEFAULT_PREFS, ...saved.prefs } };
+  } catch { return DEFAULT; }
 }
 export const learner = createStore<Learner>(load());
 learner.subscribe(() => { try { localStorage.setItem(KEY, JSON.stringify(learner.get())); } catch { /* private mode */ } });
@@ -51,6 +63,7 @@ export function addWish(text: string, source: string) {
   learner.set((s) => s.wishes.some((w) => w.text.toLowerCase() === t.toLowerCase()) ? {} :
     { wishes: [...s.wishes, { id: uid(), ts: Date.now(), text: t, source }] });
 }
+export const setPrefs = (p: Partial<Prefs>) => learner.set((s) => ({ prefs: { ...s.prefs, ...p } }));
 export function markVisited(page: string) {
   learner.set((s) => ({ visited: { ...s.visited, [page]: (s.visited[page] ?? 0) + 1 } }));
 }

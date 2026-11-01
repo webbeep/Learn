@@ -8,7 +8,10 @@ interface Body {
     selection?: { id: string; label: string }[];
     elements?: { id: string; label: string }[];
     region?: string;
+    pointer?: { id: string; label: string; ago: number };
+    viewport?: string;
   };
+  mode?: "text" | "voice";
   learner?: { goal?: string; depth?: string; length?: string; profile?: string; recent?: string[] };
 }
 
@@ -41,6 +44,14 @@ HOW TO ANSWER
 - Always end with exactly one line: FOLLOWUPS: <question 1> | <question 2> | <question 3>
   (short, curious next questions tailored to this learner).`;
 
+const VOICE = `
+
+VOICE MODE: the learner SPOKE this question and your answer will be READ ALOUD (the text also shows on screen).
+Talk like a friendly tutor sitting next to them: 2–6 short spoken sentences, plain words, no tables, no bullet lists,
+no headings, no symbols that sound odd when read (write "about 93 percent", "layer 2 head 4"). The transcript may
+contain speech-recognition mistakes; infer the intended words. Still use [[element-id]] pointers (they are shown,
+not read). End with the FOLLOWUPS line as usual.`;
+
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const b = (await request.json()) as Body;
@@ -51,12 +62,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       l.recent?.length ? `RECENT QUESTIONS: ${l.recent.join(" / ")}` : "",
       `CONTEXT — page: ${c.page ?? "?"}; scene: ${c.scene ?? "?"}`,
       c.summary ? `WHAT IS ON SCREEN:\n${c.summary}` : "",
+      c.viewport ? `VIEWPORT: ${c.viewport}` : "",
       c.region ? `THE LEARNER HIGHLIGHTED A REGION: ${c.region}` : "",
+      c.pointer ? `MOUSE POINTER is over [${c.pointer.id}] ${c.pointer.label} (${c.pointer.ago < 2 ? "right now" : `${c.pointer.ago}s ago`}). If the question says "this"/"here" and nothing is selected, it probably means this.` : "",
       c.selection?.length ? `SELECTION (what the learner clicked/highlighted):\n${c.selection.map((s) => `- [${s.id}] ${s.label}`).join("\n")}` : "SELECTION: nothing specific",
-      c.elements?.length ? `OTHER ELEMENTS ON SCREEN (ids you may cite):\n${c.elements.map((s) => `- [${s.id}] ${s.label}`).join("\n")}` : "",
+      c.elements?.length ? `OTHER ELEMENTS VISIBLE IN THE WINDOW (ids you may cite):\n${c.elements.map((s) => `- [${s.id}] ${s.label}`).join("\n")}` : "",
     ].filter(Boolean).join("\n");
     const messages: Msg[] = [...(b.thread ?? []).slice(-8), { role: "user", content: `${lines}\n\nQUESTION: ${b.question}` }];
-    const stream = await streamChat(env, SYSTEM, messages, l.length === "short" ? 700 : 1600);
+    const voice = b.mode === "voice";
+    const system = voice ? SYSTEM + VOICE : SYSTEM;
+    const stream = await streamChat(env, system, messages, voice || l.length === "short" ? 700 : 1600);
     return new Response(stream, { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } });
   } catch (e) {
     return new Response(String((e as Error).message ?? e), { status: 500 });

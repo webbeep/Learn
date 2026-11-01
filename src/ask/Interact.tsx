@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ask, select, useStore, type AskItem } from "../lib/store";
+import { afterHighlight } from "../lib/conversation";
 
 /** Click-to-select + drag-to-highlight layer for everything inside <main>. */
 export function useClickToAsk(main: React.RefObject<HTMLElement>) {
@@ -43,8 +44,9 @@ export function RegionLayer({ main }: { main: React.RefObject<HTMLElement> }) {
     });
     const m = main.current.getBoundingClientRect();
     const where = `${Math.round(((L + R) / 2 - m.left) / m.width * 100)}% across, ${Math.round(((T + B) / 2 - m.top) / m.height * 100)}% down the stage`;
-    select(items, `${items.length} element(s) inside a box ${Math.round(R - L)}×${Math.round(B - T)}px, centered ${where}`, true);
+    select(items, `${items.length} element(s) inside a box ${Math.round(R - L)}×${Math.round(B - T)}px, centered ${where}`, false);
     ask.set({ regionMode: false });
+    afterHighlight({ x: (L + R) / 2, y: B });
   };
   return (
     <div className="region-layer"

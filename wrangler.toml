@@ -5,3 +5,7 @@ compatibility_date = "2026-10-01"
 # Secrets (set with `wrangler pages secret put <NAME> --project-name learn-ai`):
 #   DEEPSEEK_API_KEY   – used by default for the tutor
 #   ANTHROPIC_API_KEY  – optional; if set, the tutor uses Claude instead
+
+# Workers AI: speech-to-text (Whisper) and natural text-to-speech (Deepgram Aura)
+[ai]
+binding = "AI"

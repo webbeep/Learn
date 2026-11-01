@@ -1,11 +1,14 @@
 import { ask, learner, uid, addWish, type AskItem } from "./store";
 
-export interface Turn { role: "user" | "assistant"; content: string; selection?: AskItem[]; followups?: string[]; error?: boolean }
+export interface Turn { role: "user" | "assistant"; content: string; selection?: AskItem[]; followups?: string[]; error?: boolean; via?: "text" | "voice" }
 
 /** Collect every askable element currently on screen (ids the tutor may cite). */
 export function visibleElements(limit = 90): AskItem[] {
   const out: AskItem[] = []; const seen = new Set<string>();
+  const W = window.innerWidth, H = window.innerHeight;
   document.querySelectorAll<HTMLElement | SVGElement>("main [data-ask-id]").forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > H || r.right < 0 || r.left > W || (r.width === 0 && r.height === 0)) return; // only what's actually in the window
     const id = el.getAttribute("data-ask-id")!, label = el.getAttribute("data-ask") ?? "";
     if (!seen.has(id) && label) { seen.add(id); out.push({ id, label }); }
   });
@@ -27,14 +30,22 @@ export function compressSelection(items: AskItem[], max = 30): AskItem[] {
   return out.slice(0, max);
 }
 
-export async function streamAsk(question: string, thread: Turn[], onText: (t: string) => void, signal?: AbortSignal) {
+export function viewportNote() {
+  const doc = document.documentElement, top = window.scrollY, h = window.innerHeight, total = doc.scrollHeight;
+  const heads = [...document.querySelectorAll("main h1, main .lane-label, main .stage-name")].filter((e) => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.top < h; }).slice(0, 6).map((e) => e.textContent?.trim()).filter(Boolean);
+  return `window ${window.innerWidth}×${h}px showing ${Math.round((top / total) * 100)}–${Math.round(((top + h) / total) * 100)}% of the page; visible section titles: ${heads.join(" | ") || "none"}`;
+}
+
+export async function streamAsk(question: string, thread: Turn[], onText: (t: string) => void, signal?: AbortSignal,
+  extra: { mode?: "text" | "voice"; pointer?: { id: string; label: string; ago: number } } = {}) {
   const a = ask.get(), l = learner.get();
   const p = l.profile;
   const body = {
     question,
     thread: thread.filter((t) => !t.error).map(({ role, content }) => ({ role, content })),
     context: { page: a.page, scene: a.scene, summary: a.summary, region: a.region,
-      selection: compressSelection(a.selection), elements: visibleElements() },
+      selection: compressSelection(a.selection), elements: visibleElements(), pointer: extra.pointer, viewport: viewportNote() },
+    mode: extra.mode ?? "text",
     learner: { goal: l.goal, depth: l.depth, length: l.length,
       profile: p ? `${p.summary} Style: ${p.style}. Confusions: ${p.confusions.join("; ")}` : undefined,
       recent: l.history.slice(-5).map((h) => h.q) },

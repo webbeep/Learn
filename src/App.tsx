@@ -3,6 +3,8 @@ import { loadModel, type TinyGPT } from "./model/gpt";
 import { ask, learner, markVisited, useStore } from "./lib/store";
 import { AskPanel, AskPopover } from "./ask/AskPanel";
 import { MarkStyles, RegionLayer, useClickToAsk } from "./ask/Interact";
+import { ShortcutHelp, VoiceHUD, useShortcuts } from "./ask/Shortcuts";
+import { trackPointer, trackTextSelection } from "./lib/conversation";
 import { XRay } from "./pages/XRay";
 import { Training } from "./pages/Training";
 import { Watch } from "./pages/Watch";
@@ -30,7 +32,10 @@ export default function App() {
   const main = useRef<HTMLElement>(null);
   const panelOpen = useStore(ask, (s) => s.open);
   const nWishes = useStore(learner, (s) => s.wishes.filter((w) => !w.done).length);
+  const [help, setHelp] = useState(false);
   useClickToAsk(main);
+  useShortcuts(setHelp);
+  useEffect(() => { const a = trackPointer(), b = trackTextSelection(); return () => { a(); b(); }; }, []);
   useEffect(() => { loadModel().then(setModel).catch((e) => setErr(String(e))); }, []);
   useEffect(() => { markVisited(hash); ask.set({ selection: [], region: "", highlight: null }); window.scrollTo(0, 0); }, [hash]);
 
@@ -53,6 +58,7 @@ export default function App() {
             </a>
           ))}
         </nav>
+        <button className="ghost" onClick={() => setHelp(true)} title="Keyboard & voice shortcuts"><kbd>?</kbd></button>
         <button className="primary" onClick={() => ask.set({ open: !panelOpen })}>💬 <span className="nav-label">Ask</span></button>
       </header>
       <main ref={main}>{page}</main>
@@ -60,6 +66,8 @@ export default function App() {
       <AskPopover />
       <RegionLayer main={main} />
       <MarkStyles />
+      <VoiceHUD />
+      {help && <ShortcutHelp onClose={() => setHelp(false)} />}
     </div>
   );
 }
