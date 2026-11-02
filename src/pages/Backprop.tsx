@@ -1,4 +1,31 @@
-// Placeholder. Will be replaced by the real page.
+import { useCallback, useEffect, useState } from "react";
+import { setScreen } from "../lib/store";
+import { GraphLab } from "../labs/BackpropGraph";
+import { FitLab } from "../labs/BackpropFit";
+import { RealGrads } from "../labs/BackpropReal";
+
 export function Backprop() {
-  return <div className="p-10 text-center text-muted-foreground">Backprop is being built.</div>;
+  const [scene, setScene] = useState("Graph");
+  const [parts, setParts] = useState<{ graph: string; fit: string; real: string }>({ graph: "", fit: "", real: "" });
+  const onGraph = useCallback((sc: string, s: string) => { setScene(sc); setParts((p) => (p.graph === s ? p : { ...p, graph: s })); }, []);
+  const onFit = useCallback((s: string) => setParts((p) => (p.fit === s ? p : { ...p, fit: s })), []);
+  const onReal = useCallback((s: string) => setParts((p) => (p.real === s ? p : { ...p, real: s })), []);
+  useEffect(() => {
+    setScreen("Backprop, visualized", scene, [
+      "Backpropagation lab: a scalar autograd engine (micrograd-style) drawn as a computational graph. Gradients are computed by the chain rule from the output back to every leaf.",
+      parts.graph, parts.fit, parts.real,
+    ].filter(Boolean).join("\n\n"));
+  }, [scene, parts]);
+
+  return (
+    <div className="space-y-6 pb-10">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">Backprop, visualized</h1>
+        <p className="mt-1 max-w-3xl text-muted-foreground">Training needs one answer for every number in the model: <i>if I nudge you, does the loss go up or down, and how much?</i> Backpropagation gets all of those answers in one backward sweep. Step through it here, node by node.</p>
+      </div>
+      <GraphLab onSummary={onGraph} />
+      <FitLab onSummary={onFit} />
+      <RealGrads onSummary={onReal} />
+    </div>
+  );
 }
