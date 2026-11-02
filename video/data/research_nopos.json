@@ -175,6 +175,7 @@
   "in_train": 1642,
   "frac": 0.5471509496834388,
   "train_docs": 28815,
+  "text_frac": 0.38535354122806,
   "example": "tom has a red fox. the fox says yip. he loves the fox. the fox is red.",
   "by_kind": {
    "short": {
@@ -199,5 +200,29 @@
   "steps": 3000,
   "val": 0.452,
   "val_se": 0.0024
+ },
+ "seed_runs": {
+  "baseline": {
+   "1": {
+    "val": 0.6566,
+    "val_se": 0.0034,
+    "seconds": 29.5,
+    "curve": [
+     5.5498,
+     4.1195,
+     1.8141,
+     1.0409,
+     0.8335,
+     0.7615,
+     0.7219,
+     0.6948,
+     0.6776,
+     0.667,
+     0.6603,
+     0.6578,
+     0.6566
+    ]
+   }
+  }
  }
 }

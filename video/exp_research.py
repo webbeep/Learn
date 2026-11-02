@@ -6,6 +6,7 @@ Writes video/data/research_nopos.json, which the scene reads at render time.
 
     python3 video/exp_research.py              # the two runs (~4 min each on 2 threads)
     python3 video/exp_research.py --released   # + the published model on the same eval batches
+    python3 video/exp_research.py --seeds 1 2  # 2 more seeds for both arms (seed sets init + batch order)
     python3 video/exp_research.py --leak       # recompute the train/val overlap check only
 """
 import json, math, os, sys, time
@@ -53,8 +54,11 @@ def probe(m, prompt, cands):
     return {"top": [[VOCAB[t], float(p[t])] for t in top], **{c: float(p[VOCAB.index(c)]) for c in cands}}
 
 
-def run(use_pos):
-    torch.manual_seed(SEED)
+def run(use_pos, seed=SEED):
+    """seed sets the init AND the batch order (seed 0 = the original batches); eval batches never change."""
+    torch.manual_seed(seed)
+    tix = train_ix if seed == SEED else torch.randint(len(train_d) - T - 1, (STEPS + 1, BATCH),
+                                                       generator=torch.Generator().manual_seed(1234 + seed))
     m = TinyGPT(CFG, use_pos=use_pos)
     opt = torch.optim.AdamW(m.parameters(), lr=LR, weight_decay=0.05)
     log = {"steps": [], "train": [], "val": [], "val_se": []}
@@ -62,7 +66,7 @@ def run(use_pos):
     for step in range(STEPS + 1):
         lr = LR * min(1, (step + 1) / 100) * 0.5 * (1 + math.cos(math.pi * step / STEPS))
         for g_ in opt.param_groups: g_["lr"] = lr
-        x, y = get(train_d, train_ix[step])
+        x, y = get(train_d, tix[step])
         loss = F.cross_entropy(m(x).view(-1, CFG["vocab_size"]), y.view(-1))
         opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0); opt.step()
         if step % EVAL_EVERY == 0:
@@ -83,6 +87,8 @@ def leakage():
     val_docs = val_text.split("\n")[1:-1]          # drop the partial first line and the trailing empty one
     train_docs = set(train_text.split("\n"))
     dup = sum(d in train_docs for d in val_docs)
+    chars_dup = sum(len(d) + 1 for d in val_docs if d in train_docs)
+    chars_all = sum(len(d) + 1 for d in val_docs)
 
     def kind(d):  # the corpus generators (train/corpus.py) leave clear fingerprints
         return "trade" if " gives the " in d else ("story" if d.startswith("once upon") else
@@ -91,11 +97,24 @@ def leakage():
     for d in val_docs:
         k = kind(d); n, m = by.get(k, (0, 0)); by[k] = (n + 1, m + (d in train_docs))
     return dict(val_docs=len(val_docs), in_train=dup, frac=dup / len(val_docs), train_docs=len(train_docs),
+                text_frac=chars_dup / chars_all,
                 example=next(d for d in val_docs if d in train_docs),
                 by_kind={k: {"n": n, "in_train": m} for k, (n, m) in by.items()})
 
 
-if __name__ == "__main__" and "--leak" in sys.argv:
+if __name__ == "__main__" and "--seeds" in sys.argv:
+    # extra seeds for both arms (python3 video/exp_research.py --seeds 1 2)
+    path = os.path.join(DATA, "research_nopos.json")
+    seeds = [int(a) for a in sys.argv[sys.argv.index("--seeds") + 1:]]
+    for sd in seeds:
+        for arm, use_pos in (("baseline", True), ("nopos", False)):
+            r = run(use_pos, sd)
+            out = json.load(open(path))
+            out.setdefault("seed_runs", {}).setdefault(arm, {})[str(sd)] = {
+                "val": r["val"][-1], "val_se": r["val_se"][-1], "seconds": r["seconds"], "curve": r["val"]}
+            json.dump(out, open(path, "w"), indent=1)
+            print(arm, sd, r["val"][-1], flush=True)
+elif __name__ == "__main__" and "--leak" in sys.argv:
     path = os.path.join(DATA, "research_nopos.json")
     out = json.load(open(path)); out["leak"] = leakage()
     json.dump(out, open(path, "w"), indent=1)

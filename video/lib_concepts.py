@@ -131,7 +131,15 @@ def backprop_data(lr=3e-3):
     norms = {k: math.sqrt(v) for k, v in groups.items()}
     total = math.sqrt(sum(groups.values()))
     n_params = sum(p_.numel() for p_ in m.parameters())
-    n_nonzero = sum(int((p_.grad != 0).sum()) for p_ in m.parameters())
+    # attention key biases get exactly zero gradient (softmax ignores adding the same number to every score);
+    # float64 leaves ~1e-17 noise there, so count with a tiny threshold
+    n_nonzero = sum(int((p_.grad.abs() > 1e-12).sum()) for p_ in m.parameters())
+    D_ = META["config"]["d_model"]
+    kb = [dict(m.named_parameters())[f"blocks.{l}.attn_qkv.bias"].grad[D_:2 * D_] for l in range(META["config"]["n_layer"])]
+    assert all(float(k.abs().max()) < 1e-12 for k in kb)
+    n_keybias = sum(k.numel() for k in kb)
+    n_unused_pos = (META["config"]["n_ctx"] - len(ids)) * D_
+    assert n_nonzero + n_keybias + n_unused_pos == n_params
 
     # one real weight: the biggest gradient inside layer 3's MLP output matrix
     name = "blocks.2.mlp_out.weight"
@@ -165,12 +173,13 @@ def backprop_data(lr=3e-3):
             p3 -= lr * sc * p1.grad
         p_after_clip = float(m3(x)[0, -1].softmax(-1)[tgt])
 
-    top = torch.argsort(p, descending=True)[:6].tolist()
+    top = torch.argsort(p, descending=True)[:5].tolist()
     return dict(ids=ids, toks=[VOCAB[t] for t in ids], loss=float(loss.detach()), p_red=float(p[tgt]),
                 top=[(VOCAB[t], float(p[t]), float(g_logit[t])) for t in top],
                 g_rest_max=float(max(g_logit[t] for t in range(len(VOCAB)) if t not in top)),
                 g_sum=float(g_logit.sum()),
-                norms=norms, total=total, n_params=n_params, n_nonzero=n_nonzero,
+                norms=norms, total=total, n_params=n_params, n_nonzero=n_nonzero, n_keybias=n_keybias,
+                n_unused_pos=n_unused_pos,
                 weight=dict(name=name, i=i, j=j, w=w0, g=g, fd=fd, lr=lr, step=-lr * g, w_new=w0 - lr * g),
                 p_after=p_after, loss_after=loss_after, p_after_clip=p_after_clip)
 
