@@ -152,3 +152,11 @@ def token_losses(text):
 
 def params_count():
     return sum(int(np.prod(t["shape"])) for t in META["tensors"])
+
+
+def tokhue(t):
+    """The app's per-token colour rule (src/lib/viz.ts tokColor, dark theme): hsl(id*137.508 mod 360, 70%, 62%)."""
+    import colorsys
+    i = tid(t) if isinstance(t, str) else int(t)
+    r, g, b = colorsys.hls_to_rgb(((i * 137.508) % 360) / 360, 0.62, 0.70)
+    return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))

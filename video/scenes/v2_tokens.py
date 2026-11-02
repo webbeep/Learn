@@ -1,7 +1,7 @@
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from vscene import *  # noqa
-from model import VOCAB, MERGES, tok, bpe_steps
+from model import VOCAB, MERGES, tok, bpe_steps, pretokenize
 
 PAIR_COUNTS = [(" ", "t", 13558), ("h", "e", 11868), (" ", "a", 10413), ("t", "h", 10372)]  # first 400k chars, step 0
 
@@ -78,8 +78,13 @@ class Tokens(VScene):
 
         # ------------------------------------------------------------ BPE training
         hdr2 = self.header("Byte-pair encoding")
-        snippet = self.M("…tom has a blue boat. tom gives the boat to zoe…", 24, MUTED)
-        snippet.to_edge(UP, buff=1.15)
+        SNIP = "tom has a blue boat. tom gives"
+        snippet = self.M(SNIP, 34, FG).move_to(UP * 2.45)
+        words = pretokenize(SNIP)
+        wchips = VGroup(*[self.chip(w, MUTED, 30, fill=0.08) for w in words]).arrange(RIGHT, buff=0.3).move_to(UP * 2.45)
+        seps = VGroup(*[Line(UP * 0.36, DOWN * 0.36, color=YELLOW, stroke_width=3).move_to(
+            (wchips[i].get_right() + wchips[i + 1].get_left()) / 2) for i in range(len(words) - 1)])
+        wlab = self.T("merges never cross a word boundary", 26, YELLOW).next_to(wchips, DOWN, buff=0.35)
         bars = VGroup()
         mx = PAIR_COUNTS[0][2]
         for a, b, n in PAIR_COUNTS:
@@ -92,21 +97,36 @@ class Tokens(VScene):
             r[0].move_to([-3.8, y, 0], aligned_edge=RIGHT)
             r[1].move_to([-3.4, y, 0], aligned_edge=LEFT)
             r[2].next_to(r[1], RIGHT, buff=0.25)
-        cap = self.T("most common neighbor pairs in the training text", 26, MUTED).next_to(bars, UP, buff=0.4)
+        cap = self.T("most common pairs inside words (first 400k characters)", 26, MUTED).next_to(bars, UP, buff=0.4)
         cap.align_to(bars[0][0], LEFT)
-        with self.say("Byte-pair encoding fixes this. Scan the training text and count every pair of neighbors. "
-                      "The winner is space t, 13,558 times. Merge it into a brand new token, and repeat.",
-                      scene="A corpus snippet at the top; bars of the most frequent adjacent pairs in the first 400k "
-                            "characters: '␣+t' 13,558, 'h+e' 11,868, '␣+a' 10,413, 't+h' 10,372. The winner becomes "
-                            "new token #35 '␣t'.", chapter="Byte-pair encoding"):
+        with self.say("Byte-pair encoding fixes this. First, chop the training text into words, each keeping its "
+                      "leading space. Merges never cross from one word into the next.",
+                      scene="The corpus snippet 'tom has a blue boat. tom gives' is split into word pieces (tom · ␣has · "
+                            "␣a · ␣blue · ␣boat · . · ␣tom · ␣gives), with yellow separators: merges never cross a word "
+                            "boundary.", chapter="Byte-pair encoding"):
             self.unmark(*[f"ch-{k}" for k in range(10)])
             self.play(FadeOut(crow), ReplacementTransform(hdr, hdr2), run_time=0.4)
-            self.play(FadeIn(snippet, shift=DOWN * 0.2), FadeIn(cap), run_time=0.5)
+            self.play(FadeIn(snippet, shift=DOWN * 0.2), run_time=0.5)
+            self.sync("into words", 0.1)
+            self.play(FadeTransform(snippet, wchips), run_time=0.9)
+            self.play(LaggedStart(*[Create(x) for x in seps], lag_ratio=0.1), run_time=0.6)
+            self.sync("Merges never", 0.1)
+            self.play(FadeIn(wlab, shift=UP * 0.15), run_time=0.4)
+            for k, w in enumerate(words):
+                self.mark(f"word-{k}", wchips[k], f'pre-token "{w}": merges only happen inside it')
+            self.mark("word-rule", wlab, "BPE splits text into words first (leading space attached); merges never cross words")
+
+        with self.say("Then count every pair of neighbors inside those words, across the first 400 thousand characters. "
+                      "The winner is space t, 13,558 times. Merge it into a brand new token, and repeat.",
+                      scene="Bars of the most frequent adjacent pairs inside words, in the first 400k characters of the "
+                            "corpus (the part BPE was trained on): '␣+t' 13,558, 'h+e' 11,868, '␣+a' 10,413, 't+h' 10,372. "
+                            "The winner becomes new token #35 '␣t'."):
+            self.unmark("word-rule")
+            self.play(FadeOut(wlab), FadeIn(cap), run_time=0.5)
             self.play(LaggedStart(*[AnimationGroup(FadeIn(r[0]), GrowFromEdge(r[1], LEFT), FadeIn(r[2]))
                                     for r in bars], lag_ratio=0.2), run_time=1.6)
             for (a, b, n), r in zip(PAIR_COUNTS, bars):
-                self.mark(f"pair-{(a + b).strip() or 'sp'}", r, f'pair "{a}" + "{b}" appears {n:,} times')
-            self.mark("snippet", snippet, "a slice of the synthetic tiny-world training corpus")
+                self.mark(f"pair-{(a + b).strip() or 'sp'}", r, f'pair "{a}" + "{b}" appears {n:,} times inside words (first 400k characters)')
             self.sync("The winner", 0.1)
             box = SurroundingRectangle(bars[0], color=YELLOW, buff=0.12, corner_radius=0.1)
             self.play(Create(box), bars[0][1].animate.set_fill(YELLOW), run_time=0.5)
@@ -134,7 +154,7 @@ class Tokens(VScene):
                       scene="Left: the first four merge rules (␣+t→␣t id 35, h+e→he id 36, ␣+a→␣a id 37, ␣t+he→␣the id 38). "
                             "Right: '␣the' fusing from 4 characters into one token, id 38."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(snippet, cap, bars, box)), FadeOut(newtok), run_time=0.4)
+            self.play(FadeOut(VGroup(wchips, seps, cap, bars, box)), FadeOut(newtok), run_time=0.4)
             self.play(FadeIn(rt), FadeIn(rows_the[0]), run_time=0.4)
             cur = rows_the[0]
             for n in range(4):
@@ -174,7 +194,7 @@ class Tokens(VScene):
         panel = RoundedRectangle(corner_radius=0.18, width=8.4, height=1.4, fill_color=PANEL, fill_opacity=1,
                                  stroke_color=LINE, stroke_width=2).move_to(DOWN * 1.75)
         with self.say("To encode new text, start from characters and replay the merges in the order they were "
-                      "learned. Space w goes first, then a y, then e d.",
+                      "learned. Space w goes first, then a y, then e d. Lowest rule number first, every time.",
                       scene="' wednesday' as 10 character chips; below, a panel shows the merge being applied. Merges "
                             "fire in learned order: ␣+w → ␣w (rank 9), a+y → ay (rank 10), e+d → ed (rank 13).",
                       chapter="Encoding a word"):
@@ -184,6 +204,8 @@ class Tokens(VScene):
             self.cur = rows[0]
             self.rule_txt = None
             self._merge_anims(rows, applied, steps, [0, 1, 2], ["Space w", "then a y", "then e d"], panel)
+            self.sync("Lowest rule", 0.1)
+            self.play(Indicate(self.rule_txt, color=YELLOW, scale_factor=1.08), run_time=0.6)
 
         with self.say("Then e s. Then d plus ay makes day, and es plus day makes esday. Ten characters, four tokens.",
                       scene="Remaining merges: e+s → es, d+ay → day, es+day → esday. Final result: ␣w (43) · ed (47) · "
@@ -236,32 +258,65 @@ class Tokens(VScene):
             self.play(Indicate(lines[2][2], color=PINK, scale_factor=1.25), run_time=0.7)
             self.mark("split-red", lines[2], '" red" → one token, id 157')
 
+        # ------------------------------------------------------------ capitals -> <unk>; real tokenizers use bytes
+        cap_ids = tok("Wednesday")
+        cap_src = self.M("Wednesday", 36, FG, t2c={"W": PINK}).move_to([-2.6, 0, 0], aligned_edge=RIGHT)
+        cap_arr = self.T("→", 36, MUTED).move_to([-1.9, 0, 0])
+        cap_row = VGroup(*[self.chip(VOCAB[i], PINK if i == 0 else tc(VOCAB[i]), 36, id_=i, id_size=22, pad=0.13)
+                           for i in cap_ids]).arrange(RIGHT, buff=0.14, aligned_edge=UP)
+        cap_row.move_to([-1.3, 0, 0], aligned_edge=LEFT)
+        cap_row.shift(UP * (0 - cap_row[0][0].get_y()))
+        cap_line = VGroup(cap_src, cap_arr, cap_row).shift(DOWN * 0.2)
+        byte_note = VGroup(self.T("most real tokenizers start from the 256 possible bytes", 30, TEAL),
+                           self.T("so any text can be encoded, and nothing is ever unknown", 26, MUTED)).arrange(
+            DOWN, buff=0.15).move_to(DOWN * 2.3)
+        with self.say("One catch. This tiny world is all lowercase, so a capital W becomes the unknown token. Most real "
+                      "tokenizers start from the 256 possible bytes instead, so nothing is ever unknown.",
+                      scene="'Wednesday' with a capital W encodes as <unk> (id 0) · ed · n · esday: TinyGPT's vocab is "
+                            "lowercase only. Note: most real tokenizers start from the 256 possible bytes, so nothing is "
+                            "ever unknown."):
+            self.unmark(*list(self._marks))
+            self.play(FadeOut(lines), run_time=0.4)
+            self.play(FadeIn(cap_src), FadeIn(cap_arr), LaggedStart(*[FadeIn(c) for c in cap_row], lag_ratio=0.15),
+                      run_time=0.8)
+            self.play(Indicate(cap_row[0], color=PINK, scale_factor=1.2), run_time=0.6)
+            self.mark("cap-unk", cap_row[0], 'capital "W" is not in the lowercase vocab → <unk> (id 0)')
+            self.mark("cap-rest", VGroup(*cap_row[1:]), '"ednesday" still encodes normally: "ed" (47) · "n" (16) · "esday" (202)')
+            self.sync("Most real", 0.1)
+            self.play(FadeIn(byte_note, shift=UP * 0.2), run_time=0.6)
+            self.mark("bytes", byte_note, "byte-level BPE (e.g. GPT-2's) starts from 256 byte tokens, so it never needs <unk>")
+
         # ------------------------------------------------------------ scale
         hdr5 = self.header("Scale")
-        data = [("TinyGPT", 256, TEAL), ("GPT-2", 50257, BLUE), ("newer LLMs", 128000, ORANGE)]
+        data = [("TinyGPT", 256, TEAL), ("GPT-2", 50257, BLUE), ("newer LLMs", 100000, ORANGE)]
         sbars = VGroup()
         for n, (name, v, col) in enumerate(data):
             lab = self.T(name, 30, col, BOLD)
-            bar = Rectangle(width=max(0.025, 8.0 * v / 128000), height=0.7, fill_color=col, fill_opacity=0.85,
+            bar = Rectangle(width=max(0.025, 8.0 * v / 100000), height=0.7, fill_color=col, fill_opacity=0.85,
                             stroke_width=0)
+            if n == 2:  # "and up": a fading arrow past the 100k mark instead of guessing a number
+                tip = Arrow(bar.get_right() + LEFT * 0.05, bar.get_right() + RIGHT * 0.75, buff=0, color=col,
+                            stroke_width=6, max_tip_length_to_length_ratio=0.45)
+                bar = VGroup(bar, tip)
             val = self.T(f"{v:,}" if n < 2 else "100k+", 30, col)
             sbars.add(VGroup(lab, bar, val))
         for n, r in enumerate(sbars):
             y = 1.2 - n * 1.25
-            r[0].move_to([-3.9, y, 0], aligned_edge=RIGHT)
-            r[1].move_to([-3.5, y, 0], aligned_edge=LEFT)
+            r[0].move_to([-4.2, y, 0], aligned_edge=RIGHT)
+            r[1].move_to([-3.8, y, 0], aligned_edge=LEFT)
             r[2].next_to(r[1], RIGHT, buff=0.3)
         with self.say("Our vocab has 256 entries. GPT-2 had 50,257. Newer models go past 100 thousand. "
                       "Same algorithm, bigger table.",
-                      scene="Vocab-size bars to scale: TinyGPT 256 (a sliver), GPT-2 50,257, newer LLMs 100k+. "
+                      scene="Vocab-size bars to scale: TinyGPT 256 (a sliver), GPT-2 50,257, newer LLMs drawn at "
+                            "100,000 with an arrow for 'and up'. "
                             "Flash: 'same algorithm, bigger table'.", chapter="Scale"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(lines), ReplacementTransform(hdr4, hdr5), run_time=0.4)
+            self.play(FadeOut(VGroup(cap_line, byte_note)), ReplacementTransform(hdr4, hdr5), run_time=0.4)
             for n, ph in enumerate(["Our vocab", "GPT-2", "Newer models"]):
                 self.sync(ph, 0.1)
                 self.play(FadeIn(sbars[n][0]), GrowFromEdge(sbars[n][1], LEFT), FadeIn(sbars[n][2]), run_time=0.6)
                 self.mark(f"vocab-{n}", sbars[n], f"{data[n][0]} vocab size: {data[n][1]:,}" if n < 2
-                          else "newer LLMs: vocabularies of 100,000+ tokens (e.g. ~100k–128k+)")
+                          else "newer LLMs: vocabularies of 100,000 tokens and up (bar drawn at 100,000)")
             self.sync("Same algorithm")
             self.flash("same algorithm, bigger table", YELLOW, 52, hold=0.8, pos=DOWN * 2.6)
 
@@ -319,7 +374,7 @@ class Tokens(VScene):
                     mapping.append(ReplacementTransform(VGroup(cur[i], cur[i + 1]), nxt[k]))
                 else:
                     mapping.append(ReplacementTransform(cur[k + 1], nxt[k]))
-            self.play(*mapping, FadeOut(hl), run_time=0.55)
+            self.play(*mapping, FadeOut(hl), run_time=0.45)
             self.cur = nxt
             self.rule_txt = txt
             self.mark("rule-now", txt, f'merge rule #{m["rank"] + 1}: "{a}" + "{b}" → "{m["new"]}" (id {m["id"]})')

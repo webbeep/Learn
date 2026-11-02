@@ -12,6 +12,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 R = json.load(open(os.path.join(HERE, "..", "data", "research_nopos.json")))   # written by video/exp_research.py
 BASE, NOPOS, REL, LEAK = R["baseline"], R["nopos"], R["released"], R["leak"]
 SHORT, TRADE = LEAK["by_kind"]["short"], LEAK["by_kind"]["trade"]
+SEEDS = ["0"] + sorted(R["seed_runs"]["baseline"])                      # extra seeds from exp_research.py --seeds
+VB = [BASE["val"][-1]] + [R["seed_runs"]["baseline"][k]["val"] for k in SEEDS[1:]]
+VN = [NOPOS["val"][-1]] + [R["seed_runs"]["nopos"][k]["val"] for k in SEEDS[1:]]
+GAPS = [n_ - b_ for n_, b_ in zip(VN, VB)]                              # paired: same seed, same batches
+SECS = [BASE["seconds"], NOPOS["seconds"]] + [R["seed_runs"][a][k]["seconds"] for a in ("baseline", "nopos") for k in SEEDS[1:]]
+ABL = {r["id"]: r for r in json.load(open(os.path.join(HERE, "..", "..", "public", "research", "ablations.json")))["runs"]}
+A_BASE, A_NOPOS = ABL["baseline"]["final_val"], ABL["no-positions"]["final_val"]
+assert all(g > 0 for g in GAPS)          # the narration says every seed agrees
 assert SHORT["in_train"] == SHORT["n"]   # the narration says "all" of the short templated lines
 STEPS_ = ["hypothesis", "smallest experiment", "baseline", "change ONE thing", "compare across seeds", "scale up what wins"]
 SCOL = [YELLOW, TEAL, BLUE, PINK, ORANGE, "#b48cff"]
@@ -111,7 +119,7 @@ class ResearchLoop(CScene):
             f"{n} steps each (TinyGPT's real run: 3,000)",
             f"batch {R['batch']} × 64 tokens · AdamW, lr {R['lr']:g}, cosine",
             f"same seed ({R['seed']}) · the exact same batches · same code",
-            f"CPU, {R['threads']} threads: {BASE['seconds'] / 60:.0f} and {NOPOS['seconds'] / 60:.0f} minutes")]
+            f"CPU, {R['threads']} threads: {min(SECS) / 60:.1f}–{max(SECS) / 60:.1f} min per run (machine load varies)")]
                         ).arrange(DOWN, aligned_edge=LEFT, buff=0.22)
         sh_t = self.T("identical in both runs", 26, MUTED, BOLD)
         shg = VGroup(sh_t, shared).arrange(DOWN, aligned_edge=LEFT, buff=0.25)
@@ -125,11 +133,10 @@ class ResearchLoop(CScene):
             cards.add(VGroup(b, c.move_to(b).align_to(b, LEFT).shift(RIGHT * 0.25)))
         cards.arrange(DOWN, buff=0.35).move_to([6.7, 0.55, 0], aligned_edge=RIGHT)
         one = self.T("the only difference: one line", 30, YELLOW, BOLD).move_to(DOWN * 2.4)
-        with self.say(f"The smallest test: two short runs of {n} steps, about four minutes each on my CPU. Same code, same "
-                      f"data, same batches, same seed. The baseline is unchanged TinyGPT; the only difference is one line.",
+        with self.say('The smallest test: short runs of 600 steps, a few minutes at most on two CPU threads. Same code, same data, same batches, same seed. The baseline is unchanged TinyGPT; the only difference is one line.',
                       scene=f"Experiment setup (real): both runs use {n} steps, batch {R['batch']}×64, AdamW lr {R['lr']}, "
-                            f"cosine schedule, seed {R['seed']}, identical batches, CPU with 2 threads ({BASE['seconds']:.0f} s and "
-                            f"{NOPOS['seconds']:.0f} s). Baseline: x = tok(idx) + pos(t). Variant: x = tok(idx).",
+                            f"cosine schedule, seed {R['seed']}, identical batches, CPU with 2 threads ({min(SECS):.0f}–{max(SECS):.0f} s "
+                            f"per run). Baseline: x = tok(idx) + pos(t). Variant: x = tok(idx).",
                       chapter="Experiment"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(row, cross, q, mask, mask_l)), ReplacementTransform(hdr, hdr2), run_time=0.5)
@@ -151,7 +158,12 @@ class ResearchLoop(CScene):
         xl = VGroup(*[self.M(str(v), 22, MUTED).next_to(ax.c2p(v, Y0), DOWN, buff=0.15) for v in range(S0, n + 1, 100)])
         yl = VGroup(*[self.M(f"{v:.2f}", 22, MUTED).next_to(ax.c2p(S0, v), LEFT, buff=0.15) for v in (0.65, 0.75, 0.85)])
         xt = self.T("training step", 22, MUTED).next_to(xl, DOWN, buff=0.12)
-        yt = self.T("validation loss (held-out text)", 22, MUTED).next_to(ax, UP, buff=0.15).align_to(ax, LEFT)
+        yt = self.T("validation loss (held-out text) · zoomed: axis starts at 0.62, not 0", 22, MUTED)
+        yt.next_to(ax, UP, buff=0.15).align_to(ax, LEFT)
+        brk = self.M("≈", 30, MUTED).move_to(ax.c2p(S0, Y0) + LEFT * 0.0 + UP * 0.12)
+        legend = VGroup(VGroup(Line(ORIGIN, RIGHT * 0.5, color=BLUE, stroke_width=4), self.T("baseline", 22, BLUE)).arrange(RIGHT, buff=0.12),
+                        VGroup(Line(ORIGIN, RIGHT * 0.5, color=PINK, stroke_width=4), self.T("no positions", 22, PINK)).arrange(RIGHT, buff=0.12)
+                        ).arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(ax.c2p(n, Y1), DL, buff=0.1)
 
         def curve(run, col):
             return VMobject(color=col, stroke_width=4).set_points_as_corners(
@@ -160,9 +172,9 @@ class ResearchLoop(CScene):
         fin = VGroup(
             VGroup(self.T("baseline", 28, BLUE, BOLD), self.M(f"{BASE['val'][-1]:.3f}", 34, BLUE)).arrange(RIGHT, buff=0.3),
             VGroup(self.T("no positions", 28, PINK, BOLD), self.M(f"{NOPOS['val'][-1]:.3f}", 34, PINK)).arrange(RIGHT, buff=0.3),
-            VGroup(self.T("gap", 28, YELLOW, BOLD), self.M(f"+{gap:.3f}", 34, YELLOW)).arrange(RIGHT, buff=0.3),
+            VGroup(self.T("paired gap", 28, YELLOW, BOLD), self.M(f"+{gap:.3f}", 34, YELLOW)).arrange(RIGHT, buff=0.3),
         ).arrange(DOWN, aligned_edge=RIGHT, buff=0.35).move_to([4.6, 0.2, 0])
-        fin_t = self.T(f"at step {n}, lower is better", 22, MUTED).next_to(fin, UP, buff=0.35)
+        fin_t = self.T(f"seed 0, step {n}, lower is better", 22, MUTED).next_to(fin, UP, buff=0.35)
         ev = self.T(f"measured on the same {R['n_eval_batches']} held-out batches ({R['eval_tokens']:,} tokens)", 22, MUTED)
         ev.to_edge(DOWN, buff=0.3)
         with self.say(f"Then compare, on held-out text, measured on the exact same batches. Baseline: "
@@ -174,7 +186,8 @@ class ResearchLoop(CScene):
                       chapter="Compare"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(shg, cards, one)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
-            self.play(Create(ax), FadeIn(xl), FadeIn(yl), FadeIn(xt), FadeIn(yt), FadeIn(ev), run_time=0.6)
+            self.play(Create(ax), FadeIn(xl), FadeIn(yl), FadeIn(xt), FadeIn(yt), FadeIn(ev), FadeIn(brk), FadeIn(legend), run_time=0.6)
+            self.mark("legend", legend, "blue = baseline (with positions), pink = no position embeddings")
             self.play(Create(cb), Create(cn), run_time=1.8, rate_func=linear)
             self.mark("curve-base", cb, f"baseline val loss: {BASE['val'][i0]:.3f} at step {S0} → {BASE['val'][-1]:.3f} at step {n}")
             self.mark("curve-nopos", cn, f"no-positions val loss: {NOPOS['val'][i0]:.3f} at step {S0} → {NOPOS['val'][-1]:.3f} at step {n}")
@@ -193,38 +206,39 @@ class ResearchLoop(CScene):
         nlab = VGroup(*[self.M(f"{v:.2f}", 22, MUTED).next_to(nl.n2p(v), DOWN, buff=0.2) for v in np.arange(0.62, 0.7201, 0.02)])
         nt = self.T("validation loss at step 600", 22, MUTED).next_to(nlab, DOWN, buff=0.15)
 
-        def dot(run, col, y):
-            v, e = run["val"][-1], run["val_se"][-1]
-            d = Dot(nl.n2p(v) + UP * y, radius=0.12, color=col)
-            bar = Line(nl.n2p(v - 2 * e) + UP * y, nl.n2p(v + 2 * e) + UP * y, color=col, stroke_width=4)
-            return VGroup(bar, d)
-        db, dn = dot(BASE, BLUE, 0.9), dot(NOPOS, PINK, 0.9)
-        lb = self.T("baseline · seed 0", 26, BLUE).next_to(db, UP, buff=0.3).align_to(db, RIGHT)
-        ln = self.T("no positions · seed 0", 26, PINK).next_to(dn, UP, buff=0.3).align_to(dn, LEFT)
-        gl = VGroup(self.T("a verdict needs 3+ seeds per arm,", 32, YELLOW, BOLD),
-                    self.T("and a gap clearly bigger than the seed-to-seed spread", 32, YELLOW, BOLD)
-                    ).arrange(DOWN, buff=0.15).move_to(UP * 2.55)
+        dots_b, dots_n = VGroup(), VGroup()
+        for k, (vb, vn) in enumerate(zip(VB, VN)):
+            dots_b.add(Dot(nl.n2p(vb) + UP * (0.55 + 0.32 * k), radius=0.11, color=BLUE))
+            dots_n.add(Dot(nl.n2p(vn) + UP * (0.55 + 0.32 * k), radius=0.11, color=PINK))
+        sl = VGroup(*[self.M(f"seed {sd}", 20, MUTED).next_to(nl.n2p(0.62) + UP * (0.55 + 0.32 * k), LEFT, buff=0.2)
+                      for k, sd in enumerate(SEEDS)])
+        lb = self.T("baseline", 26, BLUE, BOLD).next_to(dots_b, UP, buff=0.25)
+        ln = self.T("no positions", 26, PINK, BOLD).next_to(dots_n, UP, buff=0.25)
+        mg, sdg = float(np.mean(GAPS)), float(np.std(GAPS, ddof=1))
+        gl = VGroup(self.T("paired gap per seed (same seed, same batches): " + ", ".join(f"+{g:.3f}" for g in GAPS), 28, YELLOW),
+                    self.T(f"mean +{mg:.3f} · seed-to-seed sd {sdg:.3f} · every seed agrees", 28, YELLOW, BOLD)
+                    ).arrange(DOWN, buff=0.12).to_edge(UP, buff=1.0)
         self.fitw(gl, 12.6)
-        note = VGroup(self.T(f"bars: ±2 × measurement noise ({se:.4f})", 22, MUTED),
-                      self.T("seed-to-seed spread is not measured: it is usually larger", 22, MUTED)).arrange(DOWN, buff=0.1)
+        note = self.T(f"measurement noise per number ≈ ±{se:.3f} (SE over the {R['n_eval_batches']} eval batches)", 22, MUTED)
         note.to_edge(DOWN, buff=0.4)
-        with self.say("But that's one seed per arm. Rerun with a different seed and both numbers move. A real verdict needs "
-                      "three or more seeds each, and a gap that clearly beats the spread between them. So for now, "
-                      "it's a promising hint, not a result.",
-                      scene=f"Number line of val loss at step {n}: baseline seed 0 = {BASE['val'][-1]:.4f}, no positions "
-                            f"seed 0 = {NOPOS['val'][-1]:.4f}, each with a ±2×SE measurement-noise bar (SE ≈ {se:.4f}). "
-                            f"Only one seed per arm was run; text: a verdict needs 3+ seeds per arm and a gap clearly "
-                            f"bigger than the seed-to-seed spread.",
+        with self.say('But one seed could be luck. So we ran two more seeds per arm, each with its own initial weights and batch order. Both numbers move, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap beats the seed-to-seed spread.',
+                      scene=f"Number line of val loss at step {n} for seeds {', '.join(SEEDS)}: baseline "
+                            f"{', '.join(f'{v:.4f}' for v in VB)}; no positions {', '.join(f'{v:.4f}' for v in VN)}. Paired gaps "
+                            f"{', '.join(f'{g:+.4f}' for g in GAPS)}, mean {mg:+.4f}, sd {sdg:.4f}. Each seed changes the "
+                            f"initial weights and the batch order; eval batches are fixed.",
                       chapter="Seeds"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ax, xl, yl, xt, yt, cb, cn, fin, fin_t, ev)), ReplacementTransform(hdr3, hdr4), run_time=0.5)
-            self.play(Create(nl), FadeIn(nlab), FadeIn(nt), run_time=0.5)
-            self.play(FadeIn(db), FadeIn(dn), FadeIn(lb), FadeIn(ln), FadeIn(note), run_time=0.6)
-            self.mark("dot-base", VGroup(db, lb), f"baseline, seed 0: {BASE['val'][-1]:.4f} ± {BASE['val_se'][-1]:.4f} (measurement)")
-            self.mark("dot-nopos", VGroup(dn, ln), f"no positions, seed 0: {NOPOS['val'][-1]:.4f} ± {NOPOS['val_se'][-1]:.4f}")
-            self.sync("A real verdict", 0.1)
+            self.play(FadeOut(VGroup(ax, xl, yl, xt, yt, cb, cn, fin, fin_t, ev, brk, legend)), ReplacementTransform(hdr3, hdr4), run_time=0.5)
+            self.play(Create(nl), FadeIn(nlab), FadeIn(nt), FadeIn(note), run_time=0.5)
+            self.play(FadeIn(dots_b[0]), FadeIn(dots_n[0]), FadeIn(sl[0]), FadeIn(lb), FadeIn(ln), run_time=0.5)
+            self.sync("So we ran", 0.1)
+            for k in range(1, len(SEEDS)):
+                self.play(FadeIn(dots_b[k], scale=1.5), FadeIn(dots_n[k], scale=1.5), FadeIn(sl[k]), run_time=0.5)
+            self.mark("dots-base", VGroup(dots_b, lb), "baseline val loss per seed: " + ", ".join(f"{v:.4f}" for v in VB))
+            self.mark("dots-nopos", VGroup(dots_n, ln), "no-positions val loss per seed: " + ", ".join(f"{v:.4f}" for v in VN))
+            self.sync("yet every seed", 0.1)
             self.play(FadeIn(gl, shift=DOWN * 0.2), run_time=0.6)
-            self.mark("need-seeds", gl, "rule of thumb: several seeds per arm; compare the gap to the seed spread")
+            self.mark("gaps", gl, f"paired gaps {', '.join(f'{g:+.4f}' for g in GAPS)}; mean {mg:+.4f}, sd {sdg:.4f}")
 
         # ============================================================ traps
         hdr5 = self.header("Traps", PINK)

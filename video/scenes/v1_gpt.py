@@ -15,6 +15,43 @@ def tcol(t):
     return TOKCOL.get(t, MUTED)
 
 
+def hit(mob, min_u=0.32):
+    """Pad a tiny mobject's click box to >= ~43 px with an invisible backing rect (moves/fades with it)."""
+    if mob.width < min_u or mob.height < min_u:
+        r = Rectangle(width=max(mob.width, min_u), height=max(mob.height, min_u), stroke_width=0,
+                      fill_color=BG, fill_opacity=0.04).move_to(mob)
+        mob.add_to_back(r)
+    return mob
+
+
+def handle(parent, point, size=0.34):
+    """Small invisible click target glued to `parent` (e.g. on an attention line), so its box stays compact."""
+    r = Square(size, stroke_width=0, fill_color=BG, fill_opacity=0.04).move_to(point)
+    parent.add(r)
+    return r
+
+
+@torch.no_grad()
+def p_red_without(ids, layer, head):
+    """Re-run the forward pass with one attention head's output zeroed; return P(' red') at the last position."""
+    import torch.nn.functional as F
+    import model as M
+    T = len(ids); D = M.D
+    x = W["tok.weight"][ids] + W["pos.weight"][:T]
+    mask = torch.triu(torch.ones(T, T, dtype=torch.bool), 1)
+    for l in range(3):
+        p = f"blocks.{l}."
+        q, k, v = M._lin(M._ln(x, p + "ln1"), p + "attn_qkv").split(D, -1)
+        q, k, v = (t.view(T, M.H, M.HD).transpose(0, 1) for t in (q, k, v))
+        a = (q @ k.transpose(-1, -2) / M.HD ** 0.5).masked_fill(mask, float("-inf")).softmax(-1)
+        o = a @ v
+        if l == layer:
+            o[head] = 0
+        x = x + M._lin(o.transpose(0, 1).reshape(T, D), p + "attn_out")
+        x = x + M._lin(F.gelu(M._lin(M._ln(x, p + "ln2"), p + "mlp_in"), approximate="tanh"), p + "mlp_out")
+    return float(lens(x)[-1].softmax(-1)[VOCAB.index(" red")])
+
+
 def div_color(v, vmax):
     a = float(np.clip(v / vmax, -1, 1))
     return interpolate_color(ManimColor(BG), ManimColor(ORANGE if a > 0 else BLUE), abs(a) ** 0.8)
@@ -182,14 +219,23 @@ class GPTIn100(VScene):
             (hi[g] if g else dots).add(d)
         key = VGroup(*[VGroup(Dot(radius=0.09, color=c), self.T(t, 26, c)).arrange(RIGHT, buff=0.18)
                        for t, c in (("names", TEAL), ("colors", PINK), ("things", YELLOW), ("other tokens", MUTED))])
-        key.arrange(DOWN, aligned_edge=LEFT, buff=0.3).to_edge(LEFT, buff=0.7).shift(DOWN * 0.3)
+        key.arrange(DOWN, aligned_edge=LEFT, buff=0.3).to_edge(LEFT, buff=0.7).shift(UP * 0.4)
         title = self.T("all 256 token embeddings, squashed to 2-D (PCA)", 26, MUTED).next_to(frame, UP, buff=0.18)
-        lab_red = self.M("␣red", 24, PINK).next_to(P(VOCAB.index(" red")), LEFT, buff=0.15)
-        lab_tom = self.M("␣tom", 24, TEAL).next_to(P(VOCAB.index(" tom")), DOWN, buff=0.12)
+        pr_ = P(VOCAB.index(" red"))
+        lab_red = self.M("␣red", 26, PINK).move_to(pr_ + LEFT * 1.35 + UP * 0.75)
+        lab_red = VGroup(lab_red, Line(lab_red.get_corner(DR) + RIGHT * 0.05, pr_ + UL * 0.07, color=PINK,
+                                       stroke_width=2))
+        lab_tom = self.M("␣tom", 26, TEAL).next_to(P(VOCAB.index(" tom")), LEFT, buff=0.15)
+        Ec = W["tok.weight"].numpy() - W["tok.weight"].numpy().mean(0)
+        sv = np.linalg.svd(Ec, compute_uv=False)
+        var2 = float((sv[:2] ** 2).sum() / (sv ** 2).sum())
+        caveat = VGroup(self.T("these 2 axes keep only", 24, MUTED),
+                        self.T(f"{var2 * 100:.0f}% of the spread", 24, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
         with self.say("Squash those 64 numbers down to two, and you can see what it learned. Names land in one "
                       "neighborhood. Colors land in another. Nobody told it that.",
-                      scene="A 2-D PCA map of all 256 real token embeddings: names (teal) cluster at the bottom, "
-                            "colors (pink) form a tight cluster near the things (yellow); other tokens are faint gray dots."):
+                      scene=f"A 2-D PCA map of all 256 real token embeddings: names (teal) cluster at the bottom, "
+                            f"colors (pink) form a tight cluster near the things (yellow); other tokens are faint gray dots. "
+                            f"Caveat on screen: these 2 axes keep only {var2 * 100:.0f}% of the spread."):
             self.unmark("chip-red", "emb-tok", "emb-pos", "emb-sum")
             self.play(*[FadeOut(m) for m in [red_chip, arrow, grid, plus, dims]], run_time=0.5)
             self.play(FadeIn(frame), FadeIn(title), LaggedStart(*[FadeIn(d, scale=0.3) for d in dots], lag_ratio=0.004),
@@ -205,6 +251,9 @@ class GPTIn100(VScene):
                       LaggedStart(*[GrowFromCenter(d) for d in hi["t"]], lag_ratio=0.05), FadeIn(lab_red), run_time=0.9)
             self.mark("cluster-colors", hi["c"], "cluster of color tokens (red, blue, green, yellow, white, ...)")
             self.mark("cluster-things", hi["t"], "object tokens (ball, kite, boat, cup, ...) next to the colors")
+            caveat.next_to(key, DOWN, buff=0.6).align_to(key, LEFT)
+            self.play(FadeIn(caveat), run_time=0.4)
+            self.mark("pca-caveat", caveat, f"PCA caveat: the 2 plotted axes capture {var2 * 100:.1f}% of the variance of the 64-D embeddings")
 
         # ---------------------------------------------------------------- attention
         hdr3 = self.header("3 · Attention")
@@ -220,35 +269,48 @@ class GPTIn100(VScene):
                         for k in range(23)])
         q_chip = self.chip(" the", tcol(" the"), 34).move_to([3.6, -0.2, 0])
         q_lab = self.T("query: the last token", 24, MUTED).next_to(q_chip, DOWN, buff=0.25)
-        col_lab = self.T("earlier tokens", 24, MUTED).next_to(posn, LEFT, buff=0.3).shift(UP * 0.2)
+        col_lab = VGroup(self.T("tokens so far", 24, MUTED), self.T("(itself included)", 24, MUTED)).arrange(
+            DOWN, buff=0.1).next_to(posn, LEFT, buff=0.3).shift(UP * 0.2)
+        avg_cap = VGroup(self.T("layer 2, averaged over 4 heads", 24, BLUE),
+                         self.T("line thickness = attention weight", 24, MUTED)).arrange(DOWN, buff=0.1)
+        avg_cap.next_to(q_lab, DOWN, buff=0.5)
+        kright = [k_.get_right() for k_ in keys]
+        for k_ in keys:
+            hit(k_)
 
         def wire(k, w, col):
             s_ = q_chip.get_left() + LEFT * 0.08
-            e_ = keys[k].get_right() + RIGHT * 0.15
+            e_ = kright[k] + RIGHT * 0.15
             return Line(s_, e_, stroke_width=1.2 + 10 * w, color=col, stroke_opacity=min(1, 0.3 + 1.5 * w))
 
-        with self.say("Now the tokens talk. In every attention layer, each token looks back at earlier tokens and "
-                      "pulls in whatever looks useful.",
+        with self.say("Now the tokens talk. In every attention layer, each token looks back at the tokens so far, "
+                      "itself included, and pulls in whatever looks useful.",
                       scene="The 23 tokens slide into a column; on the right, the last token ' the' is the query. Lines fan "
-                            "out from it to earlier tokens (layer 2, averaged over its 4 heads; thickness = attention weight).",
+                            "out from it to the tokens so far, itself included (on-screen caption: layer 2, averaged over "
+                            "its 4 heads; line thickness = attention weight).",
                       chapter="Attention"):
-            self.unmark("pca", "cluster-names", "cluster-colors", "cluster-things")
-            self.play(*[FadeOut(m) for m in [frame, title, dots, hi["n"], hi["c"], hi["t"], key, lab_red, lab_tom]],
+            self.unmark("pca", "cluster-names", "cluster-colors", "cluster-things", "pca-caveat")
+            self.play(*[FadeOut(m) for m in [frame, title, dots, hi["n"], hi["c"], hi["t"], key, lab_red, lab_tom, caveat]],
                       run_time=0.5)
             self.play(ReplacementTransform(hdr2, hdr3),
                       LaggedStart(*[FadeIn(k_, shift=RIGHT * 0.2) for k_ in keys], lag_ratio=0.03),
                       FadeIn(posn), run_time=1.0)
             self.play(TransformFromCopy(keys[22], q_chip), FadeIn(q_lab), FadeIn(col_lab), run_time=0.7)
             wires_avg = VGroup(*[wire(k, float(a_avg[k]), BLUE) for k in range(23) if a_avg[k] > 0.01])
-            self.play(LaggedStart(*[Create(w) for w in wires_avg], lag_ratio=0.06), run_time=1.3)
+            self.play(LaggedStart(*[Create(w) for w in wires_avg], lag_ratio=0.06), FadeIn(avg_cap), run_time=1.3)
             self.mark("query", q_chip, 'query token: the last " the" (position 22)')
+            self.mark("avg-cap", avg_cap, "these lines: layer 2's attention from the last token, averaged over its 4 heads")
             for k, (c, t, i) in enumerate(zip(keys, toks, ids)):
-                self.mark(f"tok-{k}", c, f'token "{t}" (id {i}), position {k}; layer-2 average attention from last " the": {a_avg[k] * 100:.1f}%')
+                self.mark(f"tok-{k}", c, f'token "{t}" (id {i}), position {k}; layer-2 average attention from the last " the": {a_avg[k] * 100:.1f}%' + (" (the query itself)" if k == 22 else ""))
 
-        with self.say("One head in layer two has a very clear job. From the last 'the', it puts 93 percent of its "
-                      "attention on 'red'. It's a color copier.",
-                      scene="Only layer 2 head 4 remains: a thick yellow line from the final ' the' to ' red' (position 3) "
-                            "labeled 93%, thin lines to '.' (2.4%) and ' ball' (1.9%). Flash: 'a color-copying head'."):
+        p_abl = p_red_without(ids, 1, 3)
+        with self.say(f"One head in layer two has a clear job here. From the last 'the', it puts 93 percent of its "
+                      f"attention on 'red'. Switch that one head off, and red drops from 87 percent to "
+                      f"{p_abl * 100:.0f}. On stories like this, it fetches the color of the item being handed over.",
+                      scene=f"Only layer 2 head 4 remains: a thick yellow line from the final ' the' to ' red' (position 3) "
+                            f"labeled 93%, and two thin unlabeled lines (each under 3%) to '.' and ' ball'. Flash: "
+                            f"'head off: red {p_red * 100:.0f}% → {p_abl * 100:.0f}%' (real ablation: this head's output "
+                            f"zeroed)."):
             wires_h = {k: wire(k, float(a_head[k]), YELLOW if k == 3 else BLUE) for k in range(23) if a_head[k] > 0.01}
             hl = self.T("layer 2 · head 4", 30, YELLOW, BOLD).move_to([3.6, 3.3, 0])
             self.play(FadeOut(wires_avg), FadeIn(hl), run_time=0.4)
@@ -261,15 +323,16 @@ class GPTIn100(VScene):
             pct.move_to(w3.point_from_proportion(0.45) + n_ * 0.72)
             self.sync("93")
             self.play(FadeIn(pct, scale=1.4), keys[3].animate.scale(1.35, about_edge=RIGHT), run_time=0.6)
-            self.mark("arc-red", VGroup(wires_h[3], pct),
+            self.mark("arc-red", pct,
                       f'attention L2H4: " the" (pos 22) → " red" (pos 3) = {a_head[3] * 100:.1f}%')
             for k, w in wires_h.items():
                 if k != 3:
-                    self.mark(f"arc-{k}", w, f'attention L2H4: " the" → "{toks[k]}" (pos {k}) = {a_head[k] * 100:.1f}%')
+                    hd = handle(w, w.point_from_proportion(0.8))
+                    self.mark(f"arc-{k}", hd, f'attention L2H4: " the" → "{toks[k]}" (pos {k}) = {a_head[k] * 100:.1f}%')
             for k, (c, t, i) in enumerate(zip(keys, toks, ids)):
                 self.mark(f"tok-{k}", c, f'token "{t}" (id {i}), position {k}; L2H4 attention from last " the": {a_head[k] * 100:.1f}%')
-            self.sync("color copier")
-            self.flash("a color-copying head", YELLOW, 44, hold=0.8, pos=[3.1, -2.6, 0])
+            self.sync("Switch that")
+            self.flash(f"head off: red {p_red * 100:.0f}% → {p_abl * 100:.0f}%", YELLOW, 40, hold=1.6, pos=[3.3, -2.7, 0])
 
         # ---------------------------------------------------------------- layers + logit lens
         hdr4 = self.header("4 · Layers")
@@ -280,8 +343,8 @@ class GPTIn100(VScene):
             mlp = RoundedRectangle(corner_radius=0.12, width=2.0, height=0.75, fill_color=TEAL, fill_opacity=0.15,
                                    stroke_color=TEAL, stroke_width=2)
             VGroup(att, mlp).arrange(DOWN, buff=0.22)
-            at = self.T("attention", 24, BLUE).move_to(att)
-            mt = self.T("MLP", 24, TEAL).move_to(mlp)
+            at = self.T("+ attention", 24, BLUE).move_to(att)
+            mt = self.T("+ MLP", 24, TEAL).move_to(mlp)
             panel = SurroundingRectangle(VGroup(att, mlp), buff=0.22, corner_radius=0.18, stroke_color=LINE,
                                          stroke_width=2, fill_color=PANEL, fill_opacity=1)
             name = self.T(f"layer {l + 1}", 24, MUTED).next_to(panel, UP, buff=0.12)
@@ -294,9 +357,16 @@ class GPTIn100(VScene):
             stream.add(Arrow(layer_boxes[l][0].get_right(), layer_boxes[l + 1][0].get_left(), buff=0.1, color=MUTED,
                              stroke_width=3))
         stream.add(Arrow(layer_boxes[2][0].get_right(), out.get_left(), buff=0.1, color=MUTED, stroke_width=3))
-        with self.say("Attention moves information between tokens. Then a small MLP chews on each token by itself. "
-                      "Attention plus MLP is one layer. This model stacks three.",
-                      scene="Diagram: vectors → three layer panels, each containing an attention box and an MLP box → scores.",
+        res_cap = VGroup(self.T("residual stream: each block adds its output onto the token's vector", 26, FG),
+                         self.M("x = x + attention(x)     x = x + MLP(x)", 24, MUTED,
+                                t2c={"attention": BLUE, "MLP": TEAL})).arrange(DOWN, buff=0.18)
+        res_cap.next_to(layer_boxes, UP, buff=0.45)
+        with self.say("Attention moves information between tokens. Then a small MLP works on each token by itself. "
+                      "Each one adds its result back onto the token's vector, the residual stream. "
+                      "Attention plus MLP is one layer, and this model stacks three.",
+                      scene="Diagram: vectors → three layer panels, each with a '+ attention' and a '+ MLP' box → scores. "
+                            "Caption: residual stream, each block adds its output onto the token's vector "
+                            "(x = x + attention(x), x = x + MLP(x)).",
                       chapter="Layers"):
             self.unmark(*[k for k in list(self._marks)])
             self.play(FadeOut(VGroup(keys, posn, q_chip, q_lab, col_lab, *wires_h.values(), pct, hl)), ReplacementTransform(hdr3, hdr4),
@@ -304,12 +374,15 @@ class GPTIn100(VScene):
             self.play(FadeIn(inp), GrowArrow(stream[0]), FadeIn(layer_boxes[0], shift=RIGHT * 0.3), run_time=0.7)
             self.sync("Then a small")
             self.play(Indicate(layer_boxes[0][2], color=TEAL), run_time=0.6)
+            self.sync("Each one adds")
+            self.play(FadeIn(res_cap, shift=DOWN * 0.2), run_time=0.5)
+            self.mark("residual", res_cap, "residual stream: x = x + attention(x), then x = x + MLP(x), in every layer")
             self.sync("stacks three")
             self.play(LaggedStart(GrowArrow(stream[1]), FadeIn(layer_boxes[1], shift=RIGHT * 0.3), GrowArrow(stream[2]),
                                   FadeIn(layer_boxes[2], shift=RIGHT * 0.3), GrowArrow(stream[3]), FadeIn(out),
                                   lag_ratio=0.3), run_time=1.2)
             for l in range(3):
-                self.mark(f"layer-{l + 1}", layer_boxes[l], f"layer {l + 1}: 4-head attention + MLP (64 → 256 → 64)")
+                self.mark(f"layer-{l + 1}", layer_boxes[l], f"layer {l + 1}: 4-head attention + MLP (64 → 256 → 64), both added onto the residual stream")
 
         lens_res = []
         for kind, l, x in tr["resid"]:
@@ -326,7 +399,8 @@ class GPTIn100(VScene):
             lens_chips.add(g)
         lens_lab = self.T("top guess if we stopped after this layer", 24, MUTED).next_to(lens_chips, DOWN, buff=0.35)
         with self.say("Peek at its best guess after each layer. After layer one, it's 'the'. After layer two, 'white'. "
-                      "Only the final MLP locks in red, at 87 percent.",
+                      "Only the final MLP locks in red, at 87 percent. Layer two fetched the information, and MLP "
+                      "three turns it into the answer.",
                       scene="Under each layer panel, the model's top guess for the next token if we stopped there "
                             "(logit lens): layer 1 ' the' 33%, layer 2 ' white' 12%, layer 3 ' red' 87%."):
             self.play(FadeIn(lens_lab), run_time=0.3)
@@ -359,11 +433,12 @@ class GPTIn100(VScene):
         sub = self.T("softmax over all 256 tokens", 26, MUTED).next_to(bar_rows, UP, buff=0.4)
         with self.say("The final vector gets scored against all 256 tokens, and softmax turns those scores into "
                       "probabilities. Red gets 87 percent, white 6, purple 5, and everything else gets crumbs.",
-                      scene="Horizontal probability bars for the next token: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, "
-                            "' black' 0.3%, ' ava' 0.2%, all 251 others combined ~1.4%.",
+                      scene=f"Horizontal probability bars for the next token: ' red' {top_p[0] * 100:.1f}%, ' white' "
+                            f"{top_p[1] * 100:.1f}%, ' purple' {top_p[2] * 100:.1f}%, ' black' {top_p[3] * 100:.2f}%, ' ava' "
+                            f"{top_p[4] * 100:.2f}%, all 251 others combined {rest * 100:.2f}%.",
                       chapter="Probabilities"):
             self.unmark(*[k for k in list(self._marks)])
-            self.play(FadeOut(VGroup(layer_boxes, stream, inp, out, lens_chips, lens_lab)),
+            self.play(FadeOut(VGroup(layer_boxes, stream, inp, out, lens_chips, lens_lab, res_cap)),
                       ReplacementTransform(hdr4, hdr5), run_time=0.5)
             self.play(FadeIn(sub), LaggedStart(*[AnimationGroup(FadeIn(r[0]), GrowFromEdge(r[1], LEFT), FadeIn(r[2]))
                                                  for r in bar_rows], lag_ratio=0.15), run_time=1.6)
@@ -372,7 +447,7 @@ class GPTIn100(VScene):
                 self.mark(bid, r, f'P("{t}") = {p * 100:.2f}%' if t != "others" else f"all other 251 tokens together = {p * 100:.2f}%")
 
         # ---------------------------------------------------------------- sample + loop
-        hdr6 = self.header("6 · Sample & repeat")
+        hdr6 = self.header("6 · Pick & repeat")
         gen_ids = list(ids)
         gen = []
         for _ in range(8):
@@ -384,12 +459,13 @@ class GPTIn100(VScene):
         ell = self.T("…", 34, MUTED)
         row = VGroup(ell, *ctx).arrange(RIGHT, buff=0.14)
         row.move_to(LEFT * 3.5 + UP * 0.6)
-        with self.say("Pick a winner, append it, and run the whole thing again. Red. Ball. Period. Newline. "
-                      "Once upon a time. One token at a time.",
-                      scene="The context '… now tom has the' gets new chips appended one by one (the model's top pick "
-                            "each step: ' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time'); the row slides "
-                            "left as it grows, with a loop arrow feeding the output back in.",
-                      chapter="Sample & repeat"):
+        with self.say("Take the top pick, append it, and run the whole thing again. Red. Ball. Period. Newline. "
+                      "Once upon a time. Always taking the top pick is called greedy. Rolling weighted dice instead "
+                      "is sampling.",
+                      scene="Greedy decoding: the context '… now tom has the' gets the model's top pick appended each step "
+                            "(' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time', with their probabilities); the "
+                            "row slides left as it grows, with a loop arrow feeding the output back in.",
+                      chapter="Pick & repeat"):
             self.unmark(*[k for k in list(self._marks)])
             self.play(FadeOut(VGroup(bar_rows, sub)), ReplacementTransform(hdr5, hdr6), FadeIn(row), run_time=0.6)
             loop = CurvedArrow(RIGHT * 5.6 + DOWN * 0.1, LEFT * 5.2 + DOWN * 0.1, angle=-PI / 3.2, color=MUTED,
@@ -426,12 +502,12 @@ class GPTIn100(VScene):
                 self.play(FadeIn(c, shift=LEFT * 0.3), FadeIn(pl), run_time=0.3)
                 row.add(c)
                 self._pls.append(pl)
-                self.mark(f"gen-{n}", c, f'generated token {n + 1}: "{t}" (id {j}), p = {p * 100:.1f}%')
+                self.mark(f"gen-{n}", hit(c, 0.3), f'greedy pick {n + 1}: "{t}" (id {j}), p = {p * 100:.1f}%')
 
         # ---------------------------------------------------------------- outro
-        steps = ["text", "tokens", "vectors", "attention ×3", "probs", "sample"]
+        steps = ["text", "tokens", "vectors", "3 × (attention + MLP)", "probs", "pick"]
         cols = [FG, ORANGE, TEAL, YELLOW, PINK, BLUE]
-        pills = VGroup(*[self.chip(s, c, 30, fill=0.12, font=SANS, pad=0.16) for s, c in zip(steps, cols)]).arrange(RIGHT, buff=0.42)
+        pills = VGroup(*[self.chip(s, c, 27, fill=0.12, font=SANS, pad=0.15) for s, c in zip(steps, cols)]).arrange(RIGHT, buff=0.38)
         pills.move_to(UP * 0.4)
         arrs = VGroup(*[Arrow(pills[i].get_right(), pills[i + 1].get_left(), buff=0.08, color=MUTED, stroke_width=3,
                               max_tip_length_to_length_ratio=0.35) for i in range(len(pills) - 1)])
@@ -439,7 +515,7 @@ class GPTIn100(VScene):
                            color=MUTED, stroke_width=3)
         rep = self.T("repeat", 24, MUTED).next_to(back, DOWN, buff=0.1)
         with self.say("That's GPT. Text in, probabilities out, one token at a time. Now go poke it in the X-ray.",
-                      scene="Summary pipeline: text → tokens → vectors → attention ×3 → probabilities → sample, with a "
+                      scene="Summary pipeline: text → tokens → vectors → 3 × (attention + MLP) → probs → pick, with a "
                             "'repeat' arrow looping back. Final card: 'now go poke it in the X-ray'.",
                       chapter="Recap"):
             self.unmark(*[k for k in list(self._marks)])

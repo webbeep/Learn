@@ -87,13 +87,18 @@ class Embeddings(VScene):
             self.mark("row-red", VGroup(s_red, s_lab, nums),
                       f'embedding of " red" (row {RED}): 64 numbers from {e_red.min():+.2f} to {e_red.max():+.2f}, length {np.linalg.norm(e_red):.2f}')
 
-        with self.say(f"All {n_tab:,} of these numbers started as random noise. Training nudged them, "
-                      f"until tokens used the same way got similar rows.",
-                      scene=f"Same view; caption: 'started random → shaped by training'. The table holds {n_tab:,} of the "
-                            f"model's {params_count():,} parameters."):
+        with self.say(f"All {n_tab:,} numbers started as random noise. And the same table is reused at the very end, "
+                      f"to score every possible next token. So training pulls tokens that fit the same slots toward similar rows.",
+                      scene=f"Same view; captions: 'started random → shaped by training' and 'reused at the end to score every "
+                            f"next token (weight tying)'. The table holds {n_tab:,} of the model's {params_count():,} parameters."):
             cap = self.T("started random → shaped by training", 28, YELLOW).next_to(nums, DOWN, buff=0.7)
+            cap2 = VGroup(self.T("also reused at the end to score", 26, FG),
+                          self.T("every next token (weight tying)", 26, FG)).arrange(DOWN, buff=0.1).next_to(cap, DOWN, buff=0.35)
             self.play(FadeIn(cap, shift=UP * 0.2), run_time=0.5)
-            self.sync("until", 0.1)
+            self.sync("And the same", 0.1)
+            self.play(FadeIn(cap2, shift=UP * 0.2), run_time=0.5)
+            self.mark("tying", cap2, "weight tying: logits = final vector · every row of this same embedding table")
+            self.sync("So training", 0.1)
             self.play(Indicate(table, scale_factor=1.03, color=YELLOW), run_time=0.8)
 
         # ------------------------------------------------------------ what a vector means: cosine
@@ -124,7 +129,7 @@ class Embeddings(VScene):
                             "elsewhere. Text: cosine similarity = how aligned two arrows are (+1 same way, 0 unrelated, −1 opposite).",
                       chapter="Meaning = direction"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(Group(table, frame_t, rows_l, cols_l, hl, s_red, s_lab, nums, cap, chip)),
+            self.play(FadeOut(Group(table, frame_t, rows_l, cols_l, hl, s_red, s_lab, nums, cap, cap2, chip)),
                       ReplacementTransform(hdr, hdr2), run_time=0.6)
             self.play(Create(ax), FadeIn(toy), GrowArrow(a1), FadeIn(l1), run_time=0.7)
             self.sync("direction", 0.1)
@@ -174,8 +179,8 @@ class Embeddings(VScene):
         hdr3 = self.header("3 · The map")
         Y, var = pca2(En)
         Y = Y / np.abs(Y).max()
-        pw, ph = 6.6, 5.6
-        ctr = RIGHT * 2.1 + DOWN * 0.45
+        pw, ph = 6.4, 5.2
+        ctr = RIGHT * 2.1 + DOWN * 0.1
         frame = RoundedRectangle(corner_radius=0.2, width=pw + 0.7, height=ph + 0.6, stroke_color=LINE, stroke_width=2,
                                  fill_color=PANEL, fill_opacity=0.6).move_to(ctr)
 
@@ -253,12 +258,13 @@ class Embeddings(VScene):
         ttl2 = self.T(f"zoom: PCA of just these {tot} words", 26, MUTED).next_to(frame, UP, buff=0.15)
         vlab2 = self.T(f"2 axes keep {100 * (zvar[0] + zvar[1]):.0f}% of their spread", 24, MUTED).next_to(frame, DOWN, buff=0.15)
         verdict = VGroup(self.T(f"{ok} / {tot}", 44, YELLOW, BOLD),
-                         self.T("have their nearest\nneighbour in their\nown group (64-D)", 24, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
-        with self.say(f"Zoom in and re-run PCA on just those {tot} words. Names sit far away. Colors and places get "
-                      f"their own patches. Animals and objects overlap: in these stories, both come right after a color, like 'a red ball'. "
+                         VGroup(*[self.T(t_, 24, FG) for t_ in ("have their nearest", "neighbour in their", "own group (64-D)")]
+                                ).arrange(DOWN, aligned_edge=LEFT, buff=0.1)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+        with self.say(f"Re-run PCA on just these {tot} words. Names sit far away. Colors and places get "
+                      f"their own patches. Animals and objects overlap: they fill the same slot, nouns after 'the', and often after a color. "
                       f"And in the full 64 dimensions, {ok} out of {tot} words have their nearest neighbour in their own group.",
                       scene=f"Real PCA of only the {tot} group words (names, colors, animals, objects, places): names far off, colors "
-                            f"and places in their own patches, animals and objects overlapping (both follow 'has a <color>' in the stories). Verdict: {ok}/{tot} words have their nearest "
+                            f"and places in their own patches, animals and objects overlapping (both fill the same noun slot: after 'the', often after a color). Verdict: {ok}/{tot} words have their nearest "
                             "cosine neighbour (in 64-D) in their own group."):
             self.unmark("pca-names", "pca-colors", "pca-animals", "pca-objects", "pca-places")
             moves = []
@@ -287,8 +293,8 @@ class Embeddings(VScene):
         s2 = self.strip(e_pos, vmax, cw=0.12, ch=0.45)
         s3 = self.strip(e_sum, vmax, cw=0.12, ch=0.45)
         g3 = VGroup(s1, s2, s3).arrange(DOWN, buff=0.42).move_to(RIGHT * 1.3 + UP * 1.35)
-        lab1 = self.M(f'token "␣red"  |{np.linalg.norm(e_red):.2f}|', 24, PINK).next_to(s1, LEFT, buff=0.3)
-        lab2 = self.M(f"+ position {k_pos}  |{np.linalg.norm(e_pos):.2f}|", 24, MUTED).next_to(s2, LEFT, buff=0.3)
+        lab1 = self.M(f'token "␣red"  length {np.linalg.norm(e_red):.2f}', 24, PINK).next_to(s1, LEFT, buff=0.3)
+        lab2 = self.M(f"+ position {k_pos}  length {np.linalg.norm(e_pos):.2f}", 24, MUTED).next_to(s2, LEFT, buff=0.3)
         lab3 = self.M("= what layer 1 sees", 24, FG).next_to(s3, LEFT, buff=0.3)
         tnorm = float(np.linalg.norm(En, axis=1).mean()); pnorm = float(np.linalg.norm(Pn, axis=1).mean())
         with self.say(f"One problem: red at position 3 and red at position 20 would look identical. "
@@ -309,11 +315,10 @@ class Embeddings(VScene):
             self.mark("pos-sum", VGroup(lab3, s3), f'input to layer 1 for " red" at position {k_pos} = token + position')
 
         SP = cos_matrix(Pn)
-        hm = self.heat(SP, 1.0, 3.4, 3.4).move_to(LEFT * 3.6 + DOWN * 1.95)
+        hm = self.heat(SP, 1.0, 3.2, 3.2).move_to(LEFT * 3.6 + DOWN * 1.75)
         hm_f = SurroundingRectangle(hm, buff=0.02, stroke_color=LINE, stroke_width=2)
-        hm_t = self.T("position vs position (cosine)", 24, MUTED).next_to(hm, UP, buff=0.12)
-        hm_ax = self.T("0 → 63", 24, MUTED).next_to(hm, DOWN, buff=0.1)
-        nb = float(np.mean([SP[i, i + 1] for i in range(1, 63)]))
+        hm_t = self.T("position vs position (cosine), 0 → 63", 24, MUTED).next_to(hm, UP, buff=0.12)
+        nb = float(np.mean([SP[i, i + 1] for i in range(63)]))
         far = float(SP[0].min()); farj = int(SP[0].argmin())
         facts = VGroup(self.T(f"next-door positions: {nb:.2f} on average", 28, ORANGE),
                        self.T(f"position 0 vs position {farj}: {far:+.2f}", 28, BLUE),
@@ -325,7 +330,7 @@ class Embeddings(VScene):
                             f"(neighbours average {nb:.2f}) fading to blue far from it (position 0 vs {farj}: {far:+.2f}). "
                             f"Position vectors average length {pnorm:.2f} vs {tnorm:.2f} for token vectors."):
             self.play(VGroup(lab1, s1, lab2, s2, lab3, s3).animate.shift(UP * 0.35), run_time=0.4)
-            self.play(FadeIn(hm), Create(hm_f), FadeIn(hm_t), FadeIn(hm_ax), run_time=0.8)
+            self.play(FadeIn(hm), Create(hm_f), FadeIn(hm_t), run_time=0.8)
             self.mark("pos-heat", Group(hm, hm_f), f"cosine similarity between the 64 learned position embeddings; neighbours ≈ {nb:.2f}")
             self.sync("Next-door", 0.1)
             self.play(FadeIn(facts[0], shift=UP * 0.2), run_time=0.4)
@@ -352,7 +357,7 @@ class Embeddings(VScene):
                             "of 64 squares and a note that 162 more rows would be needed (192× more room).",
                       chapter="Bigger models"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(Group(hm, hm_f, hm_t, hm_ax, facts, lab1, s1, lab2, s2, lab3, s3)),
+            self.play(FadeOut(Group(hm, hm_f, hm_t, facts, lab1, s1, lab2, s2, lab3, s3)),
                       ReplacementTransform(hdr4, hdr5), run_time=0.5)
             self.play(FadeIn(small_l), FadeIn(small, lag_ratio=0.02), run_time=0.6)
             self.mark("tiny", VGroup(small_l, small), "TinyGPT: d_model = 64 numbers per token")

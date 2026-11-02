@@ -52,16 +52,17 @@ class Backprop(CScene):
         # a wall of dots standing in for the weights
         wall = VGroup(*[Dot(radius=0.035, color=BLUE, fill_opacity=0.55) for _ in range(40 * 9)])
         wall.arrange_in_grid(rows=6, cols=60, buff=0.12).move_to(DOWN * 1.55)
-        wl = self.T(f"{bd['n_params']:,} weights: which ones are to blame?", 30, FG).next_to(wall, DOWN, buff=0.3)
-        with self.say(f"TinyGPT guessed red at 87 percent: the loss is {bd['loss']:.2f}. "
-                      f"Which of its {bd['n_params']:,} weights should change, and by how much? "
+        wl = VGroup(self.T(f"{bd['n_params']:,} weights: which ones are to blame?", 30, FG),
+                    self.T(f"(each dot stands in for ~{bd['n_params'] // len(wall)} weights)", 22, MUTED)
+                    ).arrange(DOWN, buff=0.1).next_to(wall, DOWN, buff=0.25)
+        with self.say(f"TinyGPT guessed red at 87 percent. "
+                      f"Which of its {bd['n_params']:,} weights deserve the blame, and how much? "
                       f"Backprop answers for all of them, in one sweep backwards.",
                       scene=f"The end of the probe prompt '… tom has the' → ' red' at {pct(bd['p_red'])}, loss "
                             f"{bd['loss']:.3f}; below, a grid of dots standing for the model's {bd['n_params']:,} weights "
                             f"with the question 'which ones are to blame?'.", chapter="Who's to blame?"):
             self.play(FadeIn(row, shift=RIGHT * 0.3), run_time=0.8)
             self.mark("guess", VGroup(guess, p_t), f'TinyGPT predicts " red" with p = {bd["p_red"]:.4f}')
-            self.sync("the loss", 0.2)
             self.play(FadeIn(loss_t, shift=UP * 0.2), run_time=0.5)
             self.mark("loss", loss_t, f"cross-entropy loss = −ln({bd['p_red']:.4f}) = {bd['loss']:.4f}")
             self.sync("Which of", 0.2)
@@ -130,34 +131,36 @@ class Backprop(CScene):
         def grad_lab(s, near, direction=DOWN, buff=0.2):
             return self.M(s, 26, BWD).next_to(near, direction, buff=buff)
         gz = grad_lab(f"∂L/∂z = {tg['dz']:g}", e_z.get_center(), DOWN, 0.22)
-        ga = grad_lab(f"∂L/∂a = {tg['da']:g}", e_a.get_center(), DOWN, 0.22).shift(LEFT * 0.25)
+        ga = grad_lab(f"∂L/∂a = {tg['da']:g}", e_a.get_center(), DOWN, 0.22)
         gb = grad_lab(f"∂L/∂b = {tg['db']:g}", nb, DOWN, 0.2)
         gw = grad_lab(f"∂L/∂w = {tg['da']:g} × {TOY['x']:g} = {tg['dw']:g}", nw, DOWN, 0.2).align_to(nw, LEFT).shift(LEFT * 0.4)
         gx = grad_lab(f"∂L/∂x = {tg['da']:g} × {TOY['w']:g} = {tg['dx']:g}", nx, UP, 0.2).align_to(nx, LEFT).shift(LEFT * 0.4)
-        rule1 = self.M(f"= 2 × ({tg['z']:g} − {TOY['y']:g})", 24, BWD).next_to(gz, DOWN, buff=0.1)
-        with self.say(f"Now backwards. The loss's slope at z is twice the miss: four. "
-                      f"A plus node passes blame straight through, so a and b both get four. "
-                      f"A times node scales it by the other input: w gets eight, x gets twelve.",
-                      scene="Backward pass on the toy graph, gradients in orange flowing right-to-left: ∂L/∂z = 2(z − 5) = 4; "
+        rule1 = self.M(f"= 2 × ({tg['z']:g} − {TOY['y']:g})", 24, BWD).next_to(gz, DOWN, buff=0.1).align_to(gz, LEFT)
+
+        def rev(e):   # the same edge, pointing backwards, in the blame color
+            return Arrow(e.get_end(), e.get_start(), buff=0, color=BWD, stroke_width=4, max_tip_length_to_length_ratio=0.15)
+        r_x, r_w, r_a, r_b, r_z = rev(e_x), rev(e_w), rev(e_a), rev(e_b), rev(e_z)
+        with self.say('Now backwards. The slope at z is twice the miss: four. A plus node passes blame straight through: a and b get four. A times node scales it by the other input: w gets eight, x gets twelve.',
+                      scene="Backward pass on the toy graph, arrows reversed, gradients in orange flowing right-to-left: ∂L/∂z = 2(z − 5) = 4; "
                             "the + node copies it: ∂L/∂a = 4, ∂L/∂b = 4; the × node multiplies by the other input: "
                             "∂L/∂w = 4 × 2 = 8, ∂L/∂x = 4 × 3 = 12."):
             self.play(*[e.animate.set_color(LINE) for e in (e_x, e_w, e_a, e_b, e_z, e_y, e_L)], run_time=0.3)
             self.sync("slope", 0.2)
-            self.play(e_z.animate.set_color(BWD), FadeIn(gz, shift=LEFT * 0.2), FadeIn(rule1), run_time=0.5)
+            self.play(ReplacementTransform(e_z, r_z), FadeIn(gz, shift=LEFT * 0.2), FadeIn(rule1), run_time=0.5)
             self.mark("g-z", VGroup(gz, rule1), "gradient ∂L/∂z = 2(z − target) = 4")
             self.sync("plus node", 0.1)
             self.play(Indicate(nadd, color=BWD), run_time=0.4)
-            self.play(e_a.animate.set_color(BWD), e_b.animate.set_color(BWD), FadeIn(ga, shift=LEFT * 0.2),
+            self.play(ReplacementTransform(e_a, r_a), ReplacementTransform(e_b, r_b), FadeIn(ga, shift=LEFT * 0.2),
                       FadeIn(gb, shift=LEFT * 0.2), run_time=0.5)
             self.mark("g-a", ga, "∂L/∂a = 4 (a + node copies the incoming gradient)")
             self.mark("g-b", gb, "∂L/∂b = 4")
             self.sync("times node", 0.1)
             self.play(Indicate(nmul, color=BWD), run_time=0.4)
             self.sync("w gets", 0.1)
-            self.play(e_w.animate.set_color(BWD), FadeIn(gw, shift=LEFT * 0.2), run_time=0.5)
+            self.play(ReplacementTransform(e_w, r_w), FadeIn(gw, shift=LEFT * 0.2), run_time=0.5)
             self.mark("g-w", gw, "∂L/∂w = ∂L/∂a × x = 4 × 2 = 8")
             self.sync("x gets", 0.1)
-            self.play(e_x.animate.set_color(BWD), FadeIn(gx, shift=LEFT * 0.2), run_time=0.5)
+            self.play(ReplacementTransform(e_x, r_x), FadeIn(gx, shift=LEFT * 0.2), run_time=0.5)
             self.mark("g-x", gx, "∂L/∂x = ∂L/∂a × w = 4 × 3 = 12")
 
         # ============================================================ finite-difference check
@@ -200,20 +203,19 @@ class Backprop(CScene):
                 val.next_to(bar, RIGHT, buff=0.15)
             bars.add(VGroup(lab, pp, bar, val))
         form = self.M("∂loss/∂logit  =  p − (1 for the right token, else 0)", 28, FG).move_to(UP * 2.9)
-        rest = self.T(f"the other {256 - len(top)} tokens: each between 0 and +{bd['g_rest_max']:.3f}", 24, MUTED)
+        rest = self.T(f"the other {256 - len(top)} tokens: each between 0 and +{bd['g_rest_max']:.4f}", 24, MUTED)
         rest.move_to([0, ys[-1] - 0.95, 0])
         up_l = self.T("← push up", 24, TEAL).next_to(axis.get_top(), UP, buff=0.12).shift(LEFT * 1.25)
         dn_l = self.T("push down →", 24, BWD).next_to(axis.get_top(), UP, buff=0.12).shift(RIGHT * 1.4)
-        with self.say(f"Now the real thing. At TinyGPT's output, each logit's blame is simply its probability, "
-                      f"minus one for the right answer. Red: minus {abs(top[0][2]):.2f}, push up. "
-                      f"White and purple: plus {top[1][2]:.2f} and {top[2][2]:.2f}, push down.",
+        with self.say(f"Now the real thing. Each output logit's blame is its probability, minus one for the right "
+                      f"answer. Red: minus {abs(top[0][2]):.2f}, push up. White and purple: plus, push down.",
                       scene=f"Real gradient of the loss w.r.t. TinyGPT's output logits on the probe prompt (target ' red'): "
                             f"∂loss/∂logit = p − onehot. ' red' {top[0][2]:+.3f} (teal, push up), ' white' {top[1][2]:+.3f}, "
                             f"' purple' {top[2][2]:+.3f}, ' black' {top[3][2]:+.4f}, ' ava' {top[4][2]:+.4f} (orange, push "
                             f"down); the other 251 are each between 0 and +{bd['g_rest_max']:.4f}.",
                       chapter="Real gradients"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(graph, va, vz, gz, ga, gb, gw, gx, rule1, rule, toy_note)), ReplacementTransform(hdr, hdr2),
+            self.play(FadeOut(Group(*[m for m in self.mobjects if m is not hdr])), ReplacementTransform(hdr, hdr2),
                       run_time=0.5)
             self.play(FadeIn(form), Create(axis), run_time=0.6)
             self.mark("formula", form, "gradient of cross-entropy w.r.t. logits = softmax probability − one-hot target")
@@ -240,7 +242,7 @@ class Backprop(CScene):
         rows = VGroup()
         for k, key in enumerate(order):
             c = BLUE if "attention" in key else (TEAL if "MLP" in key else MUTED)
-            lab = self.T(key, 26, c).move_to([-1.0, ys2[k], 0], aligned_edge=RIGHT)
+            lab = self.T(key.replace("token embedding (tied)", "token emb. (tied: in + out)"), 26, c).move_to([-1.0, ys2[k], 0], aligned_edge=RIGHT)
             bar = Rectangle(width=max(0.04, 5.0 * nm[key] / gmax), height=0.36, stroke_width=0, fill_color=BWD,
                             fill_opacity=0.85).move_to([-0.6, ys2[k], 0], aligned_edge=LEFT)
             val = self.M(f"{nm[key]:.2f}", 24, BWD).next_to(bar, RIGHT, buff=0.15)
@@ -249,13 +251,19 @@ class Backprop(CScene):
                      max_tip_length_to_length_ratio=0.05)
         flow_l = self.T("blame flows down", 24, BWD).rotate(PI / 2).next_to(flow, RIGHT, buff=0.12)
         cap2 = self.T("gradient size (L2 norm) per part · one prediction", 24, MUTED).to_corner(UR, buff=0.45)
-        nz = self.T(f"{bd['n_nonzero']:,} of {bd['n_params']:,} weights get some blame", 30, YELLOW, BOLD)
-        nz.to_edge(DOWN, buff=0.45)
-        with self.say(f"That blame flows down through all three layers, adding up wherever paths merge. "
-                      f"From this single prediction, {bd['n_nonzero']:,} weights get some blame.",
+        merge = self.T("where paths merge (the residual stream skips past every block), blames add", 22, MUTED)
+        merge.next_to(cap2, DOWN, buff=0.12).align_to(cap2, RIGHT)
+        nz = VGroup(self.T(f"{bd['n_nonzero']:,} of {bd['n_params']:,} weights get some blame", 30, YELLOW, BOLD),
+                    self.T(f"exactly zero: {bd['n_unused_pos']:,} unused position weights, {bd['n_keybias']} attention key "
+                           f"biases", 22, MUTED),
+                    self.T("(a key bias adds the same number to every score, and softmax ignores that)", 22, MUTED)
+                    ).arrange(DOWN, buff=0.08)
+        self.fitw(nz, 12.8).to_edge(DOWN, buff=0.25)
+        with self.say('That blame flows down through all three layers. Where paths merge, like the residual stream, blames add up. From this one prediction, 167,744 weights get some blame.',
                       scene="Real gradient norms per part of TinyGPT for this one prediction, top (output) to bottom (input): "
                             + ", ".join(f"{k} {nm[k]:.2f}" for k in order)
-                            + f". {bd['n_nonzero']:,} of {bd['n_params']:,} weights have a nonzero gradient."):
+                            + f". {bd['n_nonzero']:,} of {bd['n_params']:,} weights have a nonzero gradient; the {bd['n_keybias']} attention key "
+                              f"biases and {bd['n_unused_pos']:,} unused position weights get exactly zero."):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(bars, axis, form, rest, up_l, dn_l)), run_time=0.4)
             self.play(GrowArrow(flow), FadeIn(flow_l), FadeIn(cap2), run_time=0.5)
@@ -264,13 +272,16 @@ class Backprop(CScene):
             for key, r in zip(order, rows):
                 self.mark("norm-" + key.replace(" ", "-").replace("(", "").replace(")", ""), r,
                           f"gradient norm of {key}: {nm[key]:.3f}")
+            self.sync("Where paths", 0.1)
+            self.play(FadeIn(merge), run_time=0.4)
+            self.mark("merge", merge, "gradients from different paths (e.g. a block and the residual skip around it) are summed")
             self.sync(f"{bd['n_nonzero']:,}"[:3], 0.3)
             self.play(FadeIn(nz, scale=1.2), run_time=0.5)
             self.mark("nonzero", nz, f"{bd['n_nonzero']:,} of {bd['n_params']:,} weights have nonzero gradient here "
-                                     f"(unused positions 23–63 get none)")
+                                     f"(positions 23–63 are unused; the {bd['n_keybias']} key biases get exactly 0 because softmax is shift-invariant)")
 
         # ============================================================ one weight
-        hdr3 = self.header("One weight")
+        hdr3 = self.header("One step · toy: plain gradient descent on ONE prediction")
         # the gradient matrix of layer 3's MLP output weights (64 × 256), rendered as an image
         from lib_concepts import load_tiny, PROBE
         import torch.nn.functional as F
@@ -287,6 +298,7 @@ class Backprop(CScene):
             rgb[s_] = (bg + (cc - bg) * a[s_][:, None]).astype(np.uint8)
         img = ImageMobject(rgb).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
         img.width = 6.3
+        img.stretch_to_fit_height(2.6)
         img.move_to([-3.55, -0.1, 0])
         frame = SurroundingRectangle(img, buff=0.02, color=LINE, stroke_width=2)
         cell_w = img.width / G.shape[1]; cell_h = img.height / G.shape[0]
@@ -294,7 +306,8 @@ class Backprop(CScene):
         ring = Circle(radius=0.16, color=YELLOW, stroke_width=4).move_to(cpos)
         cap3 = self.T("real ∂loss/∂W, layer 3 MLP (64 × 256)", 24, MUTED).next_to(frame, UP, buff=0.18)
         cap3.align_to(frame, LEFT)
-        leg = VGroup(self.T("teal: increase", 24, TEAL), self.T("orange: decrease", 24, ORANGE)).arrange(RIGHT, buff=0.5)
+        leg = VGroup(self.T("teal: gradient < 0, the step raises the weight", 22, TEAL),
+                     self.T("orange: gradient > 0, the step lowers it", 22, ORANGE)).arrange(DOWN, aligned_edge=LEFT, buff=0.08)
         leg.next_to(frame, DOWN, buff=0.18).align_to(frame, LEFT)
         info = VGroup(
             self.T(f"row {wt['i']}, column {wt['j']}", 26, MUTED),
@@ -307,14 +320,14 @@ class Backprop(CScene):
                      VGroup(self.T("new weight", 26, FG), self.M(f"{wt['w_new']:.4f}", 32, YELLOW)).arrange(RIGHT, buff=0.25)
                      ).arrange(DOWN, aligned_edge=LEFT, buff=0.22).next_to(info, DOWN, buff=0.55).align_to(info, LEFT)
         VGroup(info, upd).move_to([0.75, -0.1, 0], aligned_edge=LEFT)
-        with self.say(f"Zoom into one real weight. Its gradient is minus {abs(wt['g']):.2f}. Negative means: "
-                      f"increase me, and the loss drops. A step at learning rate 0.003 adds just {wt['step']:.4f}.",
+        with self.say(f"One real weight: gradient minus {abs(wt['g']):.2f}. Negative means: increase me, and the loss "
+                      f"drops. A plain step at learning rate 0.003 adds {wt['step']:.4f}.",
                       scene=f"Heat map of the real gradient of layer 3's MLP output matrix (64×256). Highlighted: row "
                             f"{wt['i']}, column {wt['j']}, weight {wt['w']:.4f}, gradient {wt['g']:+.4f} (finite-difference "
                             f"check {wt['fd']:+.4f}). Gradient step at lr {wt['lr']:g}: −lr × grad = {wt['step']:+.5f}, "
-                            f"new weight {wt['w_new']:.4f}.", chapter="One weight"):
+                            f"new weight {wt['w_new']:.4f}. Labelled as a toy: plain gradient descent on one prediction.", chapter="One step"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(rows, flow, flow_l, cap2, nz)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
+            self.play(FadeOut(VGroup(rows, flow, flow_l, cap2, nz, merge)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
             self.play(FadeIn(img), Create(frame), FadeIn(cap3), FadeIn(leg), run_time=0.8)
             self.mark("gradmap", frame, f"real gradient of blocks.2.mlp_out.weight (64×256), max |g| = {gm:.4f}")
             self.play(Create(ring), run_time=0.4)
@@ -322,7 +335,7 @@ class Backprop(CScene):
             self.mark("theweight", VGroup(ring), f"weight [{wt['i']}, {wt['j']}] of layer 3 MLP output: "
                                                  f"{wt['w']:.5f}, gradient {wt['g']:+.5f}")
             self.mark("info", info, f"w = {wt['w']:.5f}, ∂loss/∂w = {wt['g']:+.5f}, finite difference {wt['fd']:+.5f}")
-            self.sync("A step at", 0.1)
+            self.sync("A plain step", 0.1)
             self.play(FadeIn(upd, shift=UP * 0.2), run_time=0.7)
             self.mark("update", upd, f"w ← w − {wt['lr']:g} × grad = {wt['w']:.5f} + {wt['step']:.5f} = {wt['w_new']:.5f}")
 
@@ -332,29 +345,58 @@ class Backprop(CScene):
                     VGroup(self.chip(" red", PINK, 28), self.M(f"{pct(bd['p_red'])} → {pct(bd['p_after'])}", 34, PINK)
                            ).arrange(RIGHT, buff=0.3),
                     self.T("overshoots", 26, PINK, BOLD)).arrange(DOWN, buff=0.3)
-        c2 = VGroup(self.T(f"gradient first scaled to length 1", 28, FG),
+        c2 = VGroup(self.T(f"clipped to length 1 (train.py clips if > 1)", 28, FG),
                     VGroup(self.chip(" red", PINK, 28), self.M(f"{pct(bd['p_red'])} → {pct(bd['p_after_clip'])}", 34, TEAL)
                            ).arrange(RIGHT, buff=0.3),
                     self.T("gentle nudge the right way", 26, TEAL, BOLD)).arrange(DOWN, buff=0.3)
         cmp_ = VGroup(c1, c2).arrange(RIGHT, buff=1.6).move_to(DOWN * 0.1)
         divd = Line(UP * 1.3, DOWN * 1.3, color=LINE, stroke_width=2).move_to(cmp_.get_center())
-        note = self.T(f"whole gradient length: {gl:.2f} · learning rate 0.003 · plain gradient step", 24, MUTED)
+        note = self.T(f"toy step on ONE prediction · this gradient's length: {gl:.2f} · learning rate 0.003", 24, MUTED)
         note.next_to(cmp_, DOWN, buff=0.7)
-        with self.say(f"But take that raw step on every weight at once, and it overshoots: red falls to "
-                      f"{100 * bd['p_after']:.0f} percent. TinyGPT's training first shrinks the whole gradient to length one; "
-                      f"then the same step lifts red to {100 * bd['p_after_clip']:.1f}.",
+        with self.say(f"Take that step on every weight at once, and it overshoots: red falls to "
+                      f"{100 * bd['p_after']:.0f} percent. TinyGPT's training clips gradients longer than one, and this one is "
+                      f"{gl:.2f}. Clipped, red rises to {100 * bd['p_after_clip']:.1f}.",
                       scene=f"Two real outcomes of one gradient step at lr 0.003 on all {bd['n_params']:,} weights: raw "
                             f"gradient (length {gl:.2f}) → p(red) {pct(bd['p_red'])} → {pct(bd['p_after'])} (overshoot); "
-                            f"gradient clipped to length 1 like train.py does → {pct(bd['p_red'])} → "
+                            f"gradient clipped to length 1 (train.py clips whenever the length exceeds 1) → {pct(bd['p_red'])} → "
                             f"{pct(bd['p_after_clip'])}."):
             self.unmark(*list(self._marks))
             self.play(FadeOut(Group(img, frame, ring, cap3, leg, info, upd)), run_time=0.4)
             self.play(FadeIn(c1, shift=UP * 0.2), FadeIn(note), run_time=0.6)
             self.mark("raw", c1, f"raw gradient step (lr 0.003): p(red) {bd['p_red']:.4f} → {bd['p_after']:.4f}")
-            self.sync("TinyGPT's training", 0.1)
+            self.sync("Clipped,", 0.1)
             self.play(Create(divd), FadeIn(c2, shift=UP * 0.2), run_time=0.6)
             self.mark("clipped", c2, f"gradient clipped to norm 1 (from {gl:.3f}), lr 0.003: p(red) {bd['p_red']:.4f} → "
                                      f"{bd['p_after_clip']:.4f}")
+
+        # ============================================================ real training
+        from model import TRAIN
+        B, ctx = TRAIN["batch"], 64
+        items = [(f"averages blame over {B} × {ctx} = {B * ctx:,} predictions per batch", BLUE),
+                 ("clips the gradient only if its length is over 1 (a safety net)", TEAL),
+                 (f"learning rate {TRAIN['lr']:g} is the peak of a warmup + cosine schedule", YELLOW),
+                 ("AdamW picks each weight's own step size (see the Optimizers video)", PINK)]
+        real = VGroup()
+        for t, c in items:
+            dot_ = Dot(radius=0.09, color=c)
+            real.add(VGroup(dot_, self.T(t, 30, FG)).arrange(RIGHT, buff=0.3))
+        real.arrange(DOWN, aligned_edge=LEFT, buff=0.42)
+        rt = self.T("what train.py does instead of the toy step", 32, FG, BOLD)
+        hdr_rt = self.header("Real training")
+        realg = VGroup(rt, real).arrange(DOWN, aligned_edge=LEFT, buff=0.55)
+        self.fitw(realg, 12.6).move_to(DOWN * 0.1)
+        with self.say("And real training averages blame over 4,096 predictions per batch, uses 0.003 only as a cosine schedule's peak, and lets AdamW set each weight's step.",
+                      scene=f"Real training differs from the toy step: averages over {B * ctx:,} predictions per batch, clips "
+                            f"the gradient only when its length exceeds 1, uses lr {TRAIN['lr']:g} as the peak of a warmup + "
+                            f"cosine schedule, and AdamW adapts each weight's step size."):
+            self.unmark(*list(self._marks))
+            self.play(FadeOut(VGroup(c1, c2, divd, note)), FadeIn(rt), ReplacementTransform(hdr3, hdr_rt), run_time=0.4)
+            for k, ph in enumerate(["averages", "uses 0.003", "uses 0.003", "lets AdamW"]):
+                if k != 2:
+                    self.sync(ph, 0.1)
+                self.play(FadeIn(real[k], shift=RIGHT * 0.2), run_time=0.4)
+            for k, (t, _) in enumerate(items):
+                self.mark(f"real-{k}", real[k], t)
 
         # ============================================================ cost
         hdr4 = self.header("Why backward costs ~2×")
@@ -384,31 +426,28 @@ class Backprop(CScene):
         tally = VGroup(self.T("forward ≈ 1", 30, FG), self.T("backward ≈ 2", 30, BWD, BOLD),
                        self.T("training step ≈ 3 forward passes (roughly)", 30, YELLOW, BOLD)).arrange(RIGHT, buff=0.6)
         self.fitw(tally, 12.6).move_to(DOWN * 1.75)
-        mem = self.T("and every forward activation must be kept until the backward pass uses it", 24, MUTED)
+        mem = self.T("and forward activations are kept for the backward pass (unless you use activation checkpointing)", 24, MUTED)
+        self.fitw(mem, 12.8)
         mem.move_to(DOWN * 2.75)
-        with self.say("Why does backward cost about twice forward? Each matrix multiply going forward "
-                      "needs two going back: one for blame on its inputs, one for blame on its weights. "
-                      "So a training step costs roughly three forward passes, and must keep every activation in memory.",
+        with self.say('Why does backward cost about twice forward? Each forward matrix multiply needs two going back: blame for its inputs, and for its weights. So a training step is roughly three forward passes.',
                       scene="Matrix diagram: forward Y = X·W (one multiply); backward dX = dY·Wᵀ (blame for inputs) and "
                             "dW = Xᵀ·dY (blame for weights): two multiplies. Tally: forward ≈ 1, backward ≈ 2, training step "
                             "≈ 3 units (approximate). Note: activations must be stored for the backward pass.",
                       chapter="The cost"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(c1, c2, divd, note)), ReplacementTransform(hdr3, hdr4), run_time=0.4)
+            self.play(FadeOut(realg), ReplacementTransform(hdr_rt, hdr4), run_time=0.4)
             self.play(FadeIn(blocks[0], shift=UP * 0.2), run_time=0.6)
             self.mark("fwd-mm", blocks[0], "forward: Y = X·W, one matrix multiply per layer weight")
-            self.sync("one for blame on its inputs", 0.1)
+            self.sync("blame for its inputs", 0.1)
             self.play(FadeIn(blocks[1], shift=UP * 0.2), run_time=0.6)
             self.mark("bwd-mm1", blocks[1], "backward: dX = dY·Wᵀ passes the gradient to the layer's input")
-            self.sync("one for blame on its weights", 0.1)
+            self.sync("and for its weights", 0.1)
             self.play(FadeIn(blocks[2], shift=UP * 0.2), run_time=0.6)
             self.mark("bwd-mm2", blocks[2], "backward: dW = Xᵀ·dY is the gradient for the weights")
             self.sync("So a training", 0.1)
-            self.play(LaggedStart(*[FadeIn(t, shift=UP * 0.2) for t in tally], lag_ratio=0.3), run_time=0.9)
+            self.play(LaggedStart(*[FadeIn(t, shift=UP * 0.2) for t in tally], lag_ratio=0.3), FadeIn(mem), run_time=0.9)
             self.mark("tally", tally, "rule of thumb: backward ≈ 2× forward FLOPs, so a training step ≈ 3× a forward pass "
                                       "(approximate; depends on implementation)")
-            self.sync("and must keep", 0.1)
-            self.play(FadeIn(mem), run_time=0.4)
             self.mark("memory", mem, "backprop needs the forward activations, so training uses much more memory than inference")
 
         # ============================================================ recap
@@ -425,9 +464,10 @@ class Backprop(CScene):
         back = CurvedArrow(pills[-1].get_bottom() + DOWN * 0.1, pills[0].get_bottom() + DOWN * 0.1, angle=-PI / 5,
                            color=MUTED, stroke_width=3)
         times = self.T("× 3,000 steps", 30, MUTED).next_to(back, DOWN, buff=0.15)
+        code = self.M("loss.backward()   # PyTorch runs the backward sweep", 26, ORANGE).next_to(pills, UP, buff=0.6)
         cta = self.T("next: watch the gradients in the Backprop lab →", 40, YELLOW, BOLD).move_to(DOWN * 2.7)
         self.fitw(cta, 12.8)
-        with self.say("Forward, backward, nudge. TinyGPT did that three thousand times. Go watch the gradients flow.",
+        with self.say('Forward, backward, nudge. In PyTorch, loss dot backward does the middle step for you. Go watch the gradients flow.',
                       scene="Recap loop: forward (get the loss) → backward (share the blame) → nudge every weight, looping "
                             "back, × 3,000 steps. Final card: 'watch the gradients in the Backprop lab'.", chapter="Recap"):
             self.unmark(*list(self._marks))
@@ -436,8 +476,10 @@ class Backprop(CScene):
                 self.play(FadeIn(pills[k], shift=UP * 0.2), *([GrowArrow(arr[k - 1])] if k else []), run_time=0.35)
             for (t1, t2, _), p in zip(steps, pills):
                 self.mark("loop-" + t1, p, f"training loop: {t1}, {t2}")
-            self.sync("three thousand", 0.2)
             self.play(Create(back), FadeIn(times), run_time=0.5)
+            self.sync("In PyTorch", 0.1)
+            self.play(FadeIn(code, shift=DOWN * 0.2), run_time=0.4)
+            self.mark("code", code, "in PyTorch, loss.backward() computes every gradient by backprop")
             self.sync("Go watch", 0.1)
             self.play(FadeIn(cta, scale=1.2), run_time=0.4)
             self.mark("cta", cta, "next: the Backprop lab")

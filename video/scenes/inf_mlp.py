@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 import torch
 from vscene import *  # noqa
-from lib_inference import (VOCAB, W, PROBE, GROUPS, tid, tok, run, neuron_push, corpus_chunks)
+from lib_inference import (VOCAB, W, PROBE, GROUPS, tid, tok, run, neuron_push, corpus_chunks, tokhue)
 
 VIDEO = dict(id="mlp", cls="MLP", title="The MLP: where tokens think alone",
              subtitle="Expand, GELU, project back: real neurons in TinyGPT that detect patterns and push predictions",
@@ -76,11 +76,11 @@ class MLP(VScene):
         xs = [-5.4, -2.3, 0.8]
         hgt = 5.4
 
-        def column(n, x, col, r):
-            return VGroup(*[Dot([x, hgt / 2 - hgt * (i + 0.5) / n - 0.3, 0], radius=r, color=col) for i in range(n)])
-        c_in = column(64, xs[0], BLUE, 0.035)
-        c_hid = column(128, xs[1], YELLOW, 0.026)      # 256 neurons drawn as 128 dots (2 per dot), labelled below
-        c_out = column(64, xs[2], TEAL, 0.035)
+        def column(n, x, col, r, h):
+            return VGroup(*[Dot([x, h / 2 - h * (i + 0.5) / n - 0.3, 0], radius=r, color=col) for i in range(n)])
+        c_in = column(64, xs[0], BLUE, 0.022, hgt * 0.4)       # 64 numbers
+        c_hid = column(128, xs[1], YELLOW, 0.026, hgt)         # 256 neurons drawn as 128 dots (2 per dot), labelled below
+        c_out = column(64, xs[2], TEAL, 0.022, hgt * 0.4)
         rng = np.random.default_rng(0)
         w1 = VGroup(*[Line(c_in[i].get_center(), c_hid[j].get_center(), stroke_width=0.6, stroke_opacity=0.25, color=BLUE)
                       for i, j in zip(rng.integers(0, 64, 260), rng.integers(0, 128, 260))])
@@ -166,10 +166,10 @@ class MLP(VScene):
             if v > 0.3:
                 vals.add(self.M(f"{v:.1f}", 24, YELLOW).next_to(c, DOWN, buff=0.08))
         ntitle = VGroup(self.T(f"layer {L + 1} · neuron #{N}", 34, YELLOW, BOLD),
-                        self.T("brightness = how strongly it fires on each token", 24, MUTED)).arrange(DOWN, buff=0.15).move_to(UP * 2.45)
+                        self.T("found by browsing neurons · brightness = how strongly it fires", 24, MUTED)).arrange(DOWN, buff=0.15).move_to(UP * 2.45)
         hits = [k for k, v in enumerate(a_det) if v > 0.8]
-        with self.say(f"Each neuron's input weights are a pattern it's looking for. Take neuron {N} in layer {L + 1}. "
-                      f"On our story, it fires on 'a', both times. Right before a color.",
+        with self.say(f"Each neuron's input weights are a pattern it's looking for. Here's one we found by browsing: neuron {N} "
+                      f"in layer {L + 1}. It fires on 'a' after 'has': right before the thing being owned. Here, a color.",
                       scene=f"The 23 story tokens as chips; each chip glows yellow by how strongly layer {L + 1} neuron #{N} "
                             f"fires on it. It fires on both ' a' tokens ({', '.join(f'{a_det[k]:.2f}' for k in hits)}), "
                             f"right before ' red' and ' blue'; elsewhere it is near zero.",
@@ -232,7 +232,7 @@ class MLP(VScene):
         p_note = self.T("output weights × unembedding; ignores the final LayerNorm's scaling", 24, MUTED).to_edge(DOWN, buff=0.35)
         with self.say(f"In {N_DOCS} fresh stories, {n_col} of its 200 strongest firings came right before a color word. "
                       f"And its output weights push, roughly, toward " + ", ".join(t.strip() for t, _ in push[:4])
-                      + f". A 'color comes next' detector, that nobody designed.",
+                      + f". In these stories, a 'color comes next' detector that nobody designed.",
                       scene=f"Left: real top contexts for layer {L + 1} neuron #{N} in {N_DOCS} freshly generated stories, e.g. "
                             + "; ".join(f"'…{c}[{u}] → {n_}'" for c, u, n_, _ in exs[:2])
                             + f"; {n_col}/200 of its strongest firings are followed by a color. Right: tokens its output weights "
@@ -278,12 +278,12 @@ class MLP(VScene):
         n1, v1, p1 = tops[1]
         with self.say(f"Now the five neurons that fire hardest in layer 3, on the final 'the'. "
                       f"Number {n0} pushes toward {p0[0][0].strip()}, {p0[1][0].strip()} and {p0[3][0].strip()}. "
-                      f"Number {n1}, toward {p1[0][0].strip()} and word fragments. Most of them mix several jobs. "
-                      f"Researchers call that polysemantic.",
+                      f"Number {n1}, toward {p1[0][0].strip()} and word fragments. Most of them look mixed, with unrelated tokens at the top. "
+                      f"That's often called polysemantic.",
                       scene="The five most active real layer-3 neurons at the final ' the', each with its activation bar and the "
                             "4 tokens its output weights push toward (roughly): "
                             + "; ".join(f"#{n} ({v:.2f}) → " + ", ".join(t.strip() or repr(t) for t, _ in ps) for n, v, ps in tops)
-                            + ". Colors are highlighted pink; most neurons mix unrelated tokens (polysemantic).",
+                            + ". Colors are highlighted pink; most of these look mixed, with unrelated tokens near the top (often called polysemantic).",
                       chapter="The final \"the\""):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(ntitle[0], ex_g, p_g, p_note)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
@@ -298,7 +298,7 @@ class MLP(VScene):
             for k, (n, v, ps) in enumerate(tops):
                 self.mark(f"push-{n}", n_rows[k][3], f"#{n} pushes roughly toward " + ", ".join(f'"{t}" {s:+.2f}' for t, s in ps))
             self.sync("polysemantic", 0.3)
-            self.flash("polysemantic", YELLOW, 52, hold=0.7, pos=DOWN * 2.9)
+            self.flash("polysemantic", YELLOW, 44, hold=0.7, pos=DOWN * 3.2)
 
         # before / after the layer-3 MLP
         st = dict(R["stages"])
@@ -320,11 +320,11 @@ class MLP(VScene):
             r[2].next_to(r[1], RIGHT, buff=0.25)
         btitle = self.T('probability of " red" (read out with the logit lens)', 28, MUTED).move_to(UP * 1.9)
         bnote = self.T(f'before the MLP, the top guess was "{VOCAB[jb].strip() or VOCAB[jb]}" at {float(pb[jb]) * 100:.0f}%', 24, MUTED).move_to(DOWN * 2.4)
-        with self.say(f"Add up all 256 pushes, and the answer appears. Just before this MLP, red had {rb * 100:.1f} percent. "
-                      f"Right after it, {ra * 100:.0f}.",
+        with self.say(f"Attention in layer 2 already fetched red from earlier in the story. This MLP turns that into the "
+                      f"prediction. Just before it, red had {rb * 100:.1f} percent. Right after it, {ra * 100:.0f}.",
                       scene=f"Two bars for P(' red') read out with the logit lens: {rb * 100:.1f}% just before layer 3's MLP vs "
                             f"{ra * 100:.1f}% right after it. Note: before the MLP the top guess was '{VOCAB[jb]}' at "
-                            f"{float(pb[jb]) * 100:.1f}%."):
+                            f"{float(pb[jb]) * 100:.1f}%. Layer 2's attention fetched ' red' (head 4); layer 3's MLP turns it into the prediction."):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(hd, n_rows)), run_time=0.4)
             self.play(FadeIn(btitle), FadeIn(bx[0][0]), GrowFromEdge(bx[0][1], LEFT), FadeIn(bx[0][2]), FadeIn(bnote), run_time=0.7)
@@ -348,8 +348,8 @@ class MLP(VScene):
                     self.T(f"(layer {L + 1}, #{N}, as seen above)", 24, MUTED)).arrange(RIGHT, buff=0.25).next_to(VGroup(keyb, valb), DOWN, buff=0.5)
         cite = self.T("one leading view · Geva et al. 2021 · Meng et al. 2022", 24, MUTED).to_edge(DOWN, buff=0.35)
         with self.say("So where do facts live? One leading view: an MLP works like a key-value memory. Input weights are "
-                      "keys that recognize a situation. Output weights are values that write an answer. Researchers can "
-                      "edit a few MLP weights and change a fact a model states. Strong evidence, but not the whole story.",
+                      "keys that recognize a situation. Output weights are values that write an answer. Researchers have changed "
+                      "facts a model states with one targeted edit to a single MLP layer. Strong evidence, but not the whole story.",
                       scene=f"Diagram: key (input weights: recognize a situation) → value (output weights: write an answer). "
                             f"Example from this model: '… has a' → push toward colors (layer {L + 1} neuron #{N}). Footnote: one "
                             "leading view (Geva et al. 2021; Meng et al. 2022), not the whole story.",
@@ -371,22 +371,22 @@ class MLP(VScene):
         # ------------------------------------------------------------ recap
         def mini(t, c):
             return self.chip(t, c, 30)
-        a_row = VGroup(mini("mia", TEAL), mini(" red", PINK), mini(" ball", YELLOW), mini(" the", "#5fd0ff")).arrange(RIGHT, buff=0.3)
+        a_row = VGroup(*[mini(t_, tokhue(t_)) for t_ in ("mia", " red", " ball", " the")]).arrange(RIGHT, buff=0.3)
         arcs = VGroup(CurvedArrow(a_row[1].get_top() + UP * 0.05, a_row[3].get_top() + UP * 0.05, angle=-PI / 2.5, color=BLUE, stroke_width=4))
         card_a = VGroup(self.T("attention", 36, BLUE, BOLD), self.T("moves information between tokens", 26, FG), VGroup(a_row, arcs)).arrange(DOWN, buff=0.35)
-        m_in = mini(" the", "#5fd0ff")
+        m_in = VGroup(self.T("vector at", 24, MUTED), mini(" the", tokhue(" the"))).arrange(DOWN, buff=0.08)
         m_box = RoundedRectangle(corner_radius=0.12, width=1.3, height=0.7, fill_color=TEAL, fill_opacity=0.2, stroke_color=TEAL)
         m_lab = self.T("MLP", 24, TEAL).move_to(m_box)
-        m_out = mini(" red", PINK)
+        m_out = VGroup(self.T("reads as", 24, MUTED), mini(" red", tokhue(" red"))).arrange(DOWN, buff=0.08)
         m_row = VGroup(m_in, Arrow(ORIGIN, RIGHT * 0.7, color=MUTED, buff=0), VGroup(m_box, m_lab),
                        Arrow(ORIGIN, RIGHT * 0.7, color=MUTED, buff=0), m_out).arrange(RIGHT, buff=0.15)
         card_m = VGroup(self.T("MLP", 36, TEAL, BOLD), self.T("transforms it, inside each token", 26, FG), m_row).arrange(DOWN, buff=0.35)
         cards = VGroup(card_a, card_m).arrange(RIGHT, buff=1.4).move_to(UP * 0.5)
         cta = self.T("now poke the neurons in the X-ray →", 44, YELLOW, BOLD).move_to(DOWN * 2.5)
         with self.say("So: attention moves information between tokens. The MLP transforms it, inside each token. "
-                      "Stack both three times, and 'the' turns into red. Go poke the neurons yourself in the X-ray.",
+                      "Stack both three times, and the vector at 'the' ends up reading as red. Go poke the neurons yourself in the X-ray.",
                       scene="Recap cards: attention (blue) moves information between tokens (an arc from ' red' to ' the'); the "
-                            "MLP (teal) transforms each token on its own (' the' → MLP → leaning ' red'). CTA: poke the neurons in the X-ray.",
+                            "MLP (teal) transforms each token on its own (the vector at ' the' → MLP → now reads as ' red'). CTA: poke the neurons in the X-ray.",
                       chapter="Recap"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(keyb, valb, kt, vt, kv_ar, ex, cite, hdr4)), run_time=0.5)
