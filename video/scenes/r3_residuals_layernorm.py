@@ -5,7 +5,7 @@ from lib_research import load, Plot, legend, pill, panel, illus
 
 VIDEO = dict(id="residuals-layernorm", cls="ResidualsLayerNorm", title="Residuals & LayerNorm: why deep nets train",
              subtitle="Vanishing signals, the residual highway, and keeping scales sane, with real ablations",
-             relates="lab", track="design", order=10, poster=("The residual highway", 0, 0.95))
+             relates="lab", track="design", order=10, poster=("Vanishing signals", 1, 0.95))
 
 AB = {r["id"]: r for r in load("ablations")["runs"]}
 AB_STEPS = load("ablations")["steps"]

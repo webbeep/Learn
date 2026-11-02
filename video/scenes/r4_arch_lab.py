@@ -32,7 +32,12 @@ def p_of(r, tok):
 
 
 def spoken_tok(t):
-    return t.strip() if t.strip() else "a space"
+    named = {".": "a period", "\n": "a line break", ",": "a comma", "?": "a question mark", "!": "an exclamation mark"}
+    return named.get(t.strip() if t.strip() else t, t.strip() or "a space")
+
+
+SPOKEN = {"no-attention": "No attention", "no-mlp": "No MLP", "no-positions": "No positions",
+          "no-residual": "No residuals", "no-layernorm": "No LayerNorm", "1-layer": "One layer", "6-layer": "Six layers"}
 
 
 # one short, data-driven line per ablation (the insight phrase is the only hand-written part)
@@ -155,7 +160,7 @@ class ArchLab(VScene):
             right = t1["token"] == " red"
             ans = (f"It still says red, {pct(t1['p'])}." if right else
                    f"Its top guess is {spoken_tok(t1['token'])}, {pct(t1['p'])}" + (f"; red gets {pct(pr)}." if pr else "; red isn't even in its top five."))
-            ln_s = f"{r['label'].capitalize()}. {INSIGHT[rid]} Loss {r['final_val']:.2f}. {ans}"
+            ln_s = f"{SPOKEN[rid]}. {INSIGHT[rid]} Loss {r['final_val']:.2f}. {ans}"
             with self.say(ln_s, scene=f"Ablation '{r['label']}' ({r['params']:,} params): {r['what']} Real validation curve "
                                       f"(colored) vs baseline (gray): final {r['final_val']:.3f} vs {BASE['final_val']:.3f}. "
                                       f"Probe top tokens: " + ", ".join(f"{t['token']!r} {pct(t['p'])}" for t in r["probe_top"][:3])
