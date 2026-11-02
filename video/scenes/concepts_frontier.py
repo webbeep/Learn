@@ -81,10 +81,10 @@ class Frontier(CScene):
         el = self.T("8 expert MLPs", 22, TEAL).next_to(experts, DOWN, buff=0.12)
         row = VGroup(tokc, router, VGroup(experts, el)).arrange(RIGHT, buff=0.8)
         a1 = Arrow(tokc.get_right(), router.get_left(), buff=0.1, color=MUTED, stroke_width=3)
-        a2 = VGroup(*[Arrow(router.get_right(), experts[k].get_top() + UP * 0.02, buff=0.1, color=ORANGE, stroke_width=3,
-                            max_tip_length_to_length_ratio=0.12) for k in (2, 5)])
+        a2 = VGroup(*[CurvedArrow(router.get_top() + UP * 0.05, experts[k].get_top() + UP * 0.05, angle=-PI / 2.6,
+                                  color=ORANGE, stroke_width=3, tip_length=0.18) for k in (2, 5)])
         cap = VGroup(self.T(f"hypothetical TinyGPT-MoE, top-2 of 8 experts:", 24, MUTED),
-                     self.T(f"MLP weights per layer {mlp:,} → {8 * mlp:,}, but each token runs only 2", 24, MUTED)
+                     self.T(f"MLP weights per layer {mlp:,} → {8 * mlp:,} (+ router), but each token runs only 2", 24, MUTED)
                      ).arrange(DOWN, buff=0.06)
         g = VGroup(row, a1, a2)
         cap.next_to(g, DOWN, buff=0.3)
@@ -213,7 +213,7 @@ class Frontier(CScene):
         probs = {t: float(lg[VOCAB.index(t)]) for t in (" red", " white", " purple")}
 
         topics = [
-            dict(key="moe", label="mixture of\nexperts", cluster="cheap", hub=2, pos=(4.75, 0.25),
+            dict(key="moe", label="mixture of\nexperts", cluster="cheap", hub=2, pos=(4.55, 0.25),
                  title="Mixture of experts", swaps="replaces the MLP",
                  idea="many expert MLPs; a learned router sends each token to just a few of them",
                  attacks="more parameters (capacity) without proportionally more compute per token",
@@ -245,7 +245,7 @@ class Frontier(CScene):
                  refs="RoFormer (Su et al. 2021) · Chen et al. 2023 · Lost in the Middle (Liu et al. 2023)",
                  say="Position schemes like RoPE rotate queries and keys by position, so scores depend on relative distance. "
                      "Tricks built on it help stretch context, though using very long contexts well remains hard."),
-            dict(key="rag", label="retrieval\n(RAG)", cluster="know", hub=0, pos=(4.75, 2.05),
+            dict(key="rag", label="retrieval\n(RAG)", cluster="know", hub=0, pos=(4.55, 2.05),
                  title="Retrieval-augmented models", swaps="adds to the input (what it reads)",
                  idea="look up relevant documents in an external store and put them into the context",
                  attacks="knowledge frozen in the weights: stale facts, made-up answers, giant models to memorise trivia",
@@ -253,7 +253,7 @@ class Frontier(CScene):
                  refs="RAG (Lewis et al. 2020) · RETRO (Borgeaud et al. 2021)",
                  say="Retrieval-augmented models look things up: fetch relevant documents and put them in the context. "
                      "Knowledge can stay fresh without retraining, if retrieval finds the right text."),
-            dict(key="diff", label="diffusion\nLMs", cluster="gen", hub=4, pos=(-2.7, -2.95),
+            dict(key="diff", label="diffusion\nLMs", cluster="gen", hub=4, pos=(-2.75, -3.15),
                  title="Diffusion language models", swaps="replaces the left-to-right generation loop",
                  idea="start from a fully masked sequence and fill in every position over a few refinement steps",
                  attacks="strictly one token at a time, left to right",
@@ -261,7 +261,7 @@ class Frontier(CScene):
                  refs="D3PM (Austin et al. 2021) · masked diffusion LMs (e.g. Sahoo et al. 2024)",
                  say="Diffusion language models drop left-to-right: start from a fully masked sequence and refine every "
                      "position over a few steps. Whether they match autoregressive quality at scale is still open."),
-            dict(key="ttc", label="test-time\ncompute", cluster="gen", hub=4, pos=(2.7, -2.95),
+            dict(key="ttc", label="test-time\ncompute", cluster="gen", hub=4, pos=(2.75, -3.15),
                  title="Test-time compute & reasoning", swaps="changes how the generation loop is used",
                  idea="spend more computation per question: write out intermediate steps, or sample many answers and check or vote",
                  attacks="a fixed amount of compute per token, even for hard problems",
@@ -269,7 +269,7 @@ class Frontier(CScene):
                  refs="chain of thought (Wei et al. 2022) · self-consistency (Wang et al. 2022)",
                  say="And test-time compute spends more thinking per question: write out reasoning steps, or sample many "
                      "answers and check them. Some recent reasoning models are trained with reinforcement learning to do this."),
-            dict(key="distill", label="distillation &\nsmall models", cluster="cheap", hub=3, pos=(4.75, -1.15),
+            dict(key="distill", label="distillation &\nsmall models", cluster="cheap", hub=3, pos=(4.55, -1.15),
                  title="Distillation & small models", swaps="changes the training target (loss)",
                  idea="train a small student to match a big teacher's full probability distribution, not just the right token",
                  attacks="big models are expensive to run; one-hot targets throw away the teacher's near misses",
@@ -282,7 +282,7 @@ class Frontier(CScene):
         topics.sort(key=lambda t: seq.index(t["key"]))
 
         # ============================================================ the map
-        hub = self.hub().move_to([0, -0.15, 0])
+        hub = self.hub().move_to([0, 0.05, 0])
         hboxes = hub[1]
         nodes, edges = {}, {}
         for tp in topics:
@@ -304,8 +304,7 @@ class Frontier(CScene):
                                      stroke_opacity=0.5, fill_color=col, fill_opacity=0.04)
             lab = self.T(cname, 22, col, BOLD)
             if ck == "gen":
-                lab.next_to(h, DOWN, buff=0.08)
-                lab.move_to([0, lab.get_center()[1], 0])
+                lab.move_to([0, h.get_center()[1], 0])
             else:
                 lab.next_to(h, UP, buff=0.08)
             halos.add(h); clabs.add(lab)
@@ -396,7 +395,7 @@ class Frontier(CScene):
                 rot.clear_updaters()
 
         # ============================================================ outro
-        hub_home = hub.copy().move_to([0, -0.15, 0])
+        hub_home = hub.copy().move_to([0, 0.05, 0])
         cta = self.T("pick a box · form a hypothesis · run the loop →", 36, YELLOW, BOLD).to_edge(DOWN, buff=0.3)
         with self.say("Every one of these is a change to one box. Pick a box, form a hypothesis, and run the loop.",
                       scene="Back to the full map: TinyGPT's five parts with the eight directions around them. CTA: pick a "

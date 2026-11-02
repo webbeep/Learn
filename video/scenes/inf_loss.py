@@ -247,10 +247,10 @@ class Loss(VScene):
         i_below1 = next(i for i, l in enumerate(LOSS) if l < 1)
         a1 = VGroup(Dot(ax3.c2p(STEPS[i_below1], LOSS[i_below1]), color=ORANGE, radius=0.08),
                     self.T(f"below 1 by step {STEPS[i_below1]} (perplexity {math.exp(LOSS[i_below1]):.1f})", 24, ORANGE))
-        a1[1].next_to(a1[0], RIGHT, buff=0.25).shift(UP * 0.75)
+        a1[1].next_to(a1[0], RIGHT, buff=0.25).shift(UP * 1.35)
         a2 = VGroup(Dot(ax3.c2p(3000, LOSS[-1]), color=YELLOW, radius=0.08),
                     self.T(f"step 3000: {LOSS[-1]:.2f} (perplexity {pplf:.1f})", 24, YELLOW))
-        a2[1].next_to(a2[0], UP, buff=0.75).shift(LEFT * 1.6)
+        a2[1].next_to(a2[0], UP, buff=0.45).shift(LEFT * 1.6)
         a0 = VGroup(Dot(ax3.c2p(0, LOSS[0]), color=PINK, radius=0.08), self.T(f"{LOSS[0]:.2f}", 24, PINK))
         a0[1].next_to(a0[0], RIGHT, buff=0.15).shift(UP * 0.2)
         with self.say(f"Here's the real run. It starts at {LOSS[0]:.2f}, right on the guessing line, drops below one by "

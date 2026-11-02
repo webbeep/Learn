@@ -194,7 +194,7 @@ class TinyToChatGPT(CScene):
             return VGroup(b, t.move_to(b))
         cA = card("answer A", "clear, correct, kind", TEAL)
         cB = card("answer B", "rambling, partly wrong", MUTED)
-        ab = VGroup(cA, cB).arrange(DOWN, buff=0.35).move_to([-5.0, 0.7, 0])
+        ab = VGroup(cA, cB).arrange(DOWN, buff=0.35, aligned_edge=LEFT).move_to([-5.0, 0.7, 0])
         tick = self.T("✓ person prefers A", 26, TEAL, BOLD).next_to(ab, DOWN, buff=0.3)
         rm = card("reward model", "learns to predict\nthe picks", YELLOW).move_to([-0.7, 0.7, 0])
         pol = card("the chat model", "nudged toward\nhigh reward", PINK).move_to([4.4, 0.7, 0])
@@ -376,6 +376,7 @@ class TinyToChatGPT(CScene):
                 g.add(VGroup(r, v))
             return g
         live_bars = always_redraw(bars_now)
+        src = self.T("real TinyGPT probabilities after “…now tom has the”", 24, MUTED).move_to(DOWN * 1.85)
         tl = self.live(lambda: f"temperature {Tt.get_value():.1f}", lambda t: t.move_to([0.4, 2.6, 0]), size=32, color=YELLOW)
         p1 = probs(1.0)
         cum = np.cumsum(sorted(p1, reverse=True))
@@ -392,7 +393,7 @@ class TinyToChatGPT(CScene):
                       chapter="Sampling"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(g1, g2, t1, t2, c1, c2, rows_l, same_l, legend)), ReplacementTransform(hdr6, hdr7), run_time=0.5)
-            self.play(FadeIn(labs), FadeIn(live_bars), FadeIn(tl), run_time=0.6)
+            self.play(FadeIn(labs), FadeIn(live_bars), FadeIn(tl), FadeIn(src), run_time=0.6)
             for t, l in zip(show, labs):
                 self.mark("samp-" + t.strip(), l, f'"{t}": {100 * p1[VOCAB.index(t)]:.1f}% at temperature 1')
             self.sync("sharpens", 0.1)
@@ -409,7 +410,7 @@ class TinyToChatGPT(CScene):
         tl.clear_updaters()
 
         # ============================================================ outro
-        pipe2, parts2 = pipeline(self, n_layers="× 96 layers")
+        pipe2, parts2 = pipeline(self, n_layers="× 96 layers (GPT-3)")
         pipe2.scale(0.9).move_to(UP * 1.7)
         recap = VGroup(self.T("+ a million times the weights", 28, FG), self.T("+ web-scale pretraining", 28, FG),
                        self.T("+ instruction & preference tuning", 28, FG), self.T("+ chat tokens, KV cache, sampling knobs", 28, FG)

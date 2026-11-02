@@ -101,7 +101,8 @@ Constant LR, no warmup, no clipping, 1000 steps, eval every 25 steps.
 }
 ```
 
-`diverged` = loss became NaN/inf or > 20, or the final val loss is no better than at step 0.
+`diverged` = loss became NaN/inf or > 20, or the final val loss is no better than at step 0. `final_val` is `null`
+when the run blew up to NaN (its curve then ends with a `null` at the step where that happened).
 
 ### `overfit.json`
 

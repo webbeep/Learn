@@ -2475,18 +2475,18 @@
       "id": "pos-heat",
       "label": "cosine similarity between the 64 learned position embeddings; neighbours ≈ 0.95",
       "box": [
-       0.1189,
-       0.4912,
-       0.2559,
-       0.455
+       0.1259,
+       0.5288,
+       0.2419,
+       0.43
       ]
      },
      {
       "id": "pos-facts",
       "label": "neighbouring positions 0.955; position 0 vs 63 = -0.737; mean |position vector| 0.403 vs |token vector| 1.115",
       "box": [
-       0.4227,
-       0.6185,
+       0.4156,
+       0.6435,
        0.5404,
        0.2256
       ]
@@ -3787,6 +3787,1406 @@
        0.4315,
        0.8191,
        0.137
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mlp",
+  "title": "The MLP: where tokens think alone",
+  "subtitle": "Expand, GELU, project back: real neurons in TinyGPT that detect patterns and push predictions",
+  "duration": 134.33,
+  "track": "inference",
+  "order": 50,
+  "src": "/videos/mlp.mp4",
+  "poster": "/videos/mlp.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "After attention"
+   },
+   {
+    "t": 11.17,
+    "title": "Anatomy"
+   },
+   {
+    "t": 40.33,
+    "title": "Neurons as detectors"
+   },
+   {
+    "t": 69.4,
+    "title": "The final \"the\""
+   },
+   {
+    "t": 99.67,
+    "title": "Where facts live"
+   },
+   {
+    "t": 119.33,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 11.17,
+    "text": "Attention lets tokens share information. Then every token goes off alone, through a small network called the MLP. It holds two thirds of each layer's weights.",
+    "scene": "One transformer layer: an attention box ('tokens share information') above an MLP box ('each token thinks alone'). A bar splits each layer's weights: attention 16,640 vs MLP 33,088 (67%).",
+    "objects": [
+     {
+      "id": "attn-box",
+      "label": "attention: mixes information between token positions",
+      "box": [
+       0.1625,
+       0.3406,
+       0.5478,
+       0.125
+      ]
+     },
+     {
+      "id": "mlp-box",
+      "label": "MLP: processes each token's vector on its own",
+      "box": [
+       0.1625,
+       0.5094,
+       0.5346,
+       0.125
+      ]
+     },
+     {
+      "id": "split",
+      "label": "per layer: attention 16,640 weights, MLP 33,088 weights (66.5%)",
+      "box": [
+       0.2324,
+       0.6905,
+       0.5353,
+       0.1407
+      ]
+     }
+    ]
+   },
+   {
+    "start": 11.17,
+    "end": 29.83,
+    "text": "Inside, it's three steps. Expand the token's 64 numbers into 256 neurons. Pass each one through GELU, which lets positive signals through and squashes negative ones to nearly zero. Then project back down to 64, and add the result to the token's vector.",
+    "scene": "Network diagram: 64 inputs (blue) fan out to 256 hidden neurons (yellow; drawn 2 per dot) then back to 64 outputs (teal). Inset: the real GELU curve (negative in → ~0, positive in → passes). The output is added back to the token's vector.",
+    "objects": [
+     {
+      "id": "w-in",
+      "label": "W_in: 64 × 256 weights (+256 biases) expand the vector",
+      "box": [
+       0.1203,
+       0.1023,
+       0.218,
+       0.77
+      ]
+     },
+     {
+      "id": "hidden",
+      "label": "256 hidden neurons",
+      "box": [
+       0.2503,
+       0.1994,
+       0.176,
+       0.7377
+      ]
+     },
+     {
+      "id": "gelu",
+      "label": "GELU(x) ≈ x for large positive x, ≈ 0 for negative x; GELU(-1) = -0.159, GELU(1) = 0.841",
+      "box": [
+       0.7039,
+       0.1674,
+       0.2391,
+       0.4815
+      ]
+     },
+     {
+      "id": "w-out",
+      "label": "W_out: 256 × 64 weights (+64 biases) project back to 64 numbers",
+      "box": [
+       0.3383,
+       0.1018,
+       0.218,
+       0.7706
+      ]
+     }
+    ]
+   },
+   {
+    "start": 29.83,
+    "end": 40.33,
+    "text": "Here are the real 256 neuron values in layer 3, for the last word of our story. Most stay quiet. Only 18 percent fire above 0.1.",
+    "scene": "Bar chart of the 256 real post-GELU activations in layer 3 at the final ' the' of 'mia has a red ball … now tom has the'. Most are ≈0 (gray); 18% exceed 0.1 (yellow); the largest is neuron #212 at 2.17.",
+    "objects": [
+     {
+      "id": "acts",
+      "label": "256 real layer-3 activations at the last token; 18.4% above 0.1, max 2.17 (#212)",
+      "box": [
+       0.096,
+       0.3683,
+       0.808,
+       0.4386
+      ]
+     },
+     {
+      "id": "stat",
+      "label": "47 of 256 layer-3 neurons above 0.1",
+      "box": [
+       0.3171,
+       0.8524,
+       0.3658,
+       0.0576
+      ]
+     }
+    ]
+   },
+   {
+    "start": 40.33,
+    "end": 51.7,
+    "text": "Each neuron's input weights are a pattern it's looking for. Take neuron 1 in layer 1. On our story, it fires on 'a', both times. Right before a color.",
+    "scene": "The 23 story tokens as chips; each chip glows yellow by how strongly layer 1 neuron #1 fires on it. It fires on both ' a' tokens (1.21, 1.64), right before ' red' and ' blue'; elsewhere it is near zero.",
+    "objects": [
+     {
+      "id": "neuron",
+      "label": "layer 1, neuron #1 (of 256, counting from 0)",
+      "box": [
+       0.2379,
+       0.1364,
+       0.5241,
+       0.1146
+      ]
+     },
+     {
+      "id": "tok-0",
+      "label": "\"mia\" (position 0): layer 1 neuron #1 activation -0.158",
+      "box": [
+       0.1956,
+       0.3045,
+       0.0647,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-1",
+      "label": "\" has\" (position 1): layer 1 neuron #1 activation -0.113",
+      "box": [
+       0.2702,
+       0.3045,
+       0.0819,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-2",
+      "label": "\" a\" (position 2): layer 1 neuron #1 activation 1.212",
+      "box": [
+       0.3619,
+       0.3045,
+       0.0489,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-3",
+      "label": "\" red\" (position 3): layer 1 neuron #1 activation -0.149",
+      "box": [
+       0.4206,
+       0.3045,
+       0.0817,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-4",
+      "label": "\" ball\" (position 4): layer 1 neuron #1 activation -0.121",
+      "box": [
+       0.5122,
+       0.3045,
+       0.0992,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-5",
+      "label": "\".\" (position 5): layer 1 neuron #1 activation -0.110",
+      "box": [
+       0.6212,
+       0.3045,
+       0.0241,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-6",
+      "label": "\" tom\" (position 6): layer 1 neuron #1 activation -0.116",
+      "box": [
+       0.1956,
+       0.4475,
+       0.0826,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-7",
+      "label": "\" has\" (position 7): layer 1 neuron #1 activation -0.100",
+      "box": [
+       0.288,
+       0.4475,
+       0.0819,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-8",
+      "label": "\" a\" (position 8): layer 1 neuron #1 activation 1.637",
+      "box": [
+       0.3797,
+       0.4475,
+       0.0489,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-9",
+      "label": "\" blue\" (position 9): layer 1 neuron #1 activation -0.009",
+      "box": [
+       0.4384,
+       0.4475,
+       0.0983,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-10",
+      "label": "\" kite\" (position 10): layer 1 neuron #1 activation -0.170",
+      "box": [
+       0.5466,
+       0.4475,
+       0.0983,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-11",
+      "label": "\".\" (position 11): layer 1 neuron #1 activation 0.047",
+      "box": [
+       0.6548,
+       0.4475,
+       0.0241,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-12",
+      "label": "\" mia\" (position 12): layer 1 neuron #1 activation 0.397",
+      "box": [
+       0.1956,
+       0.5906,
+       0.0817,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-13",
+      "label": "\" gives\" (position 13): layer 1 neuron #1 activation -0.077",
+      "box": [
+       0.2871,
+       0.5906,
+       0.1147,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-14",
+      "label": "\" the\" (position 14): layer 1 neuron #1 activation 0.272",
+      "box": [
+       0.4116,
+       0.5906,
+       0.0819,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-15",
+      "label": "\" ball\" (position 15): layer 1 neuron #1 activation -0.096",
+      "box": [
+       0.5034,
+       0.5906,
+       0.0992,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-16",
+      "label": "\" to\" (position 16): layer 1 neuron #1 activation 0.130",
+      "box": [
+       0.6125,
+       0.5906,
+       0.0655,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-17",
+      "label": "\" tom\" (position 17): layer 1 neuron #1 activation -0.162",
+      "box": [
+       0.6878,
+       0.5906,
+       0.0826,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-18",
+      "label": "\".\" (position 18): layer 1 neuron #1 activation -0.157",
+      "box": [
+       0.7803,
+       0.5906,
+       0.0241,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-19",
+      "label": "\" now\" (position 19): layer 1 neuron #1 activation 0.135",
+      "box": [
+       0.1956,
+       0.7337,
+       0.0833,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-20",
+      "label": "\" tom\" (position 20): layer 1 neuron #1 activation -0.134",
+      "box": [
+       0.2888,
+       0.7337,
+       0.0826,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-21",
+      "label": "\" has\" (position 21): layer 1 neuron #1 activation -0.083",
+      "box": [
+       0.3812,
+       0.7337,
+       0.0819,
+       0.0743
+      ]
+     },
+     {
+      "id": "tok-22",
+      "label": "\" the\" (position 22): layer 1 neuron #1 activation 0.406",
+      "box": [
+       0.4729,
+       0.7337,
+       0.0819,
+       0.0743
+      ]
+     }
+    ]
+   },
+   {
+    "start": 51.7,
+    "end": 69.4,
+    "text": "In 400 fresh stories, 200 of its 200 strongest firings came right before a color word. And its output weights push, roughly, toward red, purple, black, green. A 'color comes next' detector, that nobody designed.",
+    "scene": "Left: real top contexts for layer 1 neuron #1 in 400 freshly generated stories, e.g. '…zoe has[ a] →  red'; '…nora has[ a] →  blue'; 200/200 of its strongest firings are followed by a color. Right: tokens its output weights push toward (projected through the unembedding, roughly): red, purple, black, green, white.",
+    "objects": [
+     {
+      "id": "examples",
+      "label": "top-activating contexts of L1 #1 in fresh text: …zoe has[ a] →  red (act 2.11); …nora has[ a] →  blue (act 2.05); …leo has[ a] →  yellow (act 2.02); …ava has[ a] →  red (act 2.02)",
+      "box": [
+       0.0482,
+       0.4079,
+       0.2879,
+       0.2237
+      ]
+     },
+     {
+      "id": "evidence",
+      "label": "200 of the 200 strongest activations are followed by a color token",
+      "box": [
+       0.0482,
+       0.6691,
+       0.538,
+       0.0547
+      ]
+     },
+     {
+      "id": "push",
+      "label": "L1 #1 output direction · unembedding (roughly): \" red\" +0.45, \" purple\" +0.44, \" black\" +0.39, \" green\" +0.39, \" white\" +0.38",
+      "box": [
+       0.6647,
+       0.2263,
+       0.2753,
+       0.5975
+      ]
+     },
+     {
+      "id": "note",
+      "label": "approximation: W_out column → final-LN gain → unembedding; ignores LayerNorm's 1/std",
+      "box": [
+       0.1158,
+       0.9155,
+       0.7683,
+       0.0407
+      ]
+     }
+    ]
+   },
+   {
+    "start": 69.4,
+    "end": 88.83,
+    "text": "Now the five neurons that fire hardest in layer 3, on the final 'the'. Number 212 pushes toward so, red and purple. Number 77, toward says and word fragments. Most of them mix several jobs. Researchers call that polysemantic.",
+    "scene": "The five most active real layer-3 neurons at the final ' the', each with its activation bar and the 4 tokens its output weights push toward (roughly): #212 (2.17) → so, red, i, purple; #77 (1.88) → says, bl, lo, j; #228 (1.79) → white, fo, py, ing; #72 (1.64) → ed, oo, she, t; #203 (1.61) → g, p, l, k. Colors are highlighted pink; most neurons mix unrelated tokens (polysemantic).",
+    "objects": [
+     {
+      "id": "n212",
+      "label": "layer 3 neuron #212: activation 2.169 at the final \" the\"",
+      "box": [
+       0.1062,
+       0.2738,
+       0.3473,
+       0.0525
+      ]
+     },
+     {
+      "id": "n77",
+      "label": "layer 3 neuron #77: activation 1.877 at the final \" the\"",
+      "box": [
+       0.1062,
+       0.3888,
+       0.32,
+       0.0525
+      ]
+     },
+     {
+      "id": "n228",
+      "label": "layer 3 neuron #228: activation 1.793 at the final \" the\"",
+      "box": [
+       0.1062,
+       0.5038,
+       0.3124,
+       0.0525
+      ]
+     },
+     {
+      "id": "n72",
+      "label": "layer 3 neuron #72: activation 1.644 at the final \" the\"",
+      "box": [
+       0.1062,
+       0.6188,
+       0.2975,
+       0.0525
+      ]
+     },
+     {
+      "id": "n203",
+      "label": "layer 3 neuron #203: activation 1.614 at the final \" the\"",
+      "box": [
+       0.1062,
+       0.7338,
+       0.296,
+       0.0525
+      ]
+     },
+     {
+      "id": "push-212",
+      "label": "#212 pushes roughly toward \" so\" +0.43, \" red\" +0.43, \"i\" +0.41, \" purple\" +0.40",
+      "box": [
+       0.5422,
+       0.2645,
+       0.3239,
+       0.071
+      ]
+     },
+     {
+      "id": "push-77",
+      "label": "#77 pushes roughly toward \" says\" +0.48, \" bl\" +0.46, \" lo\" +0.45, \"j\" +0.42",
+      "box": [
+       0.5422,
+       0.3795,
+       0.2766,
+       0.071
+      ]
+     },
+     {
+      "id": "push-228",
+      "label": "#228 pushes roughly toward \" white\" +0.45, \" fo\" +0.38, \"py\" +0.37, \"ing\" +0.34",
+      "box": [
+       0.5422,
+       0.4945,
+       0.307,
+       0.071
+      ]
+     },
+     {
+      "id": "push-72",
+      "label": "#72 pushes roughly toward \"ed\" +0.50, \"oo\" +0.47, \" she\" +0.33, \" t\" +0.32",
+      "box": [
+       0.5422,
+       0.6095,
+       0.2457,
+       0.071
+      ]
+     },
+     {
+      "id": "push-203",
+      "label": "#203 pushes roughly toward \"g\" +0.37, \"p\" +0.27, \"l\" +0.26, \"k\" +0.25",
+      "box": [
+       0.5422,
+       0.7245,
+       0.1544,
+       0.071
+      ]
+     }
+    ]
+   },
+   {
+    "start": 88.83,
+    "end": 99.67,
+    "text": "Add up all 256 pushes, and the answer appears. Just before this MLP, red had 1.9 percent. Right after it, 87.",
+    "scene": "Two bars for P(' red') read out with the logit lens: 1.9% just before layer 3's MLP vs 87.1% right after it. Note: before the MLP the top guess was 'e' at 28.3%.",
+    "objects": [
+     {
+      "id": "before",
+      "label": "P(\" red\") just before layer-3 MLP = 1.88%",
+      "box": [
+       0.0467,
+       0.4125,
+       0.4464,
+       0.075
+      ]
+     },
+     {
+      "id": "before-top",
+      "label": "top guess before the layer-3 MLP: \"e\" 28.3%",
+      "box": [
+       0.2463,
+       0.7796,
+       0.5073,
+       0.0407
+      ]
+     },
+     {
+      "id": "after",
+      "label": "P(\" red\") right after layer-3 MLP = 87.07% (final answer)",
+      "box": [
+       0.2194,
+       0.575,
+       0.7125,
+       0.075
+      ]
+     }
+    ]
+   },
+   {
+    "start": 99.67,
+    "end": 119.33,
+    "text": "So where do facts live? One leading view: an MLP works like a key-value memory. Input weights are keys that recognize a situation. Output weights are values that write an answer. Researchers can edit a few MLP weights and change a fact a model states. Strong evidence, but not the whole story.",
+    "scene": "Diagram: key (input weights: recognize a situation) → value (output weights: write an answer). Example from this model: '… has a' → push toward colors (layer 1 neuron #1). Footnote: one leading view (Geva et al. 2021; Meng et al. 2022), not the whole story.",
+    "objects": [
+     {
+      "id": "key",
+      "label": "key: an MLP neuron's input weights detect a pattern in the token's vector",
+      "box": [
+       0.1344,
+       0.3375,
+       0.3094,
+       0.275
+      ]
+     },
+     {
+      "id": "value",
+      "label": "value: the neuron's output weights add a direction (e.g. toward some tokens)",
+      "box": [
+       0.5562,
+       0.3375,
+       0.3094,
+       0.275
+      ]
+     },
+     {
+      "id": "kv-example",
+      "label": "this model's layer 1 neuron #1: fires on '… has a', pushes toward color tokens",
+      "box": [
+       0.1391,
+       0.675,
+       0.7217,
+       0.042
+      ]
+     },
+     {
+      "id": "cite",
+      "label": "Geva et al. 2021, 'Transformer Feed-Forward Layers Are Key-Value Memories'; Meng et al. 2022, 'Locating and Editing Factual Associations in GPT' (ROME)",
+      "box": [
+       0.206,
+       0.9159,
+       0.588,
+       0.0403
+      ]
+     }
+    ]
+   },
+   {
+    "start": 119.33,
+    "end": 133.73,
+    "text": "So: attention moves information between tokens. The MLP transforms it, inside each token. Stack both three times, and 'the' turns into red. Go poke the neurons yourself in the X-ray.",
+    "scene": "Recap cards: attention (blue) moves information between tokens (an arc from ' red' to ' the'); the MLP (teal) transforms each token on its own (' the' → MLP → leaning ' red'). CTA: poke the neurons in the X-ray.",
+    "objects": [
+     {
+      "id": "card-attn",
+      "label": "attention moves information between token positions",
+      "box": [
+       0.0399,
+       0.2729,
+       0.4171,
+       0.3292
+      ]
+     },
+     {
+      "id": "card-mlp",
+      "label": "the MLP transforms each token's vector independently",
+      "box": [
+       0.5555,
+       0.3061,
+       0.4046,
+       0.2628
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the X-ray to inspect MLP neurons live",
+      "box": [
+       0.119,
+       0.7752,
+       0.7619,
+       0.0745
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "residual-stream",
+  "title": "The residual stream: a shared whiteboard",
+  "subtitle": "Every block reads it and adds a note: real vector sizes, the logit lens, LayerNorm, and knockouts",
+  "duration": 128.2,
+  "track": "inference",
+  "order": 60,
+  "src": "/videos/residual-stream.mp4",
+  "poster": "/videos/residual-stream.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The whiteboard"
+   },
+   {
+    "t": 18.67,
+    "title": "Adding up"
+   },
+   {
+    "t": 40.33,
+    "title": "Logit lens"
+   },
+   {
+    "t": 68.03,
+    "title": "LayerNorm"
+   },
+   {
+    "t": 87.2,
+    "title": "Why it matters"
+   },
+   {
+    "t": 121.3,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 11.27,
+    "text": "Every token carries one vector through the whole model, called the residual stream. Think of it as a whiteboard. No layer ever erases it. Each one reads it, then adds a note.",
+    "scene": "A long horizontal arrow (the residual stream) runs from the token ' the' to the readout. Six blocks sit above it (attention 1, MLP 1, … MLP 3); each has a gray 'read' arrow up from the stream and a colored 'add' arrow back down with a + sign.",
+    "objects": [
+     {
+      "id": "stream",
+      "label": "the residual stream: one 64-number vector per token, shared by all blocks",
+      "box": [
+       0.0359,
+       0.6406,
+       0.9281,
+       0.1128
+      ]
+     },
+     {
+      "id": "block-attn1",
+      "label": "attention 1: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.1291,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-mlp1",
+      "label": "MLP 1: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.2585,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-attn2",
+      "label": "attention 2: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.3879,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-mlp2",
+      "label": "MLP 2: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.5172,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-attn3",
+      "label": "attention 3: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.6466,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-mlp3",
+      "label": "MLP 3: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.776,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     }
+    ]
+   },
+   {
+    "start": 11.27,
+    "end": 18.67,
+    "text": "In code it's one line per block. x equals x, plus something. Nothing is overwritten, only added.",
+    "scene": "The two lines of code that define the stream: x = x + attention(LayerNorm(x)); x = x + MLP(LayerNorm(x)), repeated for each of the 3 layers. A dot travels along the stream picking up each block's note.",
+    "objects": [
+     {
+      "id": "stream",
+      "label": "the residual stream: one 64-number vector per token, shared by all blocks",
+      "box": [
+       0.0359,
+       0.6406,
+       0.9281,
+       0.1128
+      ]
+     },
+     {
+      "id": "block-attn1",
+      "label": "attention 1: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.1291,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-mlp1",
+      "label": "MLP 1: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.2585,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-attn2",
+      "label": "attention 2: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.3879,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-mlp2",
+      "label": "MLP 2: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.5172,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-attn3",
+      "label": "attention 3: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.6466,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "block-mlp3",
+      "label": "MLP 3: reads the stream (through a LayerNorm) and adds its output",
+      "box": [
+       0.776,
+       0.325,
+       0.0949,
+       0.3312
+      ]
+     },
+     {
+      "id": "code",
+      "label": "pre-LN transformer block: x = x + attn(LN(x)); x = x + mlp(LN(x))",
+      "box": [
+       0.2278,
+       0.0657,
+       0.5443,
+       0.1811
+      ]
+     }
+    ]
+   },
+   {
+    "start": 18.67,
+    "end": 30.67,
+    "text": "Here's the real stream for the last word of our story. It starts as token plus position. Block by block, notes pile up, and its length grows from 1.19 to 3.23.",
+    "scene": "Seven real 64-cell strips for the final ' the' (orange positive, blue negative): token + position, then after each block. Their lengths: token + position 1.19, + attention 1 1.73, + MLP 1 1.63, + attention 2 1.70, + MLP 2 1.92, + attention 3 2.00, + MLP 3 3.23.",
+    "objects": [
+     {
+      "id": "vec-embed",
+      "label": "stream at the last token (token + position embedding): length 1.186",
+      "box": [
+       0.0742,
+       0.1825,
+       0.7465,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-attn1",
+      "label": "stream at the last token after attention 1: length 1.727",
+      "box": [
+       0.1232,
+       0.265,
+       0.6968,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-mlp1",
+      "label": "stream at the last token after MLP 1: length 1.625",
+      "box": [
+       0.1742,
+       0.3475,
+       0.6458,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-attn2",
+      "label": "stream at the last token after attention 2: length 1.697",
+      "box": [
+       0.1176,
+       0.43,
+       0.7026,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-mlp2",
+      "label": "stream at the last token after MLP 2: length 1.922",
+      "box": [
+       0.1686,
+       0.5125,
+       0.6518,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-attn3",
+      "label": "stream at the last token after attention 3: length 1.998",
+      "box": [
+       0.1171,
+       0.595,
+       0.7035,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-mlp3",
+      "label": "stream at the last token after MLP 3: length 3.233",
+      "box": [
+       0.1681,
+       0.6775,
+       0.6525,
+       0.0475
+      ]
+     }
+    ]
+   },
+   {
+    "start": 30.67,
+    "end": 40.33,
+    "text": "Most notes are modest, around length one. But the last MLP writes a big one, 3.68, larger than the whole board before it.",
+    "scene": "Next to each strip, the size (length) of the note that block added: attention 1 1.25, MLP 1 1.19, attention 2 1.24, MLP 2 1.34, attention 3 1.00, MLP 3 3.68. MLP 3's note (3.68) is larger than the stream before it (2.00).",
+    "objects": [
+     {
+      "id": "vec-embed",
+      "label": "stream at the last token (token + position embedding): length 1.186",
+      "box": [
+       0.0742,
+       0.1825,
+       0.7465,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-attn1",
+      "label": "stream at the last token after attention 1: length 1.727",
+      "box": [
+       0.1232,
+       0.265,
+       0.6968,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-mlp1",
+      "label": "stream at the last token after MLP 1: length 1.625",
+      "box": [
+       0.1742,
+       0.3475,
+       0.6458,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-attn2",
+      "label": "stream at the last token after attention 2: length 1.697",
+      "box": [
+       0.1176,
+       0.43,
+       0.7026,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-mlp2",
+      "label": "stream at the last token after MLP 2: length 1.922",
+      "box": [
+       0.1686,
+       0.5125,
+       0.6518,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-attn3",
+      "label": "stream at the last token after attention 3: length 1.998",
+      "box": [
+       0.1171,
+       0.595,
+       0.7035,
+       0.0475
+      ]
+     },
+     {
+      "id": "vec-mlp3",
+      "label": "stream at the last token after MLP 3: length 3.233",
+      "box": [
+       0.1681,
+       0.6775,
+       0.6525,
+       0.0475
+      ]
+     },
+     {
+      "id": "write-attn1",
+      "label": "length of the vector attention 1 added at the last token: 1.253",
+      "box": [
+       0.8552,
+       0.2718,
+       0.0724,
+       0.0339
+      ]
+     },
+     {
+      "id": "write-mlp1",
+      "label": "length of the vector MLP 1 added at the last token: 1.195",
+      "box": [
+       0.8552,
+       0.3543,
+       0.0729,
+       0.0339
+      ]
+     },
+     {
+      "id": "write-attn2",
+      "label": "length of the vector attention 2 added at the last token: 1.244",
+      "box": [
+       0.8554,
+       0.4368,
+       0.0717,
+       0.0339
+      ]
+     },
+     {
+      "id": "write-mlp2",
+      "label": "length of the vector MLP 2 added at the last token: 1.337",
+      "box": [
+       0.8556,
+       0.5196,
+       0.0717,
+       0.0334
+      ]
+     },
+     {
+      "id": "write-attn3",
+      "label": "length of the vector attention 3 added at the last token: 0.998",
+      "box": [
+       0.8558,
+       0.6018,
+       0.0725,
+       0.0339
+      ]
+     },
+     {
+      "id": "write-mlp3",
+      "label": "length of the vector MLP 3 added at the last token: 3.683",
+      "box": [
+       0.8557,
+       0.6843,
+       0.0729,
+       0.0339
+      ]
+     }
+    ]
+   },
+   {
+    "start": 40.33,
+    "end": 48.3,
+    "text": "Because every block shares one board, you can read it at any depth with the model's own final readout. That's the logit lens.",
+    "scene": "Four checkpoints on the stream (token + position, after layer 1, after layer 2, after layer 3) will each be decoded with the model's final LayerNorm + unembedding + softmax: the logit lens.",
+    "objects": [
+     {
+      "id": "lens",
+      "label": "logit lens: apply the final LayerNorm and unembedding to an intermediate stream vector",
+      "box": [
+       0.1247,
+       0.1188,
+       0.7505,
+       0.0987
+      ]
+     }
+    ]
+   },
+   {
+    "start": 48.3,
+    "end": 68.03,
+    "text": "Straight after embedding, it just says 'the', 100 percent: the readout reuses the embedding table, so it sees the token it's sitting on. After layer 1, still 'the', 33. After layer 2, 'white', 12. After layer 3, red, 87.",
+    "scene": "Logit-lens top-3 at each checkpoint for the final ' the': token + position: ' the' 100.0%, ' tom' 0.0%, ' mia' 0.0%; after layer 1: ' the' 32.6%, ' black' 9.2%, ' purple' 8.3%; after layer 2: ' white' 11.6%, 'day' 11.2%, ' ho' 8.8%; after layer 3: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%.",
+    "objects": [
+     {
+      "id": "lens",
+      "label": "logit lens: apply the final LayerNorm and unembedding to an intermediate stream vector",
+      "box": [
+       0.1247,
+       0.1188,
+       0.7505,
+       0.0987
+      ]
+     },
+     {
+      "id": "lens-embed",
+      "label": "logit lens token + position: \" the\" 100.0%, \" tom\" 0.0%, \" mia\" 0.0%",
+      "box": [
+       0.0879,
+       0.3294,
+       0.2169,
+       0.4276
+      ]
+     },
+     {
+      "id": "lens-mlp1",
+      "label": "logit lens after layer 1: \" the\" 32.6%, \" black\" 9.2%, \" purple\" 8.3%",
+      "box": [
+       0.3435,
+       0.3294,
+       0.1511,
+       0.4265
+      ]
+     },
+     {
+      "id": "lens-mlp2",
+      "label": "logit lens after layer 2: \" white\" 11.6%, \"day\" 11.2%, \" ho\" 8.8%",
+      "box": [
+       0.5332,
+       0.3294,
+       0.1568,
+       0.4286
+      ]
+     },
+     {
+      "id": "lens-mlp3",
+      "label": "logit lens after layer 3: \" red\" 87.1%, \" white\" 5.9%, \" purple\" 5.1%",
+      "box": [
+       0.7286,
+       0.3294,
+       0.1834,
+       0.4286
+      ]
+     }
+    ]
+   },
+   {
+    "start": 68.03,
+    "end": 81.33,
+    "text": "One catch: the board's scale drifts. Averaged over the story, its length grows from 1.3 to 7.3. So before any block reads it, LayerNorm re-centres the vector and rescales it to a standard size.",
+    "scene": "Line chart of the real average stream length over the 23 story tokens at each stage: embed 1.34, attn1 1.62, mlp1 2.70, attn2 2.75, mlp2 4.65, attn3 4.52, mlp3 7.34. Right: the final stream vector before and after LayerNorm (subtract the mean, divide by the spread; then a learned scale and shift).",
+    "objects": [
+     {
+      "id": "growth",
+      "label": "average residual-stream length over the 23 tokens: 1.34 → 1.62 → 2.70 → 2.75 → 4.65 → 4.52 → 7.34",
+      "box": [
+       0.0605,
+       0.2469,
+       0.3933,
+       0.5094
+      ]
+     },
+     {
+      "id": "ln",
+      "label": "LayerNorm on the final stream vector: mean +0.004, spread 0.404 → mean 0, spread 1 (then a learned per-dimension scale and shift)",
+      "box": [
+       0.5956,
+       0.2839,
+       0.315,
+       0.4571
+      ]
+     }
+    ]
+   },
+   {
+    "start": 81.33,
+    "end": 87.2,
+    "text": "The final readout needs one too. Skip it, and red drops from 87 percent to 6.",
+    "scene": "P(' red') at the end: 87.1% with the final LayerNorm vs 5.7% if the raw stream is fed straight into the unembedding.",
+    "objects": [
+     {
+      "id": "growth",
+      "label": "average residual-stream length over the 23 tokens: 1.34 → 1.62 → 2.70 → 2.75 → 4.65 → 4.52 → 7.34",
+      "box": [
+       0.0885,
+       0.2151,
+       0.3343,
+       0.4329
+      ]
+     },
+     {
+      "id": "ln",
+      "label": "LayerNorm on the final stream vector: mean +0.004, spread 0.404 → mean 0, spread 1 (then a learned per-dimension scale and shift)",
+      "box": [
+       0.6192,
+       0.2495,
+       0.2678,
+       0.3886
+      ]
+     },
+     {
+      "id": "with-ln",
+      "label": "P(\" red\") with the final LayerNorm: 87.07%",
+      "box": [
+       0.0259,
+       0.7625,
+       0.7124,
+       0.0625
+      ]
+     },
+     {
+      "id": "no-ln",
+      "label": "P(\" red\") reading the raw stream without the final LayerNorm: 5.67%",
+      "box": [
+       0.2484,
+       0.8562,
+       0.1871,
+       0.0625
+      ]
+     }
+    ]
+   },
+   {
+    "start": 87.2,
+    "end": 105.5,
+    "text": "For interpretability, this is a gift. Every note is just a vector you can measure, read, or erase. Erase layer 3's MLP note, and red falls to 2 percent. Erase layer 2's attention, home of the color-copying head, and it falls to 4.",
+    "scene": "Real knockouts: P(' red') with nothing removed vs with one block's output erased (zeroed at every position): nothing removed 87.1%, attention 1 0.1%, MLP 1 0.1%, attention 2 4.0%, MLP 2 32.9%, attention 3 57.4%, MLP 3 1.9%.",
+    "objects": [
+     {
+      "id": "ko-nothing-removed",
+      "label": "P(\" red\") with nothing removed: 87.07%",
+      "box": [
+       0.1468,
+       0.2238,
+       0.6752,
+       0.0525
+      ]
+     },
+     {
+      "id": "ko-attention-1",
+      "label": "P(\" red\") with attention 1 erased: 0.09%",
+      "box": [
+       0.2267,
+       0.3313,
+       0.2152,
+       0.0525
+      ]
+     },
+     {
+      "id": "ko-MLP-1",
+      "label": "P(\" red\") with MLP 1 erased: 0.07%",
+      "box": [
+       0.2788,
+       0.4138,
+       0.163,
+       0.0525
+      ]
+     },
+     {
+      "id": "ko-attention-2",
+      "label": "P(\" red\") with attention 2 erased: 3.96%",
+      "box": [
+       0.2211,
+       0.4962,
+       0.2349,
+       0.0525
+      ]
+     },
+     {
+      "id": "ko-MLP-2",
+      "label": "P(\" red\") with MLP 2 erased: 32.94%",
+      "box": [
+       0.2732,
+       0.5788,
+       0.3203,
+       0.0525
+      ]
+     },
+     {
+      "id": "ko-attention-3",
+      "label": "P(\" red\") with attention 3 erased: 57.35%",
+      "box": [
+       0.2206,
+       0.6612,
+       0.4757,
+       0.0525
+      ]
+     },
+     {
+      "id": "ko-MLP-3",
+      "label": "P(\" red\") with MLP 3 erased: 1.88%",
+      "box": [
+       0.2727,
+       0.7438,
+       0.1739,
+       0.0525
+      ]
+     }
+    ]
+   },
+   {
+    "start": 105.5,
+    "end": 121.3,
+    "text": "And for design. Because blocks add instead of overwrite, gradients flow straight back through the plus signs. That's a big part of why very deep networks can train at all. Many newer architectures keep this whiteboard, and change what writes on it.",
+    "scene": "Two design takeaways: 'add, don't overwrite' (gradients flow straight back through the additions, which lets very deep networks train) and 'keep the board, swap the writers' (e.g. mixture-of-experts MLPs, new kinds of token mixing).",
+    "objects": [
+     {
+      "id": "highway",
+      "label": "the + junctions pass gradients straight back to early layers",
+      "box": [
+       0.1344,
+       0.2812,
+       0.7312,
+       0.1553
+      ]
+     },
+     {
+      "id": "design-1",
+      "label": "residual connections: the identity path lets gradients reach early layers (ResNets, 2015)",
+      "box": [
+       0.1613,
+       0.5049,
+       0.5782,
+       0.1824
+      ]
+     },
+     {
+      "id": "design-2",
+      "label": "newer designs often keep the residual stream and replace the blocks that write to it",
+      "box": [
+       0.1613,
+       0.7624,
+       0.6774,
+       0.1202
+      ]
+     }
+    ]
+   },
+   {
+    "start": 121.3,
+    "end": 127.6,
+    "text": "One shared board. Six notes. One readout. Go watch it fill up in the X-ray.",
+    "scene": "Recap: the stream arrow with the logit-lens guesses along it (' the' → ' the' → ' white' → ' red'). CTA: watch the board fill up in the X-ray.",
+    "objects": [
+     {
+      "id": "recap",
+      "label": "logit-lens guesses along the stream: \" the\" 100% → \" the\" 33% → \" white\" 12% → \" red\" 87%",
+      "box": [
+       0.0781,
+       0.391,
+       0.8438,
+       0.2059
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the X-ray to see the residual stream live",
+      "box": [
+       0.0877,
+       0.7645,
+       0.8246,
+       0.0711
       ]
      }
     ]
@@ -5176,6 +6576,1884 @@
   ]
  },
  {
+  "id": "loss",
+  "title": "Loss: the one number training cares about",
+  "subtitle": "Next-token prediction, cross-entropy with real probabilities, perplexity, and why averaging works",
+  "duration": 142.17,
+  "track": "training",
+  "order": 20,
+  "src": "/videos/loss.mp4",
+  "poster": "/videos/loss.jpg",
+  "relates": "training",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The training signal"
+   },
+   {
+    "t": 11.27,
+    "title": "Cross-entropy"
+   },
+   {
+    "t": 23.67,
+    "title": "Every guess, scored"
+   },
+   {
+    "t": 53.77,
+    "title": "Pure guessing"
+   },
+   {
+    "t": 71.37,
+    "title": "Perplexity"
+   },
+   {
+    "t": 87.83,
+    "title": "The real curve"
+   },
+   {
+    "t": 100.87,
+    "title": "Why averaging works"
+   },
+   {
+    "t": 132.23,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 11.27,
+    "text": "How does a model learn from raw text, with no labels? Hide the next token and make it guess. The text is its own answer key, so every position is a free quiz question.",
+    "scene": "Tokens of 'mia has a red ball.' on top; under each, the next token is hidden behind a '?' card, then revealed. Caption: our 26-token story = 25 free quiz questions.",
+    "objects": [
+     {
+      "id": "pair-0",
+      "label": "after \"mia\" the correct next token is \" has\"",
+      "box": [
+       0.2096,
+       0.3133,
+       0.0908,
+       0.2985
+      ]
+     },
+     {
+      "id": "pair-1",
+      "label": "after \" has\" the correct next token is \" a\"",
+      "box": [
+       0.3293,
+       0.3133,
+       0.0908,
+       0.2985
+      ]
+     },
+     {
+      "id": "pair-2",
+      "label": "after \" a\" the correct next token is \" red\"",
+      "box": [
+       0.44,
+       0.3133,
+       0.0906,
+       0.2985
+      ]
+     },
+     {
+      "id": "pair-3",
+      "label": "after \" red\" the correct next token is \" ball\"",
+      "box": [
+       0.5405,
+       0.3133,
+       0.1106,
+       0.2985
+      ]
+     },
+     {
+      "id": "pair-4",
+      "label": "after \" ball\" the correct next token is \".\"",
+      "box": [
+       0.6797,
+       0.3133,
+       0.1106,
+       0.2985
+      ]
+     },
+     {
+      "id": "note",
+      "label": "a 26-token text gives 25 next-token predictions to grade",
+      "box": [
+       0.1995,
+       0.7998,
+       0.6011,
+       0.0505
+      ]
+     }
+    ]
+   },
+   {
+    "start": 11.27,
+    "end": 23.67,
+    "text": "Each guess is scored with cross-entropy: minus the log of the probability it gave the right token. Sure and right costs almost nothing. Unsure costs more. Badly wrong costs a lot.",
+    "scene": "Formula: loss = −log(p[right token]); its curve; four real guesses from the story placed on it: ' now' → ' tom' p = 99.70%, loss 0.003; ' the' → ' red' p = 87.07%, loss 0.138; ' a' → ' red' p = 12.43%, loss 2.085; '.' → ' tom' p = 4.52%, loss 3.096.",
+    "objects": [
+     {
+      "id": "formula",
+      "label": "cross-entropy loss for one prediction = −ln p(correct token)",
+      "box": [
+       0.1862,
+       0.1396,
+       0.6276,
+       0.0708
+      ]
+     },
+     {
+      "id": "curve",
+      "label": "loss = −ln p: 0 at p = 1, grows without limit as p → 0",
+      "box": [
+       0.0887,
+       0.3438,
+       0.457,
+       0.5
+      ]
+     },
+     {
+      "id": "ex-0",
+      "label": "real: after \" now\" the model gave \" tom\" p = 99.70% → loss 0.003",
+      "box": [
+       0.5373,
+       0.3396,
+       0.3716,
+       0.5038
+      ]
+     },
+     {
+      "id": "ex-1",
+      "label": "real: after \" the\" the model gave \" red\" p = 87.07% → loss 0.138",
+      "box": [
+       0.4805,
+       0.4682,
+       0.4277,
+       0.3621
+      ]
+     },
+     {
+      "id": "ex-2",
+      "label": "real: after \" a\" the model gave \" red\" p = 12.43% → loss 2.085",
+      "box": [
+       0.1446,
+       0.5968,
+       0.7647,
+       0.0849
+      ]
+     },
+     {
+      "id": "ex-3",
+      "label": "real: after \".\" the model gave \" tom\" p = 4.52% → loss 3.096",
+      "box": [
+       0.109,
+       0.5169,
+       0.7847,
+       0.2935
+      ]
+     }
+    ]
+   },
+   {
+    "start": 23.67,
+    "end": 34.53,
+    "text": "Here's every guess on our story. 16 of the 25 are nearly free. The spikes are the real coin flips: which color Mia has, which toy, who comes next.",
+    "scene": "Bar chart of the real loss for each of the 25 next-token predictions in the story (labels = the token being predicted). 16 cost under 0.05; the spikes (pink) are ' red' (2.08), ' ball' (2.68), ' tom' (3.10), ' blue' (2.11), ' kite' (2.37).",
+    "objects": [
+     {
+      "id": "bar-0",
+      "label": "predicting \" has\" after \"mia\": p = 80.41%, loss 0.218",
+      "box": [
+       0.0623,
+       0.6554,
+       0.0248,
+       0.1332
+      ]
+     },
+     {
+      "id": "bar-1",
+      "label": "predicting \" a\" after \" has\": p = 88.62%, loss 0.121",
+      "box": [
+       0.0978,
+       0.6641,
+       0.0248,
+       0.0741
+      ]
+     },
+     {
+      "id": "bar-2",
+      "label": "predicting \" red\" after \" a\": p = 12.43%, loss 2.085",
+      "box": [
+       0.1332,
+       0.4877,
+       0.0248,
+       0.3006
+      ]
+     },
+     {
+      "id": "bar-3",
+      "label": "predicting \" ball\" after \" red\": p = 6.83%, loss 2.683",
+      "box": [
+       0.1687,
+       0.4339,
+       0.0248,
+       0.3811
+      ]
+     },
+     {
+      "id": "bar-4",
+      "label": "predicting \".\" after \" ball\": p = 99.98%, loss 0.000",
+      "box": [
+       0.2041,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "bar-5",
+      "label": "predicting \" tom\" after \".\": p = 4.52%, loss 3.096",
+      "box": [
+       0.2395,
+       0.3968,
+       0.0248,
+       0.3928
+      ]
+     },
+     {
+      "id": "bar-6",
+      "label": "predicting \" has\" after \" tom\": p = 99.63%, loss 0.004",
+      "box": [
+       0.275,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-7",
+      "label": "predicting \" a\" after \" has\": p = 86.96%, loss 0.140",
+      "box": [
+       0.3104,
+       0.6624,
+       0.0248,
+       0.0758
+      ]
+     },
+     {
+      "id": "bar-8",
+      "label": "predicting \" blue\" after \" a\": p = 12.11%, loss 2.111",
+      "box": [
+       0.3458,
+       0.4853,
+       0.0248,
+       0.3283
+      ]
+     },
+     {
+      "id": "bar-9",
+      "label": "predicting \" kite\" after \" blue\": p = 9.34%, loss 2.371",
+      "box": [
+       0.3813,
+       0.462,
+       0.0248,
+       0.3516
+      ]
+     },
+     {
+      "id": "bar-10",
+      "label": "predicting \".\" after \" kite\": p = 99.95%, loss 0.001",
+      "box": [
+       0.4167,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "bar-11",
+      "label": "predicting \" mia\" after \".\": p = 98.89%, loss 0.011",
+      "box": [
+       0.4522,
+       0.6712,
+       0.0248,
+       0.117
+      ]
+     },
+     {
+      "id": "bar-12",
+      "label": "predicting \" gives\" after \" mia\": p = 99.90%, loss 0.001",
+      "box": [
+       0.4876,
+       0.6712,
+       0.0248,
+       0.1673
+      ]
+     },
+     {
+      "id": "bar-13",
+      "label": "predicting \" the\" after \" gives\": p = 99.97%, loss 0.000",
+      "box": [
+       0.523,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-14",
+      "label": "predicting \" ball\" after \" the\": p = 99.36%, loss 0.006",
+      "box": [
+       0.5585,
+       0.6712,
+       0.0248,
+       0.1438
+      ]
+     },
+     {
+      "id": "bar-15",
+      "label": "predicting \" to\" after \" ball\": p = 99.95%, loss 0.001",
+      "box": [
+       0.5939,
+       0.6712,
+       0.0248,
+       0.0923
+      ]
+     },
+     {
+      "id": "bar-16",
+      "label": "predicting \" tom\" after \" to\": p = 99.68%, loss 0.003",
+      "box": [
+       0.6293,
+       0.6712,
+       0.0248,
+       0.1184
+      ]
+     },
+     {
+      "id": "bar-17",
+      "label": "predicting \".\" after \" tom\": p = 99.98%, loss 0.000",
+      "box": [
+       0.6648,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "bar-18",
+      "label": "predicting \" now\" after \".\": p = 99.92%, loss 0.001",
+      "box": [
+       0.7002,
+       0.6712,
+       0.0248,
+       0.1196
+      ]
+     },
+     {
+      "id": "bar-19",
+      "label": "predicting \" tom\" after \" now\": p = 99.70%, loss 0.003",
+      "box": [
+       0.7357,
+       0.6712,
+       0.0248,
+       0.1184
+      ]
+     },
+     {
+      "id": "bar-20",
+      "label": "predicting \" has\" after \" tom\": p = 99.85%, loss 0.002",
+      "box": [
+       0.7711,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-21",
+      "label": "predicting \" the\" after \" has\": p = 99.96%, loss 0.000",
+      "box": [
+       0.8065,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-22",
+      "label": "predicting \" red\" after \" the\": p = 87.07%, loss 0.138",
+      "box": [
+       0.842,
+       0.6626,
+       0.0248,
+       0.1257
+      ]
+     },
+     {
+      "id": "bar-23",
+      "label": "predicting \" ball\" after \" red\": p = 99.37%, loss 0.006",
+      "box": [
+       0.8774,
+       0.6712,
+       0.0248,
+       0.1438
+      ]
+     },
+     {
+      "id": "bar-24",
+      "label": "predicting \".\" after \" ball\": p = 99.99%, loss 0.000",
+      "box": [
+       0.9128,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     }
+    ]
+   },
+   {
+    "start": 34.53,
+    "end": 53.77,
+    "text": "The first red is a pure guess: with 9 colors, the best possible is about 11 percent, and the model gives 12. No training can make that loss zero. The last red follows from the story: 87 percent. Average all 25, and the story's loss is 0.52.",
+    "scene": "Two callouts: 'mia has a' → 'red' p = 12.4% (loss 2.08); with 9 equally likely colors the best possible is ~11.1% (loss 2.20). 'now tom has the' → 'red' p = 87.1% (loss 0.14). Average over all 25 predictions = 0.520.",
+    "objects": [
+     {
+      "id": "bar-0",
+      "label": "predicting \" has\" after \"mia\": p = 80.41%, loss 0.218",
+      "box": [
+       0.0623,
+       0.6554,
+       0.0248,
+       0.1332
+      ]
+     },
+     {
+      "id": "bar-1",
+      "label": "predicting \" a\" after \" has\": p = 88.62%, loss 0.121",
+      "box": [
+       0.0978,
+       0.6641,
+       0.0248,
+       0.0741
+      ]
+     },
+     {
+      "id": "bar-2",
+      "label": "predicting \" red\" after \" a\": p = 12.43%, loss 2.085",
+      "box": [
+       0.1332,
+       0.4877,
+       0.0248,
+       0.3006
+      ]
+     },
+     {
+      "id": "bar-3",
+      "label": "predicting \" ball\" after \" red\": p = 6.83%, loss 2.683",
+      "box": [
+       0.1687,
+       0.4339,
+       0.0248,
+       0.3811
+      ]
+     },
+     {
+      "id": "bar-4",
+      "label": "predicting \".\" after \" ball\": p = 99.98%, loss 0.000",
+      "box": [
+       0.2041,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "bar-5",
+      "label": "predicting \" tom\" after \".\": p = 4.52%, loss 3.096",
+      "box": [
+       0.2395,
+       0.3968,
+       0.0248,
+       0.3928
+      ]
+     },
+     {
+      "id": "bar-6",
+      "label": "predicting \" has\" after \" tom\": p = 99.63%, loss 0.004",
+      "box": [
+       0.275,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-7",
+      "label": "predicting \" a\" after \" has\": p = 86.96%, loss 0.140",
+      "box": [
+       0.3104,
+       0.6624,
+       0.0248,
+       0.0758
+      ]
+     },
+     {
+      "id": "bar-8",
+      "label": "predicting \" blue\" after \" a\": p = 12.11%, loss 2.111",
+      "box": [
+       0.3458,
+       0.4853,
+       0.0248,
+       0.3283
+      ]
+     },
+     {
+      "id": "bar-9",
+      "label": "predicting \" kite\" after \" blue\": p = 9.34%, loss 2.371",
+      "box": [
+       0.3813,
+       0.462,
+       0.0248,
+       0.3516
+      ]
+     },
+     {
+      "id": "bar-10",
+      "label": "predicting \".\" after \" kite\": p = 99.95%, loss 0.001",
+      "box": [
+       0.4167,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "bar-11",
+      "label": "predicting \" mia\" after \".\": p = 98.89%, loss 0.011",
+      "box": [
+       0.4522,
+       0.6712,
+       0.0248,
+       0.117
+      ]
+     },
+     {
+      "id": "bar-12",
+      "label": "predicting \" gives\" after \" mia\": p = 99.90%, loss 0.001",
+      "box": [
+       0.4876,
+       0.6712,
+       0.0248,
+       0.1673
+      ]
+     },
+     {
+      "id": "bar-13",
+      "label": "predicting \" the\" after \" gives\": p = 99.97%, loss 0.000",
+      "box": [
+       0.523,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-14",
+      "label": "predicting \" ball\" after \" the\": p = 99.36%, loss 0.006",
+      "box": [
+       0.5585,
+       0.6712,
+       0.0248,
+       0.1438
+      ]
+     },
+     {
+      "id": "bar-15",
+      "label": "predicting \" to\" after \" ball\": p = 99.95%, loss 0.001",
+      "box": [
+       0.5939,
+       0.6712,
+       0.0248,
+       0.0923
+      ]
+     },
+     {
+      "id": "bar-16",
+      "label": "predicting \" tom\" after \" to\": p = 99.68%, loss 0.003",
+      "box": [
+       0.6293,
+       0.6712,
+       0.0248,
+       0.1184
+      ]
+     },
+     {
+      "id": "bar-17",
+      "label": "predicting \".\" after \" tom\": p = 99.98%, loss 0.000",
+      "box": [
+       0.6648,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "bar-18",
+      "label": "predicting \" now\" after \".\": p = 99.92%, loss 0.001",
+      "box": [
+       0.7002,
+       0.6712,
+       0.0248,
+       0.1196
+      ]
+     },
+     {
+      "id": "bar-19",
+      "label": "predicting \" tom\" after \" now\": p = 99.70%, loss 0.003",
+      "box": [
+       0.7357,
+       0.6712,
+       0.0248,
+       0.1184
+      ]
+     },
+     {
+      "id": "bar-20",
+      "label": "predicting \" has\" after \" tom\": p = 99.85%, loss 0.002",
+      "box": [
+       0.7711,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-21",
+      "label": "predicting \" the\" after \" has\": p = 99.96%, loss 0.000",
+      "box": [
+       0.8065,
+       0.6712,
+       0.0248,
+       0.1173
+      ]
+     },
+     {
+      "id": "bar-22",
+      "label": "predicting \" red\" after \" the\": p = 87.07%, loss 0.138",
+      "box": [
+       0.842,
+       0.6626,
+       0.0248,
+       0.1257
+      ]
+     },
+     {
+      "id": "bar-23",
+      "label": "predicting \" ball\" after \" red\": p = 99.37%, loss 0.006",
+      "box": [
+       0.8774,
+       0.6712,
+       0.0248,
+       0.1438
+      ]
+     },
+     {
+      "id": "bar-24",
+      "label": "predicting \".\" after \" ball\": p = 99.99%, loss 0.000",
+      "box": [
+       0.9128,
+       0.6712,
+       0.0248,
+       0.0293
+      ]
+     },
+     {
+      "id": "coinflip",
+      "label": "\"mia has a\" → \"red\": p = 12.43%; uniform over 9 colors = 11.11% (loss 2.197)",
+      "box": [
+       0.0519,
+       0.1367,
+       0.4094,
+       0.1517
+      ]
+     },
+     {
+      "id": "predictable",
+      "label": "\"now tom has the\" → \"red\": p = 87.07%, loss 0.138",
+      "box": [
+       0.5457,
+       0.1367,
+       0.4023,
+       0.1496
+      ]
+     },
+     {
+      "id": "avg",
+      "label": "mean cross-entropy over the story's 25 predictions = 0.5201",
+      "box": [
+       0.5777,
+       0.8808,
+       0.3367,
+       0.0509
+      ]
+     }
+    ]
+   },
+   {
+    "start": 53.77,
+    "end": 71.37,
+    "text": "Now rewind. With random weights, the model spreads its bets evenly over all 256 tokens, so every guess costs log of 256: 5.55. The real loss at step zero: 5.56. Right on target.",
+    "scene": "256 equal bars (illustration of a uniform guess, 0.39% each). Every guess costs ln 256 = 5.545; the real step-0 training loss from training.json is 5.5593.",
+    "objects": [
+     {
+      "id": "flat",
+      "label": "uniform guess over 256 tokens: 1/256 = 0.39% each (illustration)",
+      "box": [
+       0.0785,
+       0.3,
+       0.8429,
+       0.15
+      ]
+     },
+     {
+      "id": "ln256",
+      "label": "loss of a uniform guess = ln 256 = 5.5452",
+      "box": [
+       0.1154,
+       0.6222,
+       0.7691,
+       0.0566
+      ]
+     },
+     {
+      "id": "step0",
+      "label": "real training loss at step 0 = 5.5593",
+      "box": [
+       0.3252,
+       0.7288,
+       0.3496,
+       0.049
+      ]
+     }
+    ]
+   },
+   {
+    "start": 71.37,
+    "end": 87.83,
+    "text": "Flip a loss back with e to the loss, and you get perplexity: roughly how many tokens it's choosing between. At step zero, about 260: the whole vocabulary. After training, 0.46 means about 1.6.",
+    "scene": "Perplexity = e^loss ≈ the effective number of choices. Step 0: e^5.56 ≈ 260 squares (≈ the 256-token vocabulary). Step 3000: e^0.46 ≈ 1.58: one full square plus a partial one.",
+    "objects": [
+     {
+      "id": "ppl",
+      "label": "perplexity = e^(cross-entropy loss) ≈ effective number of equally likely choices",
+      "box": [
+       0.1562,
+       0.0979,
+       0.6876,
+       0.1391
+      ]
+     },
+     {
+      "id": "ppl0",
+      "label": "step 0: e^5.5593 = 259.6 effective choices",
+      "box": [
+       0.0939,
+       0.3102,
+       0.348,
+       0.5398
+      ]
+     },
+     {
+      "id": "pplf",
+      "label": "step 3000: e^0.4595 = 1.58 effective choices",
+      "box": [
+       0.558,
+       0.3102,
+       0.348,
+       0.5398
+      ]
+     }
+    ]
+   },
+   {
+    "start": 87.83,
+    "end": 100.87,
+    "text": "Here's the real run. It starts at 5.56, right on the guessing line, drops below one by step 150, then grinds down to 0.46.",
+    "scene": "The real training-loss curve from training.json (121 points): 5.56 at step 0 on the pure-guessing line (ln 256 = 5.55), 0.99 at step 150, 0.46 at step 3000.",
+    "objects": [
+     {
+      "id": "curve",
+      "label": "real training loss: 5.559 at step 0 → 0.460 at step 3000 (logged every 25 steps)",
+      "box": [
+       0.159,
+       0.2762,
+       0.7172,
+       0.5229
+      ]
+     },
+     {
+      "id": "chance",
+      "label": "uniform-guess loss ln 256 = 5.545",
+      "box": [
+       0.159,
+       0.2777,
+       0.7172,
+       0.0553
+      ]
+     },
+     {
+      "id": "start",
+      "label": "step 0 loss 5.5593",
+      "box": [
+       0.1534,
+       0.2357,
+       0.0674,
+       0.0506
+      ]
+     },
+     {
+      "id": "below1",
+      "label": "first logged loss below 1: step 150, loss 0.9901",
+      "box": [
+       0.1892,
+       0.5525,
+       0.4148,
+       0.2001
+      ]
+     },
+     {
+      "id": "end",
+      "label": "step 3000: loss 0.4595, perplexity 1.58",
+      "box": [
+       0.5916,
+       0.6878,
+       0.3441,
+       0.119
+      ]
+     }
+    ]
+   },
+   {
+    "start": 100.87,
+    "end": 122.6,
+    "text": "Each training step grades 64 snippets of 64 tokens, 4,096 guesses, and averages them. Single tokens are wildly uneven: on fresh text, 73 percent cost almost nothing, while the hard 18 percent carry 92 percent of the loss. But the average over 4,096 barely moves from batch to batch.",
+    "scene": "Heatmap of real per-token losses for one 64×64 batch of fresh tiny-world text (brighter = higher loss). Stats over 82,944 fresh predictions: 73.2% cost < 0.1; 18.0% cost > 1 and carry 92.2% of the total. Six random batch averages: 0.476, 0.452, 0.426, 0.459, 0.458, 0.437.",
+    "objects": [
+     {
+      "id": "batch",
+      "label": "per-token loss for one real batch of 4,096 predictions; mean 0.476",
+      "box": [
+       0.0416,
+       0.3038,
+       0.2841,
+       0.505
+      ]
+     },
+     {
+      "id": "easy",
+      "label": "73.2% of 82,944 fresh predictions have loss < 0.1",
+      "box": [
+       0.3453,
+       0.3901,
+       0.5059,
+       0.0467
+      ]
+     },
+     {
+      "id": "hard",
+      "label": "18.0% have loss > 1 and account for 92.2% of the total loss",
+      "box": [
+       0.3453,
+       0.5055,
+       0.5567,
+       0.0463
+      ]
+     },
+     {
+      "id": "bmeans",
+      "label": "mean loss of six random 64×64 batches of fresh text: 0.476, 0.452, 0.426, 0.459, 0.458, 0.437",
+      "box": [
+       0.3453,
+       0.6206,
+       0.5921,
+       0.1019
+      ]
+     }
+    ]
+   },
+   {
+    "start": 122.6,
+    "end": 132.23,
+    "text": "And the gradient of an average is the average of the gradients. So every token gets a small vote on how to nudge each weight, and most of the noise cancels out.",
+    "scene": "Caption: gradient of the average = average of the gradients; every token gets a small vote on how to nudge each weight, so individual noise cancels out.",
+    "objects": [
+     {
+      "id": "batch",
+      "label": "per-token loss for one real batch of 4,096 predictions; mean 0.476",
+      "box": [
+       0.0416,
+       0.2475,
+       0.2841,
+       0.505
+      ]
+     },
+     {
+      "id": "easy",
+      "label": "73.2% of 82,944 fresh predictions have loss < 0.1",
+      "box": [
+       0.3453,
+       0.3338,
+       0.5059,
+       0.0467
+      ]
+     },
+     {
+      "id": "hard",
+      "label": "18.0% have loss > 1 and account for 92.2% of the total loss",
+      "box": [
+       0.3453,
+       0.4493,
+       0.5567,
+       0.0463
+      ]
+     },
+     {
+      "id": "bmeans",
+      "label": "mean loss of six random 64×64 batches of fresh text: 0.476, 0.452, 0.426, 0.459, 0.458, 0.437",
+      "box": [
+       0.3453,
+       0.5643,
+       0.5921,
+       0.1019
+      ]
+     },
+     {
+      "id": "vote",
+      "label": "linearity: ∇(mean loss) = mean of per-token ∇loss",
+      "box": [
+       0.1439,
+       0.8427,
+       0.7123,
+       0.1136
+      ]
+     }
+    ]
+   },
+   {
+    "start": 132.23,
+    "end": 141.57,
+    "text": "Predict the next token. Score it. Average over everything. Nudge. That's the whole signal. Now go watch the loss fall in the training lab.",
+    "scene": "Recap loop: predict the next token → score: −log p → average everything → nudge, looping back. CTA: watch the loss fall in the Training lab.",
+    "objects": [
+     {
+      "id": "loop-predict",
+      "label": "training signal step: predict the next token",
+      "box": [
+       0.0521,
+       0.3962,
+       0.2833,
+       0.0826
+      ]
+     },
+     {
+      "id": "loop-score:",
+      "label": "training signal step: score: −log p",
+      "box": [
+       0.3621,
+       0.3962,
+       0.1806,
+       0.0826
+      ]
+     },
+     {
+      "id": "loop-average",
+      "label": "training signal step: average everything",
+      "box": [
+       0.5695,
+       0.3962,
+       0.2536,
+       0.0826
+      ]
+     },
+     {
+      "id": "loop-nudge",
+      "label": "training signal step: nudge",
+      "box": [
+       0.8498,
+       0.3962,
+       0.098,
+       0.0826
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the Training lab to watch the loss fall",
+      "box": [
+       0.0683,
+       0.7767,
+       0.8634,
+       0.0717
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "backprop",
+  "title": "Backprop: blame flows backwards",
+  "subtitle": "The chain rule on a toy graph, then TinyGPT's real gradients for one prediction",
+  "duration": 146.7,
+  "track": "training",
+  "order": 30,
+  "src": "/videos/backprop.mp4",
+  "poster": "/videos/backprop.jpg",
+  "relates": "backprop",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "Who's to blame?"
+   },
+   {
+    "t": 16.13,
+    "title": "The chain rule"
+   },
+   {
+    "t": 56.03,
+    "title": "Real gradients"
+   },
+   {
+    "t": 89.97,
+    "title": "One weight"
+   },
+   {
+    "t": 121.8,
+    "title": "The cost"
+   },
+   {
+    "t": 138.67,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 16.13,
+    "text": "TinyGPT guessed red at 87 percent: the loss is 0.14. Which of its 170,560 weights should change, and by how much? Backprop answers for all of them, in one sweep backwards.",
+    "scene": "The end of the probe prompt '… tom has the' → ' red' at 87.1%, loss 0.138; below, a grid of dots standing for the model's 170,560 weights with the question 'which ones are to blame?'.",
+    "objects": [
+     {
+      "id": "guess",
+      "label": "TinyGPT predicts \" red\" with p = 0.8707",
+      "box": [
+       0.6346,
+       0.2581,
+       0.22,
+       0.0837
+      ]
+     },
+     {
+      "id": "loss",
+      "label": "cross-entropy loss = −ln(0.8707) = 0.1385",
+      "box": [
+       0.4133,
+       0.4169,
+       0.1733,
+       0.0469
+      ]
+     },
+     {
+      "id": "weights",
+      "label": "TinyGPT has 170,560 trainable weights (dots are a stand-in)",
+      "box": [
+       0.1034,
+       0.63,
+       0.7931,
+       0.2154
+      ]
+     }
+    ]
+   },
+   {
+    "start": 16.13,
+    "end": 26.93,
+    "text": "A toy version first. Forward: two times three is six, plus one is seven. That misses the target five by two. Squared, the loss is four.",
+    "scene": "Toy computational graph (labelled toy): x = 2 and w = 3 feed a × node giving a = 6; a and b = 1 feed a + node giving z = 7; (z − t)² with target t = 5 gives loss L = 4. Forward values in teal.",
+    "objects": [
+     {
+      "id": "in-x",
+      "label": "toy input x = 2",
+      "box": [
+       0.0501,
+       0.2058,
+       0.1124,
+       0.0885
+      ]
+     },
+     {
+      "id": "in-w",
+      "label": "toy input w = 3",
+      "box": [
+       0.05,
+       0.4808,
+       0.1124,
+       0.0885
+      ]
+     },
+     {
+      "id": "in-b",
+      "label": "toy input b = 1",
+      "box": [
+       0.2544,
+       0.6308,
+       0.1116,
+       0.0885
+      ]
+     },
+     {
+      "id": "node-mul",
+      "label": "multiply node: a = w × x",
+      "box": [
+       0.2173,
+       0.335,
+       0.0591,
+       0.105
+      ]
+     },
+     {
+      "id": "node-add",
+      "label": "add node: z = a + b",
+      "box": [
+       0.4283,
+       0.335,
+       0.0591,
+       0.105
+      ]
+     },
+     {
+      "id": "node-sq",
+      "label": "squared error node: L = (z − t)², target t = 5",
+      "box": [
+       0.6357,
+       0.3392,
+       0.1504,
+       0.0967
+      ]
+     },
+     {
+      "id": "val-a",
+      "label": "forward value a = w·x = 6",
+      "box": [
+       0.3131,
+       0.3265,
+       0.0785,
+       0.036
+      ]
+     },
+     {
+      "id": "val-z",
+      "label": "forward value z = a + b = 7",
+      "box": [
+       0.5225,
+       0.327,
+       0.0781,
+       0.0355
+      ]
+     },
+     {
+      "id": "loss-L",
+      "label": "toy loss L = (7 − 5)² = 4",
+      "box": [
+       0.8322,
+       0.3435,
+       0.109,
+       0.088
+      ]
+     }
+    ]
+   },
+   {
+    "start": 26.93,
+    "end": 46.37,
+    "text": "Now backwards. The loss's slope at z is twice the miss: four. A plus node passes blame straight through, so a and b both get four. A times node scales it by the other input: w gets eight, x gets twelve.",
+    "scene": "Backward pass on the toy graph, gradients in orange flowing right-to-left: ∂L/∂z = 2(z − 5) = 4; the + node copies it: ∂L/∂a = 4, ∂L/∂b = 4; the × node multiplies by the other input: ∂L/∂w = 4 × 2 = 8, ∂L/∂x = 4 × 3 = 12.",
+    "objects": [
+     {
+      "id": "in-x",
+      "label": "toy input x = 2",
+      "box": [
+       0.0501,
+       0.2058,
+       0.1124,
+       0.0885
+      ]
+     },
+     {
+      "id": "in-w",
+      "label": "toy input w = 3",
+      "box": [
+       0.05,
+       0.4808,
+       0.1124,
+       0.0885
+      ]
+     },
+     {
+      "id": "in-b",
+      "label": "toy input b = 1",
+      "box": [
+       0.2544,
+       0.6308,
+       0.1116,
+       0.0885
+      ]
+     },
+     {
+      "id": "node-mul",
+      "label": "multiply node: a = w × x",
+      "box": [
+       0.2173,
+       0.335,
+       0.0591,
+       0.105
+      ]
+     },
+     {
+      "id": "node-add",
+      "label": "add node: z = a + b",
+      "box": [
+       0.4283,
+       0.335,
+       0.0591,
+       0.105
+      ]
+     },
+     {
+      "id": "node-sq",
+      "label": "squared error node: L = (z − t)², target t = 5",
+      "box": [
+       0.6357,
+       0.3392,
+       0.1504,
+       0.0967
+      ]
+     },
+     {
+      "id": "val-a",
+      "label": "forward value a = w·x = 6",
+      "box": [
+       0.3131,
+       0.3265,
+       0.0785,
+       0.036
+      ]
+     },
+     {
+      "id": "val-z",
+      "label": "forward value z = a + b = 7",
+      "box": [
+       0.5225,
+       0.327,
+       0.0781,
+       0.0355
+      ]
+     },
+     {
+      "id": "loss-L",
+      "label": "toy loss L = (7 − 5)² = 4",
+      "box": [
+       0.8322,
+       0.3435,
+       0.109,
+       0.088
+      ]
+     },
+     {
+      "id": "g-z",
+      "label": "gradient ∂L/∂z = 2(z − target) = 4",
+      "box": [
+       0.4733,
+       0.415,
+       0.1765,
+       0.0949
+      ]
+     },
+     {
+      "id": "g-a",
+      "label": "∂L/∂a = 4 (a + node copies the incoming gradient)",
+      "box": [
+       0.2863,
+       0.415,
+       0.132,
+       0.0424
+      ]
+     },
+     {
+      "id": "g-b",
+      "label": "∂L/∂b = 4",
+      "box": [
+       0.2442,
+       0.7442,
+       0.132,
+       0.0424
+      ]
+     },
+     {
+      "id": "g-w",
+      "label": "∂L/∂w = ∂L/∂a × x = 4 × 2 = 8",
+      "box": [
+       0.0219,
+       0.5942,
+       0.255,
+       0.0424
+      ]
+     },
+     {
+      "id": "g-x",
+      "label": "∂L/∂x = ∂L/∂a × w = 4 × 3 = 12",
+      "box": [
+       0.0219,
+       0.1384,
+       0.2701,
+       0.0424
+      ]
+     }
+    ]
+   },
+   {
+    "start": 46.37,
+    "end": 56.03,
+    "text": "Brute-force check: nudge w by a hair, and the loss moves eight times as much. Each node just multiplies the blame from above by its own local slope.",
+    "scene": "Finite-difference check of the toy gradient: (L(w+ε) − L(w−ε))/2ε with ε = 0.0001 gives 8.0000, matching ∂L/∂w = 8. Rule shown on top: blame in = blame from above × local slope.",
+    "objects": [
+     {
+      "id": "in-x",
+      "label": "toy input x = 2",
+      "box": [
+       0.0501,
+       0.2058,
+       0.1124,
+       0.0885
+      ]
+     },
+     {
+      "id": "in-w",
+      "label": "toy input w = 3",
+      "box": [
+       0.05,
+       0.4808,
+       0.1124,
+       0.0885
+      ]
+     },
+     {
+      "id": "in-b",
+      "label": "toy input b = 1",
+      "box": [
+       0.2544,
+       0.6308,
+       0.1116,
+       0.0885
+      ]
+     },
+     {
+      "id": "node-mul",
+      "label": "multiply node: a = w × x",
+      "box": [
+       0.2173,
+       0.335,
+       0.0591,
+       0.105
+      ]
+     },
+     {
+      "id": "node-add",
+      "label": "add node: z = a + b",
+      "box": [
+       0.4283,
+       0.335,
+       0.0591,
+       0.105
+      ]
+     },
+     {
+      "id": "node-sq",
+      "label": "squared error node: L = (z − t)², target t = 5",
+      "box": [
+       0.6357,
+       0.3392,
+       0.1504,
+       0.0967
+      ]
+     },
+     {
+      "id": "val-a",
+      "label": "forward value a = w·x = 6",
+      "box": [
+       0.3131,
+       0.3265,
+       0.0785,
+       0.036
+      ]
+     },
+     {
+      "id": "val-z",
+      "label": "forward value z = a + b = 7",
+      "box": [
+       0.5225,
+       0.327,
+       0.0781,
+       0.0355
+      ]
+     },
+     {
+      "id": "loss-L",
+      "label": "toy loss L = (7 − 5)² = 4",
+      "box": [
+       0.8322,
+       0.3435,
+       0.109,
+       0.088
+      ]
+     },
+     {
+      "id": "g-z",
+      "label": "gradient ∂L/∂z = 2(z − target) = 4",
+      "box": [
+       0.4733,
+       0.415,
+       0.1765,
+       0.0949
+      ]
+     },
+     {
+      "id": "g-a",
+      "label": "∂L/∂a = 4 (a + node copies the incoming gradient)",
+      "box": [
+       0.2863,
+       0.415,
+       0.132,
+       0.0424
+      ]
+     },
+     {
+      "id": "g-b",
+      "label": "∂L/∂b = 4",
+      "box": [
+       0.2442,
+       0.7442,
+       0.132,
+       0.0424
+      ]
+     },
+     {
+      "id": "g-w",
+      "label": "∂L/∂w = ∂L/∂a × x = 4 × 2 = 8",
+      "box": [
+       0.0219,
+       0.5942,
+       0.255,
+       0.0424
+      ]
+     },
+     {
+      "id": "g-x",
+      "label": "∂L/∂x = ∂L/∂a × w = 4 × 3 = 12",
+      "box": [
+       0.0219,
+       0.1384,
+       0.2701,
+       0.0424
+      ]
+     },
+     {
+      "id": "rule",
+      "label": "chain rule: gradient = upstream gradient × local derivative",
+      "box": [
+       0.1469,
+       0.8855,
+       0.7061,
+       0.0573
+      ]
+     }
+    ]
+   },
+   {
+    "start": 56.03,
+    "end": 77.23,
+    "text": "Now the real thing. At TinyGPT's output, each logit's blame is simply its probability, minus one for the right answer. Red: minus 0.13, push up. White and purple: plus 0.06 and 0.05, push down.",
+    "scene": "Real gradient of the loss w.r.t. TinyGPT's output logits on the probe prompt (target ' red'): ∂loss/∂logit = p − onehot. ' red' -0.129 (teal, push up), ' white' +0.059, ' purple' +0.051, ' black' +0.0028, ' ava' +0.0015 (orange, push down); the other 251 are each between 0 and +0.0010.",
+    "objects": [
+     {
+      "id": "formula",
+      "label": "gradient of cross-entropy w.r.t. logits = softmax probability − one-hot target",
+      "box": [
+       0.0772,
+       0.1127,
+       0.8455,
+       0.0496
+      ]
+     },
+     {
+      "id": "glogit-red",
+      "label": "\" red\": p = 0.8707, ∂loss/∂logit = -0.1293",
+      "box": [
+       0.0609,
+       0.2912,
+       0.5094,
+       0.055
+      ]
+     },
+     {
+      "id": "glogit-white",
+      "label": "\" white\": p = 0.0589, ∂loss/∂logit = +0.0589",
+      "box": [
+       0.0255,
+       0.3788,
+       0.7098,
+       0.055
+      ]
+     },
+     {
+      "id": "glogit-purple",
+      "label": "\" purple\": p = 0.0508, ∂loss/∂logit = +0.0508",
+      "box": [
+       0.0079,
+       0.4662,
+       0.7183,
+       0.055
+      ]
+     },
+     {
+      "id": "glogit-black",
+      "label": "\" black\": p = 0.0028, ∂loss/∂logit = +0.0028",
+      "box": [
+       0.0242,
+       0.5538,
+       0.6472,
+       0.055
+      ]
+     },
+     {
+      "id": "glogit-ava",
+      "label": "\" ava\": p = 0.0015, ∂loss/∂logit = +0.0015",
+      "box": [
+       0.0609,
+       0.6412,
+       0.6103,
+       0.055
+      ]
+     },
+     {
+      "id": "rest",
+      "label": "the remaining 251 logits each get a small positive gradient (max 0.0010); all 256 sum to -8.3e-17 ≈ 0",
+      "box": [
+       0.2282,
+       0.7719,
+       0.5436,
+       0.0312
+      ]
+     }
+    ]
+   },
+   {
+    "start": 77.23,
+    "end": 89.97,
+    "text": "That blame flows down through all three layers, adding up wherever paths merge. From this single prediction, 167,922 weights get some blame.",
+    "scene": "Real gradient norms per part of TinyGPT for this one prediction, top (output) to bottom (input): final LayerNorm 0.10, layer 3 MLP 0.84, layer 3 attention 1.06, layer 2 MLP 1.93, layer 2 attention 2.82, layer 1 MLP 3.34, layer 1 attention 5.09, position embedding 2.14, token embedding (tied) 2.84. 167,922 of 170,560 weights have a nonzero gradient.",
+    "objects": [
+     {
+      "id": "norm-final-LayerNorm",
+      "label": "gradient norm of final LayerNorm: 0.099",
+      "box": [
+       0.2405,
+       0.1837,
+       0.2872,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-layer-3-MLP",
+      "label": "gradient norm of layer 3 MLP: 0.842",
+      "box": [
+       0.2914,
+       0.2538,
+       0.2869,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-layer-3-attention",
+      "label": "gradient norm of layer 3 attention: 1.060",
+      "box": [
+       0.241,
+       0.3238,
+       0.3532,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-layer-2-MLP",
+      "label": "gradient norm of layer 2 MLP: 1.931",
+      "box": [
+       0.2916,
+       0.3938,
+       0.3622,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-layer-2-attention",
+      "label": "gradient norm of layer 2 attention: 2.816",
+      "box": [
+       0.2412,
+       0.4638,
+       0.4744,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-layer-1-MLP",
+      "label": "gradient norm of layer 1 MLP: 3.344",
+      "box": [
+       0.2968,
+       0.5338,
+       0.4546,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-layer-1-attention",
+      "label": "gradient norm of layer 1 attention: 5.091",
+      "box": [
+       0.2464,
+       0.6038,
+       0.6266,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-position-embedding",
+      "label": "gradient norm of position embedding: 2.142",
+      "box": [
+       0.1962,
+       0.6738,
+       0.472,
+       0.045
+      ]
+     },
+     {
+      "id": "norm-token-embedding-tied",
+      "label": "gradient norm of token embedding (tied): 2.843",
+      "box": [
+       0.1534,
+       0.7438,
+       0.5633,
+       0.045
+      ]
+     },
+     {
+      "id": "nonzero",
+      "label": "167,922 of 170,560 weights have nonzero gradient here (unused positions 23–63 get none)",
+      "box": [
+       0.1896,
+       0.8926,
+       0.6208,
+       0.0512
+      ]
+     }
+    ]
+   },
+   {
+    "start": 89.97,
+    "end": 105.93,
+    "text": "Zoom into one real weight. Its gradient is minus 0.07. Negative means: increase me, and the loss drops. A step at learning rate 0.003 adds just 0.0002.",
+    "scene": "Heat map of the real gradient of layer 3's MLP output matrix (64×256). Highlighted: row 57, column 212, weight 0.0974, gradient -0.0702 (finite-difference check -0.0702). Gradient step at lr 0.003: −lr × grad = +0.00021, new weight 0.0976.",
+    "objects": [
+     {
+      "id": "gradmap",
+      "label": "real gradient of blocks.2.mlp_out.weight (64×256), max |g| = 0.0702",
+      "box": [
+       0.0345,
+       0.4069,
+       0.4669,
+       0.2113
+      ]
+     },
+     {
+      "id": "theweight",
+      "label": "weight [57, 212] of layer 3 MLP output: 0.09740, gradient -0.07018",
+      "box": [
+       0.4099,
+       0.5747,
+       0.0225,
+       0.04
+      ]
+     },
+     {
+      "id": "info",
+      "label": "w = 0.09740, ∂loss/∂w = -0.07018, finite difference -0.07018",
+      "box": [
+       0.5422,
+       0.2522,
+       0.3509,
+       0.2732
+      ]
+     },
+     {
+      "id": "update",
+      "label": "w ← w − 0.003 × grad = 0.09740 + 0.00021 = 0.09761",
+      "box": [
+       0.5422,
+       0.5942,
+       0.3741,
+       0.1785
+      ]
+     }
+    ]
+   },
+   {
+    "start": 105.93,
+    "end": 121.8,
+    "text": "But take that raw step on every weight at once, and it overshoots: red falls to 51 percent. TinyGPT's training first shrinks the whole gradient to length one; then the same step lifts red to 87.5.",
+    "scene": "Two real outcomes of one gradient step at lr 0.003 on all 170,560 weights: raw gradient (length 7.95) → p(red) 87.1% → 50.6% (overshoot); gradient clipped to length 1 like train.py does → 87.1% → 87.5%.",
+    "objects": [
+     {
+      "id": "raw",
+      "label": "raw gradient step (lr 0.003): p(red) 0.8707 → 0.5058",
+      "box": [
+       0.0674,
+       0.3977,
+       0.3591,
+       0.2296
+      ]
+     },
+     {
+      "id": "clipped",
+      "label": "gradient clipped to norm 1 (from 7.954), lr 0.003: p(red) 0.8707 → 0.8746",
+      "box": [
+       0.539,
+       0.3919,
+       0.3937,
+       0.2412
+      ]
+     }
+    ]
+   },
+   {
+    "start": 121.8,
+    "end": 138.67,
+    "text": "Why does backward cost about twice forward? Each matrix multiply going forward needs two going back: one for blame on its inputs, one for blame on its weights. So a training step costs roughly three forward passes, and must keep every activation in memory.",
+    "scene": "Matrix diagram: forward Y = X·W (one multiply); backward dX = dY·Wᵀ (blame for inputs) and dW = Xᵀ·dY (blame for weights): two multiplies. Tally: forward ≈ 1, backward ≈ 2, training step ≈ 3 units (approximate). Note: activations must be stored for the backward pass.",
+    "objects": [
+     {
+      "id": "fwd-mm",
+      "label": "forward: Y = X·W, one matrix multiply per layer weight",
+      "box": [
+       0.199,
+       0.2112,
+       0.5924,
+       0.0775
+      ]
+     },
+     {
+      "id": "bwd-mm1",
+      "label": "backward: dX = dY·Wᵀ passes the gradient to the layer's input",
+      "box": [
+       0.0749,
+       0.355,
+       0.7024,
+       0.0775
+      ]
+     },
+     {
+      "id": "bwd-mm2",
+      "label": "backward: dW = Xᵀ·dY is the gradient for the weights",
+      "box": [
+       0.0532,
+       0.4988,
+       0.7522,
+       0.0775
+      ]
+     },
+     {
+      "id": "tally",
+      "label": "rule of thumb: backward ≈ 2× forward FLOPs, so a training step ≈ 3× a forward pass (approximate; depends on implementation)",
+      "box": [
+       0.057,
+       0.6966,
+       0.8859,
+       0.0444
+      ]
+     },
+     {
+      "id": "memory",
+      "label": "backprop needs the forward activations, so training uses much more memory than inference",
+      "box": [
+       0.093,
+       0.8235,
+       0.8141,
+       0.0404
+      ]
+     }
+    ]
+   },
+   {
+    "start": 138.67,
+    "end": 146.1,
+    "text": "Forward, backward, nudge. TinyGPT did that three thousand times. Go watch the gradients flow.",
+    "scene": "Recap loop: forward (get the loss) → backward (share the blame) → nudge every weight, looping back, × 3,000 steps. Final card: 'watch the gradients in the Backprop lab'.",
+    "objects": [
+     {
+      "id": "loop-forward",
+      "label": "training loop: forward, get the loss",
+      "box": [
+       0.0992,
+       0.3185,
+       0.225,
+       0.1629
+      ]
+     },
+     {
+      "id": "loop-backward",
+      "label": "training loop: backward, share the blame",
+      "box": [
+       0.3875,
+       0.324,
+       0.225,
+       0.1519
+      ]
+     },
+     {
+      "id": "loop-nudge",
+      "label": "training loop: nudge, every weight",
+      "box": [
+       0.6758,
+       0.3132,
+       0.225,
+       0.1736
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "next: the Backprop lab",
+      "box": [
+       0.0501,
+       0.8034,
+       0.8998,
+       0.0683
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
   "id": "optimizers",
   "title": "Optimizers: learning rate, momentum & Adam",
   "subtitle": "Why the learning rate is the knob that matters most, and why AdamW is the default (real sweeps)",
@@ -5448,9 +8726,9 @@
       "label": "real: best plain SGD (lr 1) final val 0.74",
       "box": [
        0.1289,
-       0.1352,
+       0.2387,
        0.7383,
-       0.6002
+       0.4967
       ]
      },
      {
@@ -5458,9 +8736,9 @@
       "label": "real: best SGD+momentum (lr 0.3) final val 0.57",
       "box": [
        0.1289,
-       0.1852,
+       0.2737,
        0.7383,
-       0.5667
+       0.4782
       ]
      }
     ]
@@ -5803,7 +9081,7 @@
   "id": "train-your-own",
   "title": "Train your own: data, batches, epochs & overfitting",
   "subtitle": "The whole training recipe, and what to watch, with real overfitting runs",
-  "duration": 109.97,
+  "duration": 111.17,
   "track": "training",
   "order": 50,
   "src": "/videos/train-your-own.mp4",
@@ -5840,7 +9118,7 @@
     "title": "What to watch"
    },
    {
-    "t": 105.57,
+    "t": 106.77,
     "title": "Your turn"
    }
   ],
@@ -6017,9 +9295,9 @@
       "id": "full-train",
       "label": "training loss with all data: 5.56 → 0.483",
       "box": [
-       0.1286,
+       0.1662,
        0.231,
-       0.7383,
+       0.7008,
        0.4824
       ]
      },
@@ -6027,9 +9305,9 @@
       "id": "full-val",
       "label": "validation loss with all data: 5.56 → 0.488",
       "box": [
-       0.1286,
+       0.1661,
        0.231,
-       0.7383,
+       0.7008,
        0.4815
       ]
      },
@@ -6065,9 +9343,9 @@
       "id": "tiny-train",
       "label": "train loss on the tiny set: → 0.067",
       "box": [
-       0.1286,
+       0.165,
        0.231,
-       0.7383,
+       0.7019,
        0.5623
       ]
      },
@@ -6075,9 +9353,9 @@
       "id": "tiny-val",
       "label": "validation loss: best 1.156 at step 200, final 1.728",
       "box": [
-       0.1286,
+       0.1676,
        0.231,
-       0.7383,
+       0.6993,
        0.3534
       ]
      },
@@ -6123,9 +9401,9 @@
       "id": "tiny-train",
       "label": "train loss on the tiny set: → 0.067",
       "box": [
-       0.1286,
+       0.165,
        0.231,
-       0.7383,
+       0.7019,
        0.5623
       ]
      },
@@ -6133,9 +9411,9 @@
       "id": "tiny-val",
       "label": "validation loss: best 1.156 at step 200, final 1.728",
       "box": [
-       0.1286,
+       0.1676,
        0.231,
-       0.7383,
+       0.6993,
        0.3534
       ]
      },
@@ -6181,47 +9459,47 @@
       "id": "mini-4096",
       "label": "4k tokens (750.0 epochs): final train 0.067, val 1.728, gap 1.662",
       "box": [
-       0.0,
-       0.3036,
-       0.2049,
-       0.4429
+       0.057,
+       0.3291,
+       0.1818,
+       0.3919
       ]
      },
      {
       "id": "mini-32768",
       "label": "32k tokens (93.75 epochs): final train 0.368, val 0.553, gap 0.185",
       "box": [
-       0.2646,
-       0.3031,
-       0.2055,
-       0.4439
+       0.2917,
+       0.3286,
+       0.1818,
+       0.3928
       ]
      },
      {
       "id": "mini-262144",
       "label": "256k tokens (11.72 epochs): final train 0.486, val 0.491, gap 0.005",
       "box": [
-       0.5299,
-       0.3031,
-       0.2055,
-       0.4439
+       0.5264,
+       0.3286,
+       0.1818,
+       0.3928
       ]
      },
      {
       "id": "mini-1602516",
       "label": "all 1.6M tokens (1.92 epochs): final train 0.483, val 0.488, gap 0.005",
       "box": [
-       0.7951,
-       0.3031,
-       0.2049,
-       0.4439
+       0.7611,
+       0.3286,
+       0.1818,
+       0.3928
       ]
      }
     ]
    },
    {
     "start": 93.1,
-    "end": 105.57,
+    "end": 106.77,
     "text": "While yours trains, check four things. First loss near log of the vocab size. A fast drop, then a slow grind. Validation following training. And no spikes.",
     "scene": "Checklist: 1) step-0 loss ≈ ln(256) = 5.55 (ours 5.56); 2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / early stop); 4) no spikes or NaN (else lower the learning rate).",
     "objects": [
@@ -6268,8 +9546,8 @@
     ]
    },
    {
-    "start": 105.57,
-    "end": 109.17,
+    "start": 106.77,
+    "end": 110.37,
     "text": "That's the whole recipe. Now train one in your browser.",
     "scene": "Final card: 'now train one in your browser →'.",
     "objects": [
@@ -6281,6 +9559,2730 @@
        0.4167,
        0.8173,
        0.0915
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "arch-lab",
+  "title": "Architecture lab: break it to understand it",
+  "subtitle": "Remove attention, MLPs, positions, residuals or LayerNorm, retrain, and watch what breaks (real runs)",
+  "duration": 147.37,
+  "track": "design",
+  "order": 20,
+  "src": "/videos/arch-lab.mp4",
+  "poster": "/videos/arch-lab.jpg",
+  "relates": "lab",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "Break it"
+   },
+   {
+    "t": 12.53,
+    "title": "The control"
+   },
+   {
+    "t": 27.3,
+    "title": "Seven broken models"
+   },
+   {
+    "t": 121.67,
+    "title": "Leaderboard"
+   },
+   {
+    "t": 133.87,
+    "title": "What each part does"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 12.53,
+    "text": "What does each part of a transformer actually do? Remove it, retrain from scratch, and see what breaks. Seven broken TinyGPTs, each trained exactly like the real one.",
+    "scene": "Seven pills naming TinyGPT's parts: embeddings, positions, attention, MLP, residual +, LayerNorm, layers ×3. Question: what does each part actually do?",
+    "objects": [
+     {
+      "id": "part-embeddings",
+      "label": "model part: embeddings",
+      "box": [
+       0.1543,
+       0.4196,
+       0.1981,
+       0.0904
+      ]
+     },
+     {
+      "id": "part-positions",
+      "label": "model part: positions",
+      "box": [
+       0.3908,
+       0.4199,
+       0.1509,
+       0.0898
+      ]
+     },
+     {
+      "id": "part-attention",
+      "label": "model part: attention",
+      "box": [
+       0.5837,
+       0.4248,
+       0.1466,
+       0.0798
+      ]
+     },
+     {
+      "id": "part-MLP",
+      "label": "model part: MLP",
+      "box": [
+       0.7585,
+       0.4258,
+       0.0871,
+       0.0779
+      ]
+     },
+     {
+      "id": "part-residual",
+      "label": "model part: residual +",
+      "box": [
+       0.1728,
+       0.5709,
+       0.1611,
+       0.0798
+      ]
+     },
+     {
+      "id": "part-LayerNorm",
+      "label": "model part: LayerNorm",
+      "box": [
+       0.377,
+       0.5665,
+       0.1785,
+       0.0887
+      ]
+     },
+     {
+      "id": "part-layers",
+      "label": "model part: layers ×3",
+      "box": [
+       0.5801,
+       0.5662,
+       0.1538,
+       0.0892
+      ]
+     }
+    ]
+   },
+   {
+    "start": 12.53,
+    "end": 27.3,
+    "text": "First the control: the full model, 3,000 steps. Validation loss 0.45. Our test prompt: Mia gives Tom the red ball, now Tom has the… It answers red, 98%.",
+    "scene": "Baseline (full TinyGPT, 170,560 params, 3000 steps): validation loss curve ending at 0.450; on the probe prompt its top next tokens are ' red' 98%, ' black' 1.0%, ' purple' 0.4%.",
+    "objects": [
+     {
+      "id": "base-curve",
+      "label": "baseline validation loss → 0.450",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "base-probe",
+      "label": "baseline next-token probabilities: ' red' 0.982, ' black' 0.010, ' purple' 0.004, ' end' 0.000, ' dog' 0.000",
+      "box": [
+       0.5393,
+       0.4138,
+       0.3995,
+       0.249
+      ]
+     },
+     {
+      "id": "prompt",
+      "label": "probe prompt: mia has a red ball. tom has a blue kite. mia gives the ball to tom. now tom has the",
+      "box": [
+       0.1924,
+       0.1374,
+       0.6152,
+       0.0878
+      ]
+     }
+    ]
+   },
+   {
+    "start": 27.3,
+    "end": 40.67,
+    "text": "No attention. Every token is alone, so it can't look back and see that the ball was red. Loss 1.64. Its top guess is end, 10%; red isn't even in its top five.",
+    "scene": "Ablation 'no attention' (120,256 params): Attention removed, so each token only sees itself and cannot copy information from earlier words. Real validation curve (colored) vs baseline (gray): final 1.644 vs 0.450. Probe top tokens: ' end' 10%, ' box' 3.1%, ' house' 3.0%. Sample: ' kite is saturday.\\nnesday woofinn has a:'.",
+    "objects": [
+     {
+      "id": "no-attention-curve",
+      "label": "no attention: val loss 1.644 (baseline 0.450)",
+      "box": [
+       0.0705,
+       0.2585,
+       0.392,
+       0.339
+      ]
+     },
+     {
+      "id": "no-attention-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "no-attention-probe",
+      "label": "no attention on the probe: ' end' 0.097, ' box' 0.031, ' house' 0.030, ' river' 0.029, ' hill' 0.029; wrote ' kite is saturday.\\nnesday woofinn has a:'",
+      "box": [
+       0.5864,
+       0.3418,
+       0.3054,
+       0.3913
+      ]
+     }
+    ]
+   },
+   {
+    "start": 40.67,
+    "end": 55.5,
+    "text": "No positions. Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, already leaks word order. Loss 0.45. It still says red, 97%.",
+    "scene": "Ablation 'no positions' (166,464 params): Positional embeddings removed, so the model knows which words came before but not in what order. Real validation curve (colored) vs baseline (gray): final 0.451 vs 0.450. Probe top tokens: ' red' 97%, ' black' 1.1%, ' purple' 0.9%. Sample: ' red ball.\\nonce upon a time, there was a'.",
+    "objects": [
+     {
+      "id": "no-positions-curve",
+      "label": "no positions: val loss 0.451 (baseline 0.450)",
+      "box": [
+       0.0712,
+       0.2585,
+       0.3913,
+       0.4404
+      ]
+     },
+     {
+      "id": "no-positions-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "no-positions-probe",
+      "label": "no positions on the probe: ' red' 0.970, ' black' 0.011, ' purple' 0.009, ' pink' 0.008, ' school' 0.000; wrote ' red ball.\\nonce upon a time, there was a'",
+      "box": [
+       0.5408,
+       0.3455,
+       0.3966,
+       0.384
+      ]
+     }
+    ]
+   },
+   {
+    "start": 55.5,
+    "end": 66.7,
+    "text": "No mlp. Attention still moves information around, so the copy survives. Loss 0.46. It still says red, 89%.",
+    "scene": "Ablation 'no MLP' (70,912 params): MLP blocks removed, so the model can still mix tokens but has far less per-token processing and memory. Real validation curve (colored) vs baseline (gray): final 0.457 vs 0.450. Probe top tokens: ' red' 89%, ' purple' 7.4%, ' pink' 2.0%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
+    "objects": [
+     {
+      "id": "no-mlp-curve",
+      "label": "no MLP: val loss 0.457 (baseline 0.450)",
+      "box": [
+       0.0721,
+       0.2585,
+       0.3905,
+       0.4399
+      ]
+     },
+     {
+      "id": "no-mlp-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "no-mlp-probe",
+      "label": "no MLP on the probe: ' red' 0.890, ' purple' 0.074, ' pink' 0.020, ' green' 0.009, ' blue' 0.005; wrote ' purple ball.\\nonce upon a time, there wa'",
+      "box": [
+       0.5498,
+       0.3428,
+       0.3786,
+       0.3895
+      ]
+     }
+    ]
+   },
+   {
+    "start": 66.7,
+    "end": 78.23,
+    "text": "No residual. The signal can't get through. It never really learns. Loss 4.50. Its top guess is ., 9.0%; red isn't even in its top five.",
+    "scene": "Ablation 'no residual' (170,560 params): Residual connections removed, so each layer must rebuild the whole signal instead of adding to it. Real validation curve (colored) vs baseline (gray): final 4.502 vs 0.450. Probe top tokens: '.' 9.0%, ' the' 7.2%, '\\n' 5.1%. Sample: ' daym a. one the toam the a..ied pink no'.",
+    "objects": [
+     {
+      "id": "no-residual-curve",
+      "label": "no residual: val loss 4.502 (baseline 0.450)",
+      "box": [
+       0.0725,
+       0.2585,
+       0.39,
+       0.0972
+      ]
+     },
+     {
+      "id": "no-residual-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "no-residual-probe",
+      "label": "no residual on the probe: '.' 0.090, ' the' 0.072, '\\n' 0.051, ' a' 0.049, ' has' 0.022; wrote ' daym a. one the toam the a..ied pink no'",
+      "box": [
+       0.5071,
+       0.3418,
+       0.464,
+       0.3913
+      ]
+     }
+    ]
+   },
+   {
+    "start": 78.23,
+    "end": 93.07,
+    "text": "No layernorm. Scales drift from layer to layer. It learns the language, but not the trick. Loss 0.54. Its top guess is orange, 14%; red isn't even in its top five.",
+    "scene": "Ablation 'no LayerNorm' (169,664 params): LayerNorm removed, so activation sizes are no longer re-scaled and can drift from layer to layer. Real validation curve (colored) vs baseline (gray): final 0.542 vs 0.450. Probe top tokens: ' orange' 14%, ' blue' 12%, ' black' 12%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
+    "objects": [
+     {
+      "id": "no-layernorm-curve",
+      "label": "no LayerNorm: val loss 0.542 (baseline 0.450)",
+      "box": [
+       0.0724,
+       0.2585,
+       0.3901,
+       0.4327
+      ]
+     },
+     {
+      "id": "no-layernorm-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "no-layernorm-probe",
+      "label": "no LayerNorm on the probe: ' orange' 0.136, ' blue' 0.125, ' black' 0.120, ' green' 0.114, ' white' 0.110; wrote ' purple ball.\\nonce upon a time, there wa'",
+      "box": [
+       0.6133,
+       0.3428,
+       0.2515,
+       0.3895
+      ]
+     }
+    ]
+   },
+   {
+    "start": 93.07,
+    "end": 108.2,
+    "text": "1 layer. It knows a color comes next, but not which one. Copying like this typically needs two layers working together. Loss 0.48. Its top guess is blue, 16%; red gets 12%.",
+    "scene": "Ablation '1 layer' (70,592 params): Only one block instead of three: less depth to build multi-step patterns. Real validation curve (colored) vs baseline (gray): final 0.476 vs 0.450. Probe top tokens: ' blue' 16%, ' green' 15%, ' black' 15%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
+    "objects": [
+     {
+      "id": "1-layer-curve",
+      "label": "1 layer: val loss 0.476 (baseline 0.450)",
+      "box": [
+       0.0712,
+       0.2585,
+       0.3913,
+       0.4383
+      ]
+     },
+     {
+      "id": "1-layer-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "1-layer-probe",
+      "label": "1 layer on the probe: ' blue' 0.164, ' green' 0.152, ' black' 0.146, ' purple' 0.129, ' red' 0.122; wrote ' purple ball.\\nonce upon a time, there wa'",
+      "box": [
+       0.6133,
+       0.3428,
+       0.2515,
+       0.3895
+      ]
+     }
+    ]
+   },
+   {
+    "start": 108.2,
+    "end": 121.67,
+    "text": "6 layers. Deeper isn't automatically better. On the same budget, it hasn't found the trick yet. Loss 0.46. Its top guess is black, 22%; red gets 18%.",
+    "scene": "Ablation '6 layers' (320,512 params): Six blocks instead of three: twice the depth and roughly 1.9× the parameters. Real validation curve (colored) vs baseline (gray): final 0.460 vs 0.450. Probe top tokens: ' black' 22%, ' yellow' 21%, ' purple' 19%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
+    "objects": [
+     {
+      "id": "6-layer-curve",
+      "label": "6 layers: val loss 0.460 (baseline 0.450)",
+      "box": [
+       0.0713,
+       0.2585,
+       0.3912,
+       0.4396
+      ]
+     },
+     {
+      "id": "6-layer-base",
+      "label": "baseline curve for comparison (0.450)",
+      "box": [
+       0.0713,
+       0.3122,
+       0.3912,
+       0.3867
+      ]
+     },
+     {
+      "id": "6-layer-probe",
+      "label": "6 layers on the probe: ' black' 0.215, ' yellow' 0.211, ' purple' 0.191, ' pink' 0.190, ' red' 0.184; wrote ' purple ball.\\nonce upon a time, there wa'",
+      "box": [
+       0.6133,
+       0.3428,
+       0.2515,
+       0.3895
+      ]
+     }
+    ]
+   },
+   {
+    "start": 121.67,
+    "end": 133.87,
+    "text": "Line them up. Cutting residual or attention wrecks it. The rest look almost fine by loss, but only 2 of the seven still answer red. Average loss can hide the skills you care about.",
+    "scene": "Leaderboard of real final validation losses (lower = better) with each model's probability of ' red' on the probe: baseline 0.450, no positions 0.451, no MLP 0.457, 6 layers 0.460, 1 layer 0.476, no LayerNorm 0.542, no attention 1.644, no residual 4.502.",
+    "objects": [
+     {
+      "id": "lb-baseline",
+      "label": "baseline: final val 0.450, p(' red') 0.982",
+      "box": [
+       0.1444,
+       0.18,
+       0.3443,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-no-positions",
+      "label": "no positions: final val 0.451, p(' red') 0.970",
+      "box": [
+       0.0975,
+       0.255,
+       0.3913,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-no-mlp",
+      "label": "no MLP: final val 0.457, p(' red') 0.890",
+      "box": [
+       0.1576,
+       0.33,
+       0.3324,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-6-layer",
+      "label": "6 layers: final val 0.460, p(' red') 0.184",
+      "box": [
+       0.1507,
+       0.405,
+       0.3396,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-1-layer",
+      "label": "1 layer: final val 0.476, p(' red') 0.122",
+      "box": [
+       0.17,
+       0.48,
+       0.3219,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-no-layernorm",
+      "label": "no LayerNorm: final val 0.542, p(' red') 0.000",
+      "box": [
+       0.0747,
+       0.555,
+       0.4606,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-no-attention",
+      "label": "no attention: final val 1.644, p(' red') 0.000",
+      "box": [
+       0.102,
+       0.63,
+       0.5536,
+       0.0525
+      ]
+     },
+     {
+      "id": "lb-no-residual",
+      "label": "no residual: final val 4.502, p(' red') 0.000",
+      "box": [
+       0.1132,
+       0.705,
+       0.8559,
+       0.0525
+      ]
+     }
+    ]
+   },
+   {
+    "start": 133.87,
+    "end": 146.57,
+    "text": "So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep it trainable, and depth composes. Now go break one yourself.",
+    "scene": "Roles: attention = moves information between tokens; positions = word order; MLP = per-token processing/memory; residual + LayerNorm = keep it trainable; depth = more steps to compose. CTA: try your own cuts in the Architecture lab.",
+    "objects": [
+     {
+      "id": "role-attention",
+      "label": "attention: moves information between tokens",
+      "box": [
+       0.2907,
+       0.3063,
+       0.6022,
+       0.0405
+      ]
+     },
+     {
+      "id": "role-positions",
+      "label": "positions: word order (the causal mask leaks some)",
+      "box": [
+       0.2865,
+       0.3906,
+       0.6853,
+       0.0506
+      ]
+     },
+     {
+      "id": "role-MLP",
+      "label": "MLP: per-token processing and memory",
+      "box": [
+       0.3558,
+       0.4849,
+       0.5317,
+       0.047
+      ]
+     },
+     {
+      "id": "role-residual",
+      "label": "residual + LayerNorm: keep it trainable",
+      "box": [
+       0.1117,
+       0.5756,
+       0.5346,
+       0.0508
+      ]
+     },
+     {
+      "id": "role-depth",
+      "label": "depth: more steps to compose patterns",
+      "box": [
+       0.3352,
+       0.6702,
+       0.5233,
+       0.0485
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the Architecture lab",
+      "box": [
+       0.1976,
+       0.8867,
+       0.6047,
+       0.0508
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "scaling",
+  "title": "Scaling laws: bigger, predictably",
+  "subtitle": "Seven real TinyGPTs from ~10k to ~1.8M parameters, a fitted power law, and what Kaplan & Chinchilla found",
+  "duration": 98.43,
+  "track": "design",
+  "order": 30,
+  "src": "/videos/scaling.mp4",
+  "poster": "/videos/scaling.jpg",
+  "relates": "scaling",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "Bigger is better"
+   },
+   {
+    "t": 13.1,
+    "title": "Loss vs size"
+   },
+   {
+    "t": 28.37,
+    "title": "Loss vs compute"
+   },
+   {
+    "t": 45.0,
+    "title": "What the papers found"
+   },
+   {
+    "t": 68.67,
+    "title": "Our runs, in that light"
+   },
+   {
+    "t": 83.6,
+    "title": "For your own models"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 13.1,
+    "text": "Seven TinyGPTs, from 8 thousand to 1.8 million parameters. Same data, same 3.1 million tokens each. Bigger models land lower, with smaller gains at the top.",
+    "scene": "Real validation curves of 7 model sizes trained on the same 3,072,000 tokens: 8.4k params → 0.888, 22k params → 0.672, 36k params → 0.646, 171k params → 0.488, 478k params → 0.474, 834k params → 0.474, 1.8M params → 0.464.",
+    "objects": [
+     {
+      "id": "size-xs",
+      "label": "8,432 params (d_model 16, 1 layers): final val loss 0.888",
+      "box": [
+       0.7769,
+       0.345,
+       0.154,
+       0.0286
+      ]
+     },
+     {
+      "id": "size-s",
+      "label": "22,176 params (d_model 24, 2 layers): final val loss 0.672",
+      "box": [
+       0.7769,
+       0.3986,
+       0.1411,
+       0.0286
+      ]
+     },
+     {
+      "id": "size-m",
+      "label": "35,712 params (d_model 32, 2 layers): final val loss 0.646",
+      "box": [
+       0.7769,
+       0.4522,
+       0.1406,
+       0.0286
+      ]
+     },
+     {
+      "id": "size-base",
+      "label": "170,560 params (d_model 64, 3 layers): final val loss 0.488",
+      "box": [
+       0.7769,
+       0.5059,
+       0.1535,
+       0.0286
+      ]
+     },
+     {
+      "id": "size-l",
+      "label": "478,272 params (d_model 96, 4 layers): final val loss 0.474",
+      "box": [
+       0.7769,
+       0.5595,
+       0.1541,
+       0.0286
+      ]
+     },
+     {
+      "id": "size-xl",
+      "label": "834,304 params (d_model 128, 4 layers): final val loss 0.474",
+      "box": [
+       0.7769,
+       0.6131,
+       0.1542,
+       0.0286
+      ]
+     },
+     {
+      "id": "size-xxl",
+      "label": "1,841,280 params (d_model 192, 4 layers): final val loss 0.464",
+      "box": [
+       0.7769,
+       0.6667,
+       0.1528,
+       0.0286
+      ]
+     },
+     {
+      "id": "curves",
+      "label": "7 real training curves, each 3,072,000 tokens",
+      "box": [
+       0.0846,
+       0.2327,
+       0.6572,
+       0.5216
+      ]
+     }
+    ]
+   },
+   {
+    "start": 13.1,
+    "end": 28.37,
+    "text": "Plot final loss against size on a log axis, and the dots fall on a smooth curve: a power law. Every time you multiply the size, the loss above a floor shrinks by a predictable factor. Here the floor is 0.42.",
+    "scene": "Real final losses vs non-embedding parameters (log x) with the fitted power law L(N) = c + a·N^-α: a = 12.948, α = 0.408, c = 0.417 (R² = 0.989).",
+    "objects": [
+     {
+      "id": "pt-xs",
+      "label": "3,312 non-embedding params → val 0.888 (fit 0.890)",
+      "box": [
+       0.1306,
+       0.3776,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "pt-s",
+      "label": "14,496 non-embedding params → val 0.672 (fit 0.676)",
+      "box": [
+       0.2208,
+       0.5322,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "pt-m",
+      "label": "25,472 non-embedding params → val 0.646 (fit 0.623)",
+      "box": [
+       0.2552,
+       0.5513,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "pt-base",
+      "label": "150,080 non-embedding params → val 0.488 (fit 0.517)",
+      "box": [
+       0.3635,
+       0.665,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "pt-l",
+      "label": "447,552 non-embedding params → val 0.474 (fit 0.481)",
+      "box": [
+       0.4303,
+       0.6747,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "pt-xl",
+      "label": "793,344 non-embedding params → val 0.474 (fit 0.467)",
+      "box": [
+       0.4652,
+       0.6745,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "pt-xxl",
+      "label": "1,779,840 non-embedding params → val 0.464 (fit 0.453)",
+      "box": [
+       0.5146,
+       0.682,
+       0.0141,
+       0.025
+      ]
+     },
+     {
+      "id": "fit",
+      "label": "fitted power law: L = 0.417 + 12.948·N^-0.408",
+      "box": [
+       0.0857,
+       0.2466,
+       0.5413,
+       0.4691
+      ]
+     },
+     {
+      "id": "formula",
+      "label": "fit parameters a = 12.948, alpha = 0.408, c = 0.417",
+      "box": [
+       0.6587,
+       0.2824,
+       0.2984,
+       0.2601
+      ]
+     },
+     {
+      "id": "floor",
+      "label": "irreducible loss of this data (fit): c = 0.417",
+      "box": [
+       0.0645,
+       0.7287,
+       0.5625,
+       0.0421
+      ]
+     }
+    ]
+   },
+   {
+    "start": 28.37,
+    "end": 45.0,
+    "text": "Now plot the same runs against compute. For a tiny budget, small models win. As the budget grows, the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from 8 thousand to 1.8 million parameters.",
+    "scene": "Real validation loss vs training FLOPs (log x) for all 7 sizes; the faint white envelope is the best loss reachable at each budget. Winners along it, small to large budget: 8.4k → 22k → 36k → 171k → 478k → 1.8M.",
+    "objects": [
+     {
+      "id": "fl-xs",
+      "label": "8.4k model: val loss vs compute, up to 1.55e+11 FLOPs",
+      "box": [
+       0.1907,
+       0.231,
+       0.1704,
+       0.4729
+      ]
+     },
+     {
+      "id": "fl-s",
+      "label": "22k model: val loss vs compute, up to 4.09e+11 FLOPs",
+      "box": [
+       0.2362,
+       0.2378,
+       0.1745,
+       0.4908
+      ]
+     },
+     {
+      "id": "fl-m",
+      "label": "36k model: val loss vs compute, up to 6.58e+11 FLOPs",
+      "box": [
+       0.2607,
+       0.2536,
+       0.1745,
+       0.4781
+      ]
+     },
+     {
+      "id": "fl-base",
+      "label": "171k model: val loss vs compute, up to 3.14e+12 FLOPs",
+      "box": [
+       0.3409,
+       0.3208,
+       0.1745,
+       0.4291
+      ]
+     },
+     {
+      "id": "fl-l",
+      "label": "478k model: val loss vs compute, up to 8.82e+12 FLOPs",
+      "box": [
+       0.3938,
+       0.4126,
+       0.1745,
+       0.3388
+      ]
+     },
+     {
+      "id": "fl-xl",
+      "label": "834k model: val loss vs compute, up to 1.54e+13 FLOPs",
+      "box": [
+       0.4223,
+       0.4845,
+       0.1745,
+       0.2669
+      ]
+     },
+     {
+      "id": "fl-xxl",
+      "label": "1.8M model: val loss vs compute, up to 3.39e+13 FLOPs",
+      "box": [
+       0.4629,
+       0.5709,
+       0.1745,
+       0.1817
+      ]
+     },
+     {
+      "id": "frontier",
+      "label": "compute frontier (real): best run for each budget, 8.4k → 22k → 36k → 171k → 478k → 1.8M",
+      "box": [
+       0.2209,
+       0.231,
+       0.6983,
+       0.5216
+      ]
+     }
+    ]
+   },
+   {
+    "start": 45.0,
+    "end": 68.67,
+    "text": "Big labs found the same shape at vastly larger scale. Kaplan and colleagues, 2020: loss follows smooth power laws in parameters, data and compute. Then Chinchilla, 2022: for a fixed budget, grow the model and the training data together. Their 70 billion parameter model saw 1.4 trillion tokens, about 20 per parameter.",
+    "scene": "Two cards. Kaplan et al. 2020: loss falls as a smooth power law in parameters, data and compute over many orders of magnitude. Hoffmann et al. 2022 (Chinchilla): at fixed compute, scale parameters and tokens in roughly equal proportion; Chinchilla = 70B params on 1.4T tokens (≈ 20 tokens per parameter).",
+    "objects": [
+     {
+      "id": "kaplan",
+      "label": "Kaplan et al. 2020, 'Scaling Laws for Neural Language Models'",
+      "box": [
+       0.0712,
+       0.2206,
+       0.8577,
+       0.245
+      ]
+     },
+     {
+      "id": "chinchilla",
+      "label": "Hoffmann et al. 2022, 'Training Compute-Optimal Large Language Models' (Chinchilla)",
+      "box": [
+       0.0712,
+       0.5219,
+       0.8577,
+       0.3075
+      ]
+     }
+    ]
+   },
+   {
+    "start": 68.67,
+    "end": 83.6,
+    "text": "By that yardstick, our 3.1 million tokens are plenty for the small models, but our 4 biggest are undertrained. The largest saw just 1.7 tokens per parameter: by Chinchilla's yardstick, it's starved for data.",
+    "scene": "Real tokens-per-parameter of each run (3,072,000 tokens / params): 8.4k: 364.3, 22k: 138.5, 36k: 86.0, 171k: 18.0, 478k: 6.4, 834k: 3.7, 1.8M: 1.7. A yellow dashed line marks Chinchilla's ≈ 20 tokens per parameter.",
+    "objects": [
+     {
+      "id": "tpp-xs",
+      "label": "8,432 params trained on 3,072,000 tokens = 364.3 tokens/param",
+      "box": [
+       0.282,
+       0.2344,
+       0.4695,
+       0.05
+      ]
+     },
+     {
+      "id": "tpp-s",
+      "label": "22,176 params trained on 3,072,000 tokens = 138.5 tokens/param",
+      "box": [
+       0.282,
+       0.3129,
+       0.4075,
+       0.05
+      ]
+     },
+     {
+      "id": "tpp-m",
+      "label": "35,712 params trained on 3,072,000 tokens = 86.0 tokens/param",
+      "box": [
+       0.282,
+       0.3915,
+       0.3643,
+       0.05
+      ]
+     },
+     {
+      "id": "tpp-base",
+      "label": "170,560 params trained on 3,072,000 tokens = 18.0 tokens/param",
+      "box": [
+       0.282,
+       0.4701,
+       0.2626,
+       0.05
+      ]
+     },
+     {
+      "id": "tpp-l",
+      "label": "478,272 params trained on 3,072,000 tokens = 6.4 tokens/param",
+      "box": [
+       0.282,
+       0.5487,
+       0.2085,
+       0.05
+      ]
+     },
+     {
+      "id": "tpp-xl",
+      "label": "834,304 params trained on 3,072,000 tokens = 3.7 tokens/param",
+      "box": [
+       0.282,
+       0.6272,
+       0.1735,
+       0.05
+      ]
+     },
+     {
+      "id": "tpp-xxl",
+      "label": "1,841,280 params trained on 3,072,000 tokens = 1.7 tokens/param",
+      "box": [
+       0.282,
+       0.7058,
+       0.1219,
+       0.05
+      ]
+     },
+     {
+      "id": "chin-line",
+      "label": "Chinchilla rule of thumb: about 20 training tokens per parameter",
+      "box": [
+       0.4314,
+       0.1653,
+       0.1784,
+       0.6047
+      ]
+     }
+    ]
+   },
+   {
+    "start": 83.6,
+    "end": 97.63,
+    "text": "For your own models: train a ladder of small ones first, fit the curve, and predict before you spend. Balance size and data for your budget. And remember the floor comes from the data, not the model.",
+    "scene": "Takeaways: train a ladder of small models first; fit the curve, predict the big one; balance size and data for your budget; the loss floor is set by the data. Caveat: our fit uses 7 tiny models, one seed and one learning rate.",
+    "objects": [
+     {
+      "id": "tip-0",
+      "label": "trainaladderofsmallmodelsfirst",
+      "box": [
+       0.2243,
+       0.2387,
+       0.4986,
+       0.0803
+      ]
+     },
+     {
+      "id": "tip-1",
+      "label": "fitthecurve,predictthebigone",
+      "box": [
+       0.2243,
+       0.359,
+       0.4716,
+       0.0909
+      ]
+     },
+     {
+      "id": "tip-2",
+      "label": "balancesizeanddataforyourbudget",
+      "box": [
+       0.2243,
+       0.4899,
+       0.5513,
+       0.0909
+      ]
+     },
+     {
+      "id": "tip-3",
+      "label": "thefloorissetbythedata",
+      "box": [
+       0.2243,
+       0.6208,
+       0.3876,
+       0.0905
+      ]
+     },
+     {
+      "id": "caveat",
+      "label": "caveat: small-scale fit, single seed and learning rate",
+      "box": [
+       0.0962,
+       0.9002,
+       0.8076,
+       0.0373
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "tiny-to-chatgpt",
+  "title": "From TinyGPT to ChatGPT",
+  "subtitle": "Same engine, very different scale: pretraining, instruction tuning, RLHF, chat tokens, KV cache",
+  "duration": 146.07,
+  "track": "design",
+  "order": 40,
+  "src": "/videos/tiny-to-chatgpt.mp4",
+  "poster": "/videos/tiny-to-chatgpt.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "Same engine"
+   },
+   {
+    "t": 13.1,
+    "title": "Scale"
+   },
+   {
+    "t": 30.1,
+    "title": "Pretraining"
+   },
+   {
+    "t": 52.8,
+    "title": "Instruction tuning"
+   },
+   {
+    "t": 65.5,
+    "title": "Preference tuning"
+   },
+   {
+    "t": 95.5,
+    "title": "Chat format"
+   },
+   {
+    "t": 108.1,
+    "title": "KV cache"
+   },
+   {
+    "t": 123.77,
+    "title": "Sampling"
+   },
+   {
+    "t": 135.17,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 13.1,
+    "text": "ChatGPT runs the same loop as TinyGPT: read the tokens, score every possible next one, pick, append, repeat. Same building blocks too: embeddings, attention, MLPs.",
+    "scene": "TinyGPT's loop as boxes: tokens → embed → [attention → MLP] × 3 layers → probabilities → pick one, with an arrow looping back ('append it & repeat'). ChatGPT-style models use the same loop.",
+    "objects": [
+     {
+      "id": "pipe-tokens",
+      "label": "pipeline stage: tokens",
+      "box": [
+       0.037,
+       0.361,
+       0.1139,
+       0.1188
+      ]
+     },
+     {
+      "id": "pipe-embed",
+      "label": "pipeline stage: embed",
+      "box": [
+       0.1805,
+       0.361,
+       0.1139,
+       0.1188
+      ]
+     },
+     {
+      "id": "pipe-attention",
+      "label": "pipeline stage: attention",
+      "box": [
+       0.3239,
+       0.361,
+       0.1329,
+       0.1188
+      ]
+     },
+     {
+      "id": "pipe-mlp",
+      "label": "pipeline stage: mlp",
+      "box": [
+       0.4863,
+       0.361,
+       0.1139,
+       0.1188
+      ]
+     },
+     {
+      "id": "pipe-probs",
+      "label": "pipeline stage: probs",
+      "box": [
+       0.6298,
+       0.361,
+       0.1766,
+       0.1188
+      ]
+     },
+     {
+      "id": "pipe-pick",
+      "label": "pipeline stage: pick",
+      "box": [
+       0.8358,
+       0.361,
+       0.1271,
+       0.1188
+      ]
+     },
+     {
+      "id": "pipe-layers",
+      "label": "TinyGPT stacks 3 blocks",
+      "box": [
+       0.3126,
+       0.2833,
+       0.2988,
+       0.2164
+      ]
+     },
+     {
+      "id": "pipe-loop",
+      "label": "the generation loop: append the picked token, run again",
+      "box": [
+       0.094,
+       0.4799,
+       0.8054,
+       0.1618
+      ]
+     }
+    ]
+   },
+   {
+    "start": 13.1,
+    "end": 30.1,
+    "text": "The big difference is scale. GPT-2, in 2019, ranged from 124 million to 1.5 billion parameters. GPT-3, in 2020: 175 billion, 96 layers, vectors 12,288 wide. That's about a million TinyGPTs.",
+    "scene": "Log-scale bar chart of published parameter counts: TinyGPT 170,560 (3 layers, width 64), GPT-2 small 124M (12 layers, width 768), GPT-2 XL 1.5B (48 layers, width 1,600), GPT-3 175B (96 layers, width 12,288). GPT-3 ≈ 1,026,032 × TinyGPT.",
+    "objects": [
+     {
+      "id": "bar-tiny",
+      "label": "TinyGPT: 170,560 parameters, 3 layers, d_model 64",
+      "box": [
+       0.1148,
+       0.2575,
+       0.336,
+       0.0974
+      ]
+     },
+     {
+      "id": "bar-gpt2s",
+      "label": "GPT-2 small (2019): 124M parameters, 12 layers, d_model 768 (published)",
+      "box": [
+       0.0947,
+       0.3985,
+       0.5664,
+       0.0856
+      ]
+     },
+     {
+      "id": "bar-gpt2xl",
+      "label": "GPT-2 XL (2019): 1.5B parameters, 48 layers, d_model 1600 (published)",
+      "box": [
+       0.0733,
+       0.5335,
+       0.6846,
+       0.0855
+      ]
+     },
+     {
+      "id": "bar-gpt3",
+      "label": "GPT-3 (2020): 175B parameters, 96 layers, d_model 12,288 (published)",
+      "box": [
+       0.0609,
+       0.6685,
+       0.8818,
+       0.0855
+      ]
+     },
+     {
+      "id": "ratio",
+      "label": "175,000,000,000 / 170,560 ≈ 1,026,032",
+      "box": [
+       0.2643,
+       0.9021,
+       0.4713,
+       0.0542
+      ]
+     }
+    ]
+   },
+   {
+    "start": 30.1,
+    "end": 52.8,
+    "text": "Stage one, pretraining: TinyGPT's exact game, on a huge pile of web text. GPT-3 saw about 300 billion tokens; TinyGPT's world is 1.7 million. The result is a base model: an autocomplete, not an assistant. Ask it something, and it may just continue the document.",
+    "scene": "Log-scale bars of training tokens: TinyGPT's corpus 1,686,858 tokens vs GPT-3 ≈ 300 billion tokens (published). Caption: same game, predict the next token. Illustration: a base model continuing 'Q: What is the capital of France?' with more questions instead of answering.",
+    "objects": [
+     {
+      "id": "tok-gpt3",
+      "label": "GPT-3 was trained on about 300 billion tokens (Brown et al. 2020)",
+      "box": [
+       0.1079,
+       0.425,
+       0.8212,
+       0.0625
+      ]
+     },
+     {
+      "id": "tok-tiny",
+      "label": "TinyGPT's whole training corpus: 1,686,858 tokens",
+      "box": [
+       0.0618,
+       0.3,
+       0.3593,
+       0.0625
+      ]
+     },
+     {
+      "id": "base-doc",
+      "label": "illustration: a base model may continue a question with more questions",
+      "box": [
+       0.2047,
+       0.7091,
+       0.5906,
+       0.2194
+      ]
+     }
+    ]
+   },
+   {
+    "start": 52.8,
+    "end": 65.5,
+    "text": "Stage two: supervised fine-tuning. Same loss, now on example conversations written by people: a request, and a good response. The model learns to play the assistant.",
+    "scene": "Illustrative training example: PERSON 'Explain photosynthesis to a ten-year-old.' / ASSISTANT 'Plants catch sunlight…'. The reply is underlined: the loss is usually computed on the reply tokens only.",
+    "objects": [
+     {
+      "id": "sft-person",
+      "label": "an instruction (prompt) in a supervised fine-tuning example",
+      "box": [
+       0.0559,
+       0.2682,
+       0.6047,
+       0.1377
+      ]
+     },
+     {
+      "id": "sft-reply",
+      "label": "a demonstration reply written by a person",
+      "box": [
+       0.0559,
+       0.4434,
+       0.846,
+       0.1385
+      ]
+     },
+     {
+      "id": "sft-loss",
+      "label": "SFT: same next-token loss, typically only on the assistant's reply",
+      "box": [
+       0.0699,
+       0.5968,
+       0.8179,
+       0.0588
+      ]
+     }
+    ]
+   },
+   {
+    "start": 65.5,
+    "end": 85.7,
+    "text": "Stage three, preference tuning. A person picks the better of two answers. A reward model learns those picks, and reinforcement learning nudges the chat model toward high reward, with a penalty for drifting too far. That's RLHF, as in InstructGPT, 2022.",
+    "scene": "RLHF diagram: two answers A and B, a person prefers A → a reward model learns to predict preferences → reinforcement learning nudges the chat model toward high reward, plus a penalty (KL) for drifting far from the SFT model. Citation: InstructGPT, Ouyang et al. 2022.",
+    "objects": [
+     {
+      "id": "ans-a",
+      "label": "candidate answer A (illustration)",
+      "box": [
+       0.029,
+       0.2553,
+       0.2389,
+       0.1345
+      ]
+     },
+     {
+      "id": "ans-b",
+      "label": "candidate answer B (illustration)",
+      "box": [
+       0.0077,
+       0.4335,
+       0.2814,
+       0.1361
+      ]
+     },
+     {
+      "id": "pref",
+      "label": "human preference label: A is better than B",
+      "box": [
+       0.0317,
+       0.6072,
+       0.2335,
+       0.0436
+      ]
+     },
+     {
+      "id": "rm",
+      "label": "reward model trained on human comparisons",
+      "box": [
+       0.3442,
+       0.3185,
+       0.2132,
+       0.188
+      ]
+     },
+     {
+      "id": "policy",
+      "label": "the chat model (policy), optimised with RL (PPO in InstructGPT)",
+      "box": [
+       0.7008,
+       0.3185,
+       0.2172,
+       0.188
+      ]
+     },
+     {
+      "id": "kl",
+      "label": "KL penalty keeps the tuned model close to the supervised (SFT) model",
+      "box": [
+       0.7008,
+       0.544,
+       0.2538,
+       0.0804
+      ]
+     }
+    ]
+   },
+   {
+    "start": 85.7,
+    "end": 95.5,
+    "text": "In that paper, labelers preferred answers from a 1.3 billion parameter InstructGPT over the 175 billion GPT-3.",
+    "scene": "InstructGPT result (Ouyang et al. 2022): outputs of the 1.3B InstructGPT were preferred by labelers over the 175B GPT-3, despite over 100× fewer parameters. Footnote: newer methods such as DPO (2023) skip the separate reward model.",
+    "objects": [
+     {
+      "id": "ans-a",
+      "label": "candidate answer A (illustration)",
+      "box": [
+       0.029,
+       0.2553,
+       0.2389,
+       0.1345
+      ]
+     },
+     {
+      "id": "ans-b",
+      "label": "candidate answer B (illustration)",
+      "box": [
+       0.0077,
+       0.4335,
+       0.2814,
+       0.1361
+      ]
+     },
+     {
+      "id": "pref",
+      "label": "human preference label: A is better than B",
+      "box": [
+       0.0317,
+       0.6072,
+       0.2335,
+       0.0436
+      ]
+     },
+     {
+      "id": "rm",
+      "label": "reward model trained on human comparisons",
+      "box": [
+       0.3442,
+       0.3185,
+       0.2132,
+       0.188
+      ]
+     },
+     {
+      "id": "policy",
+      "label": "the chat model (policy), optimised with RL (PPO in InstructGPT)",
+      "box": [
+       0.7008,
+       0.3185,
+       0.2172,
+       0.188
+      ]
+     },
+     {
+      "id": "kl",
+      "label": "KL penalty keeps the tuned model close to the supervised (SFT) model",
+      "box": [
+       0.7008,
+       0.544,
+       0.2538,
+       0.0804
+      ]
+     },
+     {
+      "id": "result",
+      "label": "InstructGPT paper: 1.3B InstructGPT outputs preferred over 175B GPT-3 outputs",
+      "box": [
+       0.1248,
+       0.6998,
+       0.7504,
+       0.1129
+      ]
+     },
+     {
+      "id": "dpo",
+      "label": "Direct Preference Optimization (Rafailov et al. 2023) skips the reward model",
+      "box": [
+       0.1276,
+       0.9199,
+       0.7447,
+       0.0426
+      ]
+     }
+    ]
+   },
+   {
+    "start": 95.5,
+    "end": 108.1,
+    "text": "And a chat is still one long document. Special tokens mark who's speaking, and the model keeps predicting next tokens until it predicts the end-of-turn token itself.",
+    "scene": "A conversation laid out as one token stream in a ChatML-style template: <|im_start|>system … <|im_end|> <|im_start|>user What color is the sky?<|im_end|> <|im_start|>assistant, then the model's reply (teal) generated until it emits <|im_end|>.",
+    "objects": [
+     {
+      "id": "chat-0",
+      "label": "chat template line: special tokens (pink) mark turns and roles",
+      "box": [
+       0.057,
+       0.1869,
+       0.2657,
+       0.068
+      ]
+     },
+     {
+      "id": "chat-1",
+      "label": "chat template line: special tokens (pink) mark turns and roles",
+      "box": [
+       0.057,
+       0.281,
+       0.5546,
+       0.068
+      ]
+     },
+     {
+      "id": "chat-2",
+      "label": "chat template line: special tokens (pink) mark turns and roles",
+      "box": [
+       0.057,
+       0.3752,
+       0.2364,
+       0.068
+      ]
+     },
+     {
+      "id": "chat-3",
+      "label": "chat template line: special tokens (pink) mark turns and roles",
+      "box": [
+       0.057,
+       0.4693,
+       0.4707,
+       0.068
+      ]
+     },
+     {
+      "id": "chat-4",
+      "label": "chat template line: special tokens (pink) mark turns and roles",
+      "box": [
+       0.057,
+       0.5634,
+       0.3091,
+       0.068
+      ]
+     },
+     {
+      "id": "chat-gen",
+      "label": "the assistant's reply is generated token by token; <|im_end|> ends the turn",
+      "box": [
+       0.057,
+       0.6576,
+       0.8859,
+       0.068
+      ]
+     }
+    ]
+   },
+   {
+    "start": 108.1,
+    "end": 123.77,
+    "text": "Generation has a speed trick: the KV cache. Earlier tokens' keys and values never change, so keep them, and compute only the new token. For 8 tokens after our prompt, that's 30 positions instead of 212, same result.",
+    "scene": "Two grids, one row per generation step (8 new tokens after the 23-token probe prompt). Without cache every step recomputes all positions (212 total); with the KV cache earlier keys/values are reused (blue outlines) and only the new token is computed (30 total). Real check on TinyGPT: logits match to 5.2e-06.",
+    "objects": [
+     {
+      "id": "nocache",
+      "label": "without a cache: 212 token positions pushed through the network",
+      "box": [
+       0.0662,
+       0.4062,
+       0.3987,
+       0.3035
+      ]
+     },
+     {
+      "id": "cache",
+      "label": "with a KV cache: 30 positions (prompt once, then 1 per new token)",
+      "box": [
+       0.5352,
+       0.4062,
+       0.3987,
+       0.3035
+      ]
+     },
+     {
+      "id": "same",
+      "label": "cached and uncached generation give the same tokens ('red ball.\nonce upon …'), max logit difference 5.2e-06",
+      "box": [
+       0.1268,
+       0.9132,
+       0.7464,
+       0.0431
+      ]
+     }
+    ]
+   },
+   {
+    "start": 123.77,
+    "end": 135.17,
+    "text": "Then the sampling knobs. Temperature sharpens or flattens the odds. Top-p keeps the fewest tokens that together cover, say, 90 percent: here, just red and white.",
+    "scene": "Real TinyGPT probabilities after the probe prompt as temperature changes: at T = 0.7 ' red' 96.2%, at T = 1.0 87.1%, at T = 1.3 72.2%. Top-p 0.9 keeps ' red' + ' white' = 93.0%.",
+    "objects": [
+     {
+      "id": "samp-red",
+      "label": "\" red\": 87.1% at temperature 1",
+      "box": [
+       0.1945,
+       0.2763,
+       0.0665,
+       0.0474
+      ]
+     },
+     {
+      "id": "samp-white",
+      "label": "\" white\": 5.9% at temperature 1",
+      "box": [
+       0.1591,
+       0.3688,
+       0.1018,
+       0.0498
+      ]
+     },
+     {
+      "id": "samp-purple",
+      "label": "\" purple\": 5.1% at temperature 1",
+      "box": [
+       0.1415,
+       0.4638,
+       0.1194,
+       0.0474
+      ]
+     },
+     {
+      "id": "samp-black",
+      "label": "\" black\": 0.3% at temperature 1",
+      "box": [
+       0.1578,
+       0.5576,
+       0.1031,
+       0.0474
+      ]
+     },
+     {
+      "id": "topp",
+      "label": "nucleus (top-p 0.9) set: [' red', ' white'], cumulative 0.9296",
+      "box": [
+       0.05,
+       0.8909,
+       0.9,
+       0.0458
+      ]
+     }
+    ]
+   },
+   {
+    "start": 135.17,
+    "end": 145.47,
+    "text": "Same engine: a million times bigger, fed far more text, then taught to be an assistant. Everything inside, you've already seen in TinyGPT.",
+    "scene": "Recap: the same pipeline (tokens → embed → [attention → MLP] × 96 layers for GPT-3 → probabilities → pick one) plus: a million times the weights, web-scale pretraining, instruction & preference tuning, chat tokens, KV cache and sampling knobs. CTA: open the X-ray.",
+    "objects": [
+     {
+      "id": "pipe-96",
+      "label": "same loop and blocks; GPT-3 stacks 96 layers instead of 3",
+      "box": [
+       0.0833,
+       0.1262,
+       0.8334,
+       0.3226
+      ]
+     },
+     {
+      "id": "recap",
+      "label": "what's different: scale, data, post-training, and inference tricks",
+      "box": [
+       0.2352,
+       0.505,
+       0.5297,
+       0.2446
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "next: explore TinyGPT's internals in the X-ray",
+      "box": [
+       0.1614,
+       0.8886,
+       0.6773,
+       0.0614
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "research-loop",
+  "title": "The research loop: test your own idea",
+  "subtitle": "Hypothesis → smallest experiment → baseline → one change → compare → scale. A real TinyGPT experiment",
+  "duration": 117.63,
+  "track": "research",
+  "order": 10,
+  "src": "/videos/research-loop.mp4",
+  "poster": "/videos/research-loop.jpg",
+  "relates": "invent",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The loop"
+   },
+   {
+    "t": 17.23,
+    "title": "Hypothesis"
+   },
+   {
+    "t": 32.87,
+    "title": "Experiment"
+   },
+   {
+    "t": 51.4,
+    "title": "Compare"
+   },
+   {
+    "t": 64.63,
+    "title": "Seeds"
+   },
+   {
+    "t": 81.27,
+    "title": "Traps"
+   },
+   {
+    "t": 104.7,
+    "title": "Scale up"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 17.23,
+    "text": "Inventing a new model isn't one big idea. It's a loop: a hypothesis, the smallest experiment that could test it, a baseline, one change, an honest comparison, and only then, scale up what wins. Let's run it, for real, on TinyGPT.",
+    "scene": "The research loop as six pills around a circle: hypothesis → smallest experiment → baseline → change ONE thing → compare across seeds → scale up what wins → back to hypothesis.",
+    "objects": [
+     {
+      "id": "loop-0",
+      "label": "research loop step 1: hypothesis",
+      "box": [
+       0.4148,
+       0.158,
+       0.1705,
+       0.0965
+      ]
+     },
+     {
+      "id": "loop-1",
+      "label": "research loop step 2: smallest experiment",
+      "box": [
+       0.6069,
+       0.305,
+       0.2856,
+       0.0963
+      ]
+     },
+     {
+      "id": "loop-2",
+      "label": "research loop step 3: baseline",
+      "box": [
+       0.6808,
+       0.603,
+       0.1376,
+       0.0877
+      ]
+     },
+     {
+      "id": "loop-3",
+      "label": "research loop step 4: change ONE thing",
+      "box": [
+       0.3724,
+       0.7453,
+       0.2553,
+       0.0969
+      ]
+     },
+     {
+      "id": "loop-4",
+      "label": "research loop step 5: compare across seeds",
+      "box": [
+       0.0939,
+       0.5996,
+       0.3129,
+       0.0945
+      ]
+     },
+     {
+      "id": "loop-5",
+      "label": "research loop step 6: scale up what wins",
+      "box": [
+       0.1158,
+       0.305,
+       0.2692,
+       0.0963
+      ]
+     }
+    ]
+   },
+   {
+    "start": 17.23,
+    "end": 32.87,
+    "text": "Hypothesis: TinyGPT doesn't need its position embeddings. Attention by itself ignores word order, but the causal mask leaks some: each token sees a different number of tokens before it. So maybe it can work out positions on its own.",
+    "scene": "TinyGPT's input = token embedding + position embedding, with the position embedding crossed out: 'what if TinyGPT had no position embeddings?'. A 6×6 causal mask: token k sees k tokens, so some order information leaks in.",
+    "objects": [
+     {
+      "id": "tok-emb",
+      "label": "token embedding: one learned vector per token (256 × 64)",
+      "box": [
+       0.0321,
+       0.2499,
+       0.2657,
+       0.1003
+      ]
+     },
+     {
+      "id": "pos-emb",
+      "label": "position embedding: one learned vector per position (64 × 64 = 4,096 weights)",
+      "box": [
+       0.3583,
+       0.2499,
+       0.2971,
+       0.1003
+      ]
+     },
+     {
+      "id": "question",
+      "label": "hypothesis: TinyGPT does not need learned position embeddings",
+      "box": [
+       0.1077,
+       0.4318,
+       0.7845,
+       0.0614
+      ]
+     },
+     {
+      "id": "mask",
+      "label": "causal mask: each position attends only to itself and earlier positions",
+      "box": [
+       0.204,
+       0.6175,
+       0.142,
+       0.2525
+      ]
+     },
+     {
+      "id": "mask-note",
+      "label": "the causal mask gives the model an implicit signal about position",
+      "box": [
+       0.3882,
+       0.6631,
+       0.5743,
+       0.1613
+      ]
+     }
+    ]
+   },
+   {
+    "start": 32.87,
+    "end": 51.4,
+    "text": "The smallest test: two short runs of 600 steps, about four minutes each on my CPU. Same code, same data, same batches, same seed. The baseline is unchanged TinyGPT; the only difference is one line.",
+    "scene": "Experiment setup (real): both runs use 600 steps, batch 64×64, AdamW lr 0.003, cosine schedule, seed 0, identical batches, CPU with 2 threads (235 s and 195 s). Baseline: x = tok(idx) + pos(t). Variant: x = tok(idx).",
+    "objects": [
+     {
+      "id": "shared",
+      "label": "held fixed: 600 steps, batch 64×64, AdamW lr 3e-3 cosine, seed 0, same batches, same code",
+      "box": [
+       0.0359,
+       0.2956,
+       0.5344,
+       0.2713
+      ]
+     },
+     {
+      "id": "arm-base",
+      "label": "baseline: unchanged TinyGPT (170,560 params)",
+      "box": [
+       0.6391,
+       0.2475,
+       0.332,
+       0.1581
+      ]
+     },
+     {
+      "id": "arm-nopos",
+      "label": "variant: position embedding removed (166,464 params used)",
+      "box": [
+       0.6574,
+       0.4494,
+       0.2953,
+       0.1656
+      ]
+     }
+    ]
+   },
+   {
+    "start": 51.4,
+    "end": 64.63,
+    "text": "Then compare, on held-out text, measured on the exact same batches. Baseline: 0.65. No positions: 0.68. Removing them hurt, by about 0.03.",
+    "scene": "Real validation-loss curves from step 200 to 600 (y axis zoomed to 0.62–0.92): baseline (blue) ends at 0.6524, no-positions (pink) ends at 0.6837; gap +0.0313. Evaluated on the same 24 held-out batches (98,304 tokens).",
+    "objects": [
+     {
+      "id": "curve-base",
+      "label": "baseline val loss: 0.820 at step 200 → 0.652 at step 600",
+      "box": [
+       0.0816,
+       0.4294,
+       0.5766,
+       0.321
+      ]
+     },
+     {
+      "id": "curve-nopos",
+      "label": "no-positions val loss: 0.896 at step 200 → 0.684 at step 600",
+      "box": [
+       0.0816,
+       0.2827,
+       0.5766,
+       0.4077
+      ]
+     },
+     {
+      "id": "final",
+      "label": "final val loss: baseline 0.6524, no positions 0.6837, gap +0.0313",
+      "box": [
+       0.6858,
+       0.3634,
+       0.2752,
+       0.2232
+      ]
+     }
+    ]
+   },
+   {
+    "start": 64.63,
+    "end": 81.27,
+    "text": "But that's one seed per arm. Rerun with a different seed and both numbers move. A real verdict needs three or more seeds each, and a gap that clearly beats the spread between them. So for now, it's a promising hint, not a result.",
+    "scene": "Number line of val loss at step 600: baseline seed 0 = 0.6524, no positions seed 0 = 0.6837, each with a ±2×SE measurement-noise bar (SE ≈ 0.0035). Only one seed per arm was run; text: a verdict needs 3+ seeds per arm and a gap clearly bigger than the seed-to-seed spread.",
+    "objects": [
+     {
+      "id": "dot-base",
+      "label": "baseline, seed 0: 0.6524 ± 0.0035 (measurement)",
+      "box": [
+       0.2253,
+       0.3755,
+       0.2002,
+       0.102
+      ]
+     },
+     {
+      "id": "dot-nopos",
+      "label": "no positions, seed 0: 0.6837 ± 0.0035",
+      "box": [
+       0.5471,
+       0.3669,
+       0.2456,
+       0.1106
+      ]
+     },
+     {
+      "id": "need-seeds",
+      "label": "rule of thumb: several seeds per arm; compare the gap to the seed spread",
+      "box": [
+       0.0872,
+       0.1175,
+       0.8255,
+       0.1274
+      ]
+     }
+    ]
+   },
+   {
+    "start": 81.27,
+    "end": 104.7,
+    "text": "Three classic traps. Different compute: compare against the released model, trained five times longer, and the gap looks 7 times bigger than it is. One seed: luck can fake a win. And leakage: 55 percent of TinyGPT's held-out lines also appear in training, mostly short templated ones. So part of its validation loss measures memory.",
+    "scene": "Three trap cards. Different compute: comparing the 600-step no-positions run (0.684) to the released 3,000-step model (0.452, same eval batches) suggests a 0.232 gap, 7.4× the real 0.031. One seed: luck can fake a win. Data leakage: 1,642 of 3,001 held-out lines (54.7%) appear verbatim in the training split: all 1,579 short templated lines (Q&A, counting, pets, days, facts) but only 8 of 526 trade stories.",
+    "objects": [
+     {
+      "id": "trap-compute",
+      "label": "unequal compute: released model val 0.4520 (3,000 steps) vs no-pos 0.6837 (600 steps) → misleading gap 0.232",
+      "box": [
+       0.0307,
+       0.275,
+       0.2988,
+       0.475
+      ]
+     },
+     {
+      "id": "trap-seed",
+      "label": "single-seed comparisons can be noise",
+      "box": [
+       0.3506,
+       0.275,
+       0.2988,
+       0.475
+      ]
+     },
+     {
+      "id": "trap-leak",
+      "label": "1,642/3,001 validation lines also occur in the training split; trade stories: 8/526",
+      "box": [
+       0.6705,
+       0.275,
+       0.2988,
+       0.475
+      ]
+     }
+    ]
+   },
+   {
+    "start": 104.7,
+    "end": 117.03,
+    "text": "So positions win, for now, at this size. Next: more seeds, then longer runs, then a bigger model, checking the gap holds at every step. Your turn: pick a hypothesis.",
+    "scene": "Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? Verdict: position embeddings (4,096 weights) help at this size (one seed, 600 steps). CTA: Invent lab.",
+    "objects": [
+     {
+      "id": "verdict",
+      "label": "result: removing position embeddings raised val loss by 0.031 (1 seed, 600 steps)",
+      "box": [
+       0.0206,
+       0.6015,
+       0.9589,
+       0.047
+      ]
+     },
+     {
+      "id": "ladder-0",
+      "label": "rerun both arms with more seeds",
+      "box": [
+       0.057,
+       0.3847,
+       0.1713,
+       0.0806
+      ]
+     },
+     {
+      "id": "ladder-1",
+      "label": "train longer",
+      "box": [
+       0.2604,
+       0.3802,
+       0.169,
+       0.0896
+      ]
+     },
+     {
+      "id": "ladder-2",
+      "label": "try a bigger model",
+      "box": [
+       0.4615,
+       0.3793,
+       0.1892,
+       0.0914
+      ]
+     },
+     {
+      "id": "ladder-3",
+      "label": "keep checking the gap survives",
+      "box": [
+       0.6828,
+       0.38,
+       0.2602,
+       0.0901
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "next: design your own experiment in the Invent lab",
+      "box": [
+       0.0576,
+       0.7786,
+       0.8848,
+       0.0678
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "frontier",
+  "title": "The frontier: a map for model inventors",
+  "subtitle": "MoE, state-space models, efficient attention, RoPE, retrieval, diffusion LMs, test-time compute, distillation",
+  "duration": 113.83,
+  "track": "research",
+  "order": 20,
+  "src": "/videos/frontier.mp4",
+  "poster": "/videos/frontier.jpg",
+  "relates": "invent",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The map"
+   },
+   {
+    "t": 9.7,
+    "title": "Longer sequences"
+   },
+   {
+    "t": 48.17,
+    "title": "More model per FLOP"
+   },
+   {
+    "t": 70.2,
+    "title": "Knowledge outside the weights"
+   },
+   {
+    "t": 80.73,
+    "title": "New ways to generate"
+   },
+   {
+    "t": 105.83,
+    "title": "Your move"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 9.7,
+    "text": "Want to invent a new kind of model? Here's a map of where people are pushing right now. Each idea swaps out one part of the same engine TinyGPT runs on.",
+    "scene": "A map: TinyGPT's parts in the centre (tokens & positions, attention, MLP, next-token loss, generation loop) with eight research directions around it, grouped into clusters: longer sequences (RoPE, efficient attention, state-space/Mamba), more model per FLOP (mixture of experts, distillation), knowledge outside the weights (retrieval), new ways to generate (diffusion LMs, test-time compute). Dashed lines show which part each idea replaces.",
+    "objects": [
+     {
+      "id": "hub-0",
+      "label": "TinyGPT component: tokens & positions",
+      "box": [
+       0.3857,
+       0.3081,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "hub-1",
+      "label": "TinyGPT component: attention",
+      "box": [
+       0.3857,
+       0.4144,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "hub-2",
+      "label": "TinyGPT component: MLP",
+      "box": [
+       0.3857,
+       0.5206,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "hub-3",
+      "label": "TinyGPT component: next-token loss",
+      "box": [
+       0.3857,
+       0.6269,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "hub-4",
+      "label": "TinyGPT component: generation loop",
+      "box": [
+       0.3857,
+       0.7331,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "node-rope",
+      "label": "Positions & long context (RoPE): rotate each query and key by an angle set by its position, so position enters the score only as the distance between tokens (replaces the position table)",
+      "box": [
+       0.0815,
+       0.1972,
+       0.169,
+       0.118
+      ]
+     },
+     {
+      "id": "node-eff",
+      "label": "Linear / efficient attention: approximate or restrict attention (kernel tricks, sparse or sliding windows) so cost grows ~linearly (changes attention)",
+      "box": [
+       0.102,
+       0.3687,
+       0.1281,
+       0.1125
+      ]
+     },
+     {
+      "id": "node-ssm",
+      "label": "State-space models (Mamba): a recurrence carries a fixed-size state along the sequence; Mamba makes its updates depend on the input (replaces attention)",
+      "box": [
+       0.0837,
+       0.5335,
+       0.1646,
+       0.1205
+      ]
+     },
+     {
+      "id": "node-moe",
+      "label": "Mixture of experts: many expert MLPs; a learned router sends each token to just a few of them (replaces the MLP)",
+      "box": [
+       0.7623,
+       0.4104,
+       0.1435,
+       0.1167
+      ]
+     },
+     {
+      "id": "node-distill",
+      "label": "Distillation & small models: train a small student to match a big teacher's full probability distribution, not just the right token (changes the training target (loss))",
+      "box": [
+       0.7456,
+       0.5883,
+       0.1768,
+       0.1109
+      ]
+     },
+     {
+      "id": "node-rag",
+      "label": "Retrieval-augmented models: look up relevant documents in an external store and put them into the context (adds to the input (what it reads))",
+      "box": [
+       0.7739,
+       0.1848,
+       0.1201,
+       0.1179
+      ]
+     },
+     {
+      "id": "node-diff",
+      "label": "Diffusion language models: start from a fully masked sequence and fill in every position over a few refinement steps (replaces the left-to-right generation loop)",
+      "box": [
+       0.2464,
+       0.8133,
+       0.1276,
+       0.1109
+      ]
+     },
+     {
+      "id": "node-ttc",
+      "label": "Test-time compute & reasoning: spend more computation per question: write out intermediate steps, or sample many answers and check or vote (changes how the generation loop is used)",
+      "box": [
+       0.6239,
+       0.8104,
+       0.1319,
+       0.1167
+      ]
+     }
+    ]
+   },
+   {
+    "start": 9.7,
+    "end": 22.97,
+    "text": "Position schemes like RoPE rotate queries and keys by position, so scores depend on relative distance. Tricks built on it help stretch context, though using very long contexts well remains hard.",
+    "scene": "Positions & long context (RoPE) (replaces the position table in TinyGPT). Idea: rotate each query and key by an angle set by its position, so position enters the score only as the distance between tokens. Attacks: a learned table like TinyGPT's has exactly 64 slots: position 65 simply doesn't exist. Open: stretching past the training length only partly works; using very long contexts well is still hard. Refs: RoFormer (Su et al. 2021) · Chen et al. 2023 · Lost in the Middle (Liu et al. 2023).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: replaces the position table",
+      "box": [
+       0.0131,
+       0.3081,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-rope",
+      "label": "Positions & long context (RoPE) — idea: rotate each query and key by an angle set by its position, so position enters the score only as the distance between tokens; attacks: a learned table like TinyGPT's has exactly 64 slots: position 65 simply doesn't exist; open question: stretching past the training length only partly works; using very long contexts well is still hard",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.4306
+      ]
+     },
+     {
+      "id": "diag-rope",
+      "label": "Positions & long context (RoPE): schematic diagram",
+      "box": [
+       0.2868,
+       0.5994,
+       0.6725,
+       0.25
+      ]
+     }
+    ]
+   },
+   {
+    "start": 22.97,
+    "end": 35.23,
+    "text": "Efficient attention keeps attention, but approximates or restricts it, like sliding windows, to dodge the quadratic cost. FlashAttention, by contrast, stays exact and just computes it smarter.",
+    "scene": "Linear / efficient attention (changes attention in TinyGPT). Idea: approximate or restrict attention (kernel tricks, sparse or sliding windows) so cost grows ~linearly. Attacks: the quadratic score grid: every token scored against every earlier token. Open: approximations often cost some quality; FlashAttention instead stays exact and just runs faster. Refs: Katharopoulos et al. 2020 · Longformer (2020) · FlashAttention (Dao et al. 2022).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: changes attention",
+      "box": [
+       0.0131,
+       0.4144,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-eff",
+      "label": "Linear / efficient attention — idea: approximate or restrict attention (kernel tricks, sparse or sliding windows) so cost grows ~linearly; attacks: the quadratic score grid: every token scored against every earlier token; open question: approximations often cost some quality; FlashAttention instead stays exact and just runs faster",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.4119
+      ]
+     },
+     {
+      "id": "diag-eff",
+      "label": "TinyGPT computes 64×64 = 4,096 attention scores per head per layer; 2,048 tokens would need 4,194,304",
+      "box": [
+       0.2945,
+       0.5806,
+       0.657,
+       0.2875
+      ]
+     }
+    ]
+   },
+   {
+    "start": 35.23,
+    "end": 48.17,
+    "text": "State-space models like Mamba swap attention for a recurrence with a fixed-size state, so cost grows linearly with length. Open question: how much exact detail that state can hold.",
+    "scene": "State-space models (Mamba) (replaces attention in TinyGPT). Idea: a recurrence carries a fixed-size state along the sequence; Mamba makes its updates depend on the input. Attacks: attention cost grows with length squared, and the KV cache grows with every token. Open: how much exact detail a fixed-size state can recall; hybrids that keep a few attention layers are a popular compromise. Refs: S4 (Gu et al. 2021) · Mamba (Gu & Dao 2023).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: replaces attention",
+      "box": [
+       0.0131,
+       0.4144,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-ssm",
+      "label": "State-space models (Mamba) — idea: a recurrence carries a fixed-size state along the sequence; Mamba makes its updates depend on the input; attacks: attention cost grows with length squared, and the KV cache grows with every token; open question: how much exact detail a fixed-size state can recall; hybrids that keep a few attention layers are a popular compromise",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.4452
+      ]
+     },
+     {
+      "id": "diag-ssm",
+      "label": "a recurrence passes one fixed-size state from token to token",
+      "box": [
+       0.2855,
+       0.6245,
+       0.675,
+       0.1886
+      ]
+     }
+    ]
+   },
+   {
+    "start": 48.17,
+    "end": 59.77,
+    "text": "Mixture of experts swaps the MLP for many expert MLPs, and a router sends each token to just a few. More parameters, without proportionally more compute per token.",
+    "scene": "Mixture of experts (replaces the MLP in TinyGPT). Idea: many expert MLPs; a learned router sends each token to just a few of them. Attacks: more parameters (capacity) without proportionally more compute per token. Open: balancing load across experts; memory to hold them all. Refs: Shazeer et al. 2017 · Switch Transformer (Fedus et al. 2021) · Mixtral (2024).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: replaces the MLP",
+      "box": [
+       0.0131,
+       0.5206,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-moe",
+      "label": "Mixture of experts — idea: many expert MLPs; a learned router sends each token to just a few of them; attacks: more parameters (capacity) without proportionally more compute per token; open question: balancing load across experts; memory to hold them all",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.3572
+      ]
+     },
+     {
+      "id": "diag-moe",
+      "label": "hypothetical TinyGPT with 8 expert MLPs (top-2 routing): 33,088 → 264,704 MLP weights per layer",
+      "box": [
+       0.2855,
+       0.6045,
+       0.675,
+       0.2285
+      ]
+     }
+    ]
+   },
+   {
+    "start": 59.77,
+    "end": 70.2,
+    "text": "Distillation trains a small student to match a big teacher's whole probability distribution, not just the one right token. Cheaper models that keep much of the skill.",
+    "scene": "Distillation & small models (changes the training target (loss) in TinyGPT). Idea: train a small student to match a big teacher's full probability distribution, not just the right token. Attacks: big models are expensive to run; one-hot targets throw away the teacher's near misses. Open: how much capability survives the shrink. Refs: Hinton, Vinyals & Dean 2015 · DistilBERT (Sanh et al. 2019).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: changes the training target (loss)",
+      "box": [
+       0.0131,
+       0.6269,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-distill",
+      "label": "Distillation & small models — idea: train a small student to match a big teacher's full probability distribution, not just the right token; attacks: big models are expensive to run; one-hot targets throw away the teacher's near misses; open question: how much capability survives the shrink",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.3711
+      ]
+     },
+     {
+      "id": "diag-distill",
+      "label": "Distillation & small models: schematic diagram",
+      "box": [
+       0.2855,
+       0.6251,
+       0.675,
+       0.1874
+      ]
+     }
+    ]
+   },
+   {
+    "start": 70.2,
+    "end": 80.73,
+    "text": "Retrieval-augmented models look things up: fetch relevant documents and put them in the context. Knowledge can stay fresh without retraining, if retrieval finds the right text.",
+    "scene": "Retrieval-augmented models (adds to the input (what it reads) in TinyGPT). Idea: look up relevant documents in an external store and put them into the context. Attacks: knowledge frozen in the weights: stale facts, made-up answers, giant models to memorise trivia. Open: finding the right text, and making the model actually use it. Refs: RAG (Lewis et al. 2020) · RETRO (Borgeaud et al. 2021).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: adds to the input (what it reads)",
+      "box": [
+       0.0131,
+       0.3081,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-rag",
+      "label": "Retrieval-augmented models — idea: look up relevant documents in an external store and put them into the context; attacks: knowledge frozen in the weights: stale facts, made-up answers, giant models to memorise trivia; open question: finding the right text, and making the model actually use it",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.3674
+      ]
+     },
+     {
+      "id": "diag-rag",
+      "label": "Retrieval-augmented models: schematic diagram",
+      "box": [
+       0.2855,
+       0.6233,
+       0.675,
+       0.191
+      ]
+     }
+    ]
+   },
+   {
+    "start": 80.73,
+    "end": 92.97,
+    "text": "Diffusion language models drop left-to-right: start from a fully masked sequence and refine every position over a few steps. Whether they match autoregressive quality at scale is still open.",
+    "scene": "Diffusion language models (replaces the left-to-right generation loop in TinyGPT). Idea: start from a fully masked sequence and fill in every position over a few refinement steps. Attacks: strictly one token at a time, left to right. Open: whether they can match autoregressive quality and efficiency at scale is still being studied. Refs: D3PM (Austin et al. 2021) · masked diffusion LMs (e.g. Sahoo et al. 2024).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: replaces the left-to-right generation loop",
+      "box": [
+       0.0131,
+       0.7331,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-diff",
+      "label": "Diffusion language models — idea: start from a fully masked sequence and fill in every position over a few refinement steps; attacks: strictly one token at a time, left to right; open question: whether they can match autoregressive quality and efficiency at scale is still being studied",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.3865
+      ]
+     },
+     {
+      "id": "diag-diff",
+      "label": "Diffusion language models: schematic diagram",
+      "box": [
+       0.302,
+       0.598,
+       0.6421,
+       0.2415
+      ]
+     }
+    ]
+   },
+   {
+    "start": 92.97,
+    "end": 105.83,
+    "text": "And test-time compute spends more thinking per question: write out reasoning steps, or sample many answers and check them. Some recent reasoning models are trained with reinforcement learning to do this.",
+    "scene": "Test-time compute & reasoning (changes how the generation loop is used in TinyGPT). Idea: spend more computation per question: write out intermediate steps, or sample many answers and check or vote. Attacks: a fixed amount of compute per token, even for hard problems. Open: when extra thinking pays off, what it costs, and whether the written steps reflect the real computation. Refs: chain of thought (Wei et al. 2022) · self-consistency (Wang et al. 2022).",
+    "objects": [
+     {
+      "id": "hub-part",
+      "label": "the TinyGPT part this idea touches: changes how the generation loop is used",
+      "box": [
+       0.0131,
+       0.7331,
+       0.2285,
+       0.075
+      ]
+     },
+     {
+      "id": "card-ttc",
+      "label": "Test-time compute & reasoning — idea: spend more computation per question: write out intermediate steps, or sample many answers and check or vote; attacks: a fixed amount of compute per token, even for hard problems; open question: when extra thinking pays off, what it costs, and whether the written steps reflect the real computation",
+      "box": [
+       0.2645,
+       0.1312,
+       0.7031,
+       0.3853
+      ]
+     },
+     {
+      "id": "diag-ttc",
+      "label": "Test-time compute & reasoning: schematic diagram",
+      "box": [
+       0.2939,
+       0.612,
+       0.6583,
+       0.2136
+      ]
+     }
+    ]
+   },
+   {
+    "start": 105.83,
+    "end": 113.23,
+    "text": "Every one of these is a change to one box. Pick a box, form a hypothesis, and run the loop.",
+    "scene": "Back to the full map: TinyGPT's five parts with the eight directions around them. CTA: pick a box, form a hypothesis, run the loop (Invent lab).",
+    "objects": [
+     {
+      "id": "node-rope",
+      "label": "Positions & long context (RoPE) (replaces the position table)",
+      "box": [
+       0.1446,
+       0.1785,
+       0.1454,
+       0.1015
+      ]
+     },
+     {
+      "id": "node-eff",
+      "label": "Linear / efficient attention (changes attention)",
+      "box": [
+       0.1623,
+       0.3259,
+       0.1101,
+       0.0968
+      ]
+     },
+     {
+      "id": "node-ssm",
+      "label": "State-space models (Mamba) (replaces attention)",
+      "box": [
+       0.1466,
+       0.4676,
+       0.1415,
+       0.1037
+      ]
+     },
+     {
+      "id": "node-moe",
+      "label": "Mixture of experts (replaces the MLP)",
+      "box": [
+       0.7301,
+       0.3618,
+       0.1234,
+       0.1004
+      ]
+     },
+     {
+      "id": "node-distill",
+      "label": "Distillation & small models (changes the training target (loss))",
+      "box": [
+       0.7158,
+       0.5148,
+       0.152,
+       0.0954
+      ]
+     },
+     {
+      "id": "node-rag",
+      "label": "Retrieval-augmented models (adds to the input (what it reads))",
+      "box": [
+       0.7401,
+       0.1678,
+       0.1033,
+       0.1014
+      ]
+     },
+     {
+      "id": "node-diff",
+      "label": "Diffusion language models (replaces the left-to-right generation loop)",
+      "box": [
+       0.2864,
+       0.7083,
+       0.1097,
+       0.0954
+      ]
+     },
+     {
+      "id": "node-ttc",
+      "label": "Test-time compute & reasoning (changes how the generation loop is used)",
+      "box": [
+       0.6111,
+       0.7058,
+       0.1134,
+       0.1004
+      ]
+     },
+     {
+      "id": "hub-0",
+      "label": "TinyGPT component: tokens & positions",
+      "box": [
+       0.4063,
+       0.2738,
+       0.1965,
+       0.0645
+      ]
+     },
+     {
+      "id": "hub-1",
+      "label": "TinyGPT component: attention",
+      "box": [
+       0.4063,
+       0.3652,
+       0.1965,
+       0.0645
+      ]
+     },
+     {
+      "id": "hub-2",
+      "label": "TinyGPT component: MLP",
+      "box": [
+       0.4063,
+       0.4566,
+       0.1965,
+       0.0645
+      ]
+     },
+     {
+      "id": "hub-3",
+      "label": "TinyGPT component: next-token loss",
+      "box": [
+       0.4063,
+       0.5479,
+       0.1965,
+       0.0645
+      ]
+     },
+     {
+      "id": "hub-4",
+      "label": "TinyGPT component: generation loop",
+      "box": [
+       0.4063,
+       0.6393,
+       0.1965,
+       0.0645
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "next: the Invent lab",
+      "box": [
+       0.1095,
+       0.9016,
+       0.781,
+       0.0609
       ]
      }
     ]

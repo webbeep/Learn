@@ -309,7 +309,7 @@ class Embeddings(VScene):
             self.mark("pos-sum", VGroup(lab3, s3), f'input to layer 1 for " red" at position {k_pos} = token + position')
 
         SP = cos_matrix(Pn)
-        hm = self.heat(SP, 1.0, 3.6, 3.6).move_to(LEFT * 3.6 + DOWN * 1.75)
+        hm = self.heat(SP, 1.0, 3.4, 3.4).move_to(LEFT * 3.6 + DOWN * 1.95)
         hm_f = SurroundingRectangle(hm, buff=0.02, stroke_color=LINE, stroke_width=2)
         hm_t = self.T("position vs position (cosine)", 24, MUTED).next_to(hm, UP, buff=0.12)
         hm_ax = self.T("0 → 63", 24, MUTED).next_to(hm, DOWN, buff=0.1)

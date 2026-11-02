@@ -38,12 +38,14 @@ def spoken_tok(t):
 # one short, data-driven line per ablation (the insight phrase is the only hand-written part)
 INSIGHT = {
     "no-attention": "Every token is alone, so it can't look back and see that the ball was red.",
-    "no-mlp": "Attention still moves information around, but each token gets far less processing.",
-    "no-positions": "It sees every earlier word, but not their order.",
+    "no-mlp": "Attention still moves information around, so the copy survives.",
+    "no-positions": "Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, "
+                    "already leaks word order.",
     "no-residual": "The signal can't get through. It never really learns.",
-    "no-layernorm": "Scales drift from layer to layer, and learning gets harder.",
-    "1-layer": "One block has to do everything in a single hop.",
-    "6-layer": "Twice the depth and nearly twice the parameters.",
+    "no-layernorm": "Scales drift from layer to layer. It learns the language, but not the trick.",
+    "1-layer": "It knows a color comes next, but not which one. Copying like this typically needs two layers "
+               "working together.",
+    "6-layer": "Deeper isn't automatically better. On the same budget, it hasn't found the trick yet.",
 }
 ORDER = ["no-attention", "no-positions", "no-mlp", "no-residual", "no-layernorm", "1-layer", "6-layer"]
 
@@ -69,14 +71,14 @@ class ArchLab(VScene):
             row.shift(RIGHT * (rows[0][0].get_right()[0] - row[0].get_right()[0]))
         head = self.M("…now tom has the →", 24, MUTED)
         text = r["samples"][0]["text"].split("\n")[0][:30]
-        samp = VGroup(self.T("it wrote:", 22, MUTED), self.M(text if text.strip() else "(nothing)", 22, col)) \
+        samp = VGroup(self.T("a sample:", 22, MUTED), self.M(text if text.strip() else "(nothing)", 22, col)) \
             .arrange(RIGHT, buff=0.2)
         g = VGroup(head, rows, samp).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
         return g
 
     def mini_plot(self, r, col, ymax):
         p = Plot([0, STEPS], [0, ymax], width=5.6, height=3.4, xticks=[0, STEPS // 2, STEPS],
-                 yticks=list(range(0, int(ymax) + 1)), xlabel="training step", ylabel="validation loss")
+                 yticks=list(range(0, int(ymax) + 1)), xlabel="training step", ylabel="val loss")
         lb = p.line(BASE["curve"]["step"], BASE["curve"]["val"], MUTED, 3)
         la = p.line(r["curve"]["step"], r["curve"]["val"], col, 4)
         return p, lb, la
@@ -87,8 +89,8 @@ class ArchLab(VScene):
                  ("residual +", PINK), ("LayerNorm", YELLOW), ("layers ×3", "#5fd0ff")]
         pills = VGroup(*[pill(t, c, 30) for t, c in parts]).arrange_in_grid(rows=2, buff=(0.35, 0.45)).move_to(DOWN * 0.3)
         ttl = self.T("what does each part actually do?", 46, FG, BOLD).move_to(UP * 2.3)
-        with self.say(f"What does each part of a transformer actually do? Easy way to find out: remove it, retrain "
-                      f"from scratch, and see what breaks. Seven broken TinyGPTs, each trained exactly like the real one.",
+        with self.say(f"What does each part of a transformer actually do? Remove it, retrain from scratch, and see what "
+                      f"breaks. Seven broken TinyGPTs, each trained exactly like the real one.",
                       scene="Seven pills naming TinyGPT's parts: embeddings, positions, attention, MLP, residual +, "
                             "LayerNorm, layers ×3. Question: what does each part actually do?",
                       chapter="Break it"):
@@ -104,7 +106,9 @@ class ArchLab(VScene):
         tb = top1(BASE)
         ymax = 5
         pv = self.probe_view(BASE, TEAL).move_to(RIGHT * 3.4 + DOWN * 0.3)
-        prompt = self.M(PROBE[:44] + "…", 24, MUTED).move_to(UP * 2.55)
+        cut = PROBE.rfind(" ", 0, len(PROBE) // 2 + 4)
+        prompt = VGroup(self.M(PROBE[:cut], 24, MUTED), self.M(PROBE[cut + 1:], 24, MUTED)).arrange(DOWN, buff=0.12)
+        prompt.move_to(UP * 2.55)
         pb, lb, _ = self.mini_plot(BASE, FG, ymax)
         lb_full = pb.line(BASE["curve"]["step"], BASE["curve"]["val"], FG, 4)
         VGroup(pb).move_to(LEFT * 3.3 + DOWN * 0.4)
@@ -141,8 +145,9 @@ class ArchLab(VScene):
             p.move_to(LEFT * 3.3 + DOWN * 0.4)
             lbase = p.line(BASE["curve"]["step"], BASE["curve"]["val"], MUTED, 3)
             lab_ = p.line(r["curve"]["step"], r["curve"]["val"], col, 4)
-            fl = self.M(f"{r['final_val']:.2f} vs {BASE['final_val']:.2f}", 24, col)
-            fl.next_to(p.ax, UP, buff=0.12).align_to(p.ax, RIGHT)
+            fl = VGroup(self.M(f"{r['final_val']:.2f}", 24, col), self.T("vs full model", 22, MUTED),
+                        self.M(f"{BASE['final_val']:.2f}", 24, MUTED)).arrange(RIGHT, buff=0.15)
+            fl.next_to(p.ax, UP, buff=0.18).align_to(p.ax, RIGHT)
             pv2 = self.probe_view(r, col).move_to(RIGHT * 3.4 + DOWN * 0.3)
             h2 = self.header(r["label"], col)
             t1 = top1(r)
@@ -184,21 +189,23 @@ class ArchLab(VScene):
             b = Rectangle(width=w, height=0.42, stroke_width=0, fill_color=col, fill_opacity=0.8)
             v = self.M(f"{r['final_val']:.2f}", 24, FG)
             pr = p_of(r, " red")
-            rd = self.M(f"red {pct(pr)}" if pr else "red <top-5", 22, TEAL if top1(r)["token"] == " red" else MUTED)
+            rd = self.M(f"red {pct(pr)}" if pr else "red: not in top 5", 22, TEAL if top1(r)["token"] == " red" else MUTED)
             bars.add(VGroup(name, b, v, rd))
-        for row in bars:
-            row[0].move_to([-3.6, 0, 0], aligned_edge=RIGHT)
-            row[1].move_to([-3.35, 0, 0], aligned_edge=LEFT)
+        y0 = 2.35
+        for k, row in enumerate(bars):
+            y = y0 - k * 0.6
+            row[0].move_to([-3.6, y, 0], aligned_edge=RIGHT)
+            row[1].move_to([-3.35, y, 0], aligned_edge=LEFT)
             row[2].next_to(row[1], RIGHT, buff=0.15)
             row[3].next_to(row[2], RIGHT, buff=0.35)
-        bars.arrange(DOWN, buff=0.18, aligned_edge=LEFT).move_to(DOWN * 0.2)
-        for row in bars:
-            row[0].align_to([-3.6, 0, 0], RIGHT)
         cap = self.T(f"final validation loss after {STEPS:,} steps (lower is better) · probability of ' red' on the probe",
                      22, MUTED).to_edge(DOWN, buff=0.4)
         worst = order[-1]
-        with self.say(f"Line them up. Removing residuals is the most damaging cut, then attention. Everything else still "
-                      f"learns the language, but the details, like who has the red ball, are the first thing to go.",
+        n_right = sum(1 for r in AB["runs"] if r["id"] != "baseline" and top1(r)["token"] == " red")
+        by_loss = sorted([r for r in AB["runs"] if r["id"] != "baseline"], key=lambda r: -r["final_val"])
+        with self.say(f"Line them up. Cutting {by_loss[0]['label'].replace('no ', '')} or {by_loss[1]['label'].replace('no ', '')} "
+                      f"wrecks it. The rest look almost fine by loss, but only {n_right} of the seven still answer red. "
+                      f"Average loss can hide the skills you care about.",
                       scene="Leaderboard of real final validation losses (lower = better) with each model's probability of "
                             "' red' on the probe: " + ", ".join(f"{r['label']} {r['final_val']:.3f}" for r in order) + ".",
                       chapter="Leaderboard"):
@@ -212,7 +219,7 @@ class ArchLab(VScene):
         # ------------------------------------------------------------ takeaway
         hdr4 = self.header("What each part does")
         roles = [("attention", "moves information between tokens", BLUE),
-                 ("positions", "tell it the order of the words", "#b48cff"),
+                 ("positions", "word order (the causal mask leaks some)", "#b48cff"),
                  ("MLP", "per-token processing and memory", ORANGE),
                  ("residual + LayerNorm", "keep it trainable", PINK),
                  ("depth", "more steps to compose patterns", TEAL)]
@@ -225,7 +232,7 @@ class ArchLab(VScene):
         for row in rows:
             row[0].align_to([-1.2, 0, 0], RIGHT); row[1].next_to(row[0], RIGHT, buff=0.4)
         cta = self.T("try your own cuts in the Architecture lab →", 30, YELLOW, BOLD).to_edge(DOWN, buff=0.5)
-        with self.say("So: attention moves information, positions give order, MLPs process, residuals and LayerNorm keep "
+        with self.say("So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep "
                       "it trainable, and depth composes. Now go break one yourself.",
                       scene="Roles: attention = moves information between tokens; positions = word order; MLP = per-token "
                             "processing/memory; residual + LayerNorm = keep it trainable; depth = more steps to compose. "

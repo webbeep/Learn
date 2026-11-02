@@ -120,7 +120,7 @@ class ResearchLoop(CScene):
         c2 = VGroup(self.T("no positions", 30, PINK, BOLD), self.M("x = tok(idx)", 24, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
         cards = VGroup()
         for c, col in ((c1, BLUE), (c2, PINK)):
-            b = RoundedRectangle(corner_radius=0.15, width=max(4.2, c.width + 0.6), height=c.height + 0.45, stroke_color=col, stroke_width=2.5,
+            b = RoundedRectangle(corner_radius=0.15, width=max(4.2, c1.width + 0.6, c2.width + 0.6), height=c.height + 0.45, stroke_color=col, stroke_width=2.5,
                                  fill_color=col, fill_opacity=0.08)
             cards.add(VGroup(b, c.move_to(b).align_to(b, LEFT).shift(RIGHT * 0.25)))
         cards.arrange(DOWN, buff=0.35).move_to([6.7, 0.55, 0], aligned_edge=RIGHT)

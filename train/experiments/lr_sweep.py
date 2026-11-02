@@ -17,7 +17,7 @@ def one(args):
     r = train_run({}, steps=steps, batch=batch, lr=lr, opt="adamw" if opt == "adamw" else "sgd",
                   momentum=0.9 if opt == "sgd-momentum" else 0.0, warmup=0, schedule="constant", clip=0,
                   eval_every=25, threads=1, log=lambda s: print(opt, lr, s, flush=True))
-    c = r["curve"]; fv = finite_last(c["val"])
+    c = r["curve"]; fv = None if c["val"][-1] is None else c["val"][-1]  # null when the run blew up (NaN)
     diverged = r["diverged"] or fv is None or fv >= c["val"][0]
     return {"optimizer": opt, "lr": lr, "momentum": 0.9 if opt == "sgd-momentum" else 0.0,
             "curve": {k: c[k] for k in ("step", "train", "val")}, "final_val": fv,

@@ -74,7 +74,7 @@ class Backprop(CScene):
         hdr = self.header("The chain rule · toy example")
         CY = 0.9
         P = dict(x=np.array([-5.6, 2.0, 0]), w=np.array([-5.6, -0.2, 0]), mul=np.array([-3.6, CY, 0]),
-                 b=np.array([-2.7, -1.4, 0]), add=np.array([-0.6, CY, 0]), y=np.array([3.0, -0.9, 0]),
+                 b=np.array([-1.9, -1.75, 0]), add=np.array([-0.6, CY, 0]), y=np.array([3.0, -0.9, 0]),
                  sq=np.array([3.0, CY, 0]), L=np.array([5.5, CY, 0]))
         nx = self.box(f"x = {TOY['x']:g}").move_to(P["x"])
         nw = self.box(f"w = {TOY['w']:g}").move_to(P["w"])
@@ -90,7 +90,7 @@ class Backprop(CScene):
             return Arrow(start, end, buff=0, color=LINE, stroke_width=4, max_tip_length_to_length_ratio=0.12)
         e_x, e_w = edge(nx.get_right() + RIGHT * 0.05, nmul), edge(nw.get_right() + RIGHT * 0.05, nmul)
         e_a = Arrow(nmul.get_right(), nadd.get_left(), buff=0.08, color=LINE, stroke_width=4, max_tip_length_to_length_ratio=0.1)
-        e_b = edge(nb.get_top() + UP * 0.05 + RIGHT * 0.3, nadd)
+        e_b = edge(nb.get_top() + UP * 0.05 + RIGHT * 0.25, nadd)
         e_z = Arrow(nadd.get_right(), nsq.get_left(), buff=0.08, color=LINE, stroke_width=4, max_tip_length_to_length_ratio=0.12)
         e_y = Arrow(ny.get_top(), nsq.get_bottom(), buff=0.06, color=LINE, stroke_width=4, max_tip_length_to_length_ratio=0.15)
         e_L = Arrow(nsq.get_right(), nL.get_left(), buff=0.08, color=LINE, stroke_width=4, max_tip_length_to_length_ratio=0.2)
@@ -130,7 +130,7 @@ class Backprop(CScene):
         def grad_lab(s, near, direction=DOWN, buff=0.2):
             return self.M(s, 26, BWD).next_to(near, direction, buff=buff)
         gz = grad_lab(f"∂L/∂z = {tg['dz']:g}", e_z.get_center(), DOWN, 0.22)
-        ga = grad_lab(f"∂L/∂a = {tg['da']:g}", e_a.get_center(), DOWN, 0.22)
+        ga = grad_lab(f"∂L/∂a = {tg['da']:g}", e_a.get_center(), DOWN, 0.22).shift(LEFT * 0.25)
         gb = grad_lab(f"∂L/∂b = {tg['db']:g}", nb, DOWN, 0.2)
         gw = grad_lab(f"∂L/∂w = {tg['da']:g} × {TOY['x']:g} = {tg['dw']:g}", nw, DOWN, 0.2).align_to(nw, LEFT).shift(LEFT * 0.4)
         gx = grad_lab(f"∂L/∂x = {tg['da']:g} × {TOY['w']:g} = {tg['dx']:g}", nx, UP, 0.2).align_to(nx, LEFT).shift(LEFT * 0.4)
@@ -286,13 +286,13 @@ class Backprop(CScene):
         for s_, cc in ((G > 0, oc), (G <= 0, tc)):
             rgb[s_] = (bg + (cc - bg) * a[s_][:, None]).astype(np.uint8)
         img = ImageMobject(rgb).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
-        img.width = 6.6
-        img.move_to([-3.3, -0.1, 0])
+        img.width = 6.3
+        img.move_to([-3.55, -0.1, 0])
         frame = SurroundingRectangle(img, buff=0.02, color=LINE, stroke_width=2)
         cell_w = img.width / G.shape[1]; cell_h = img.height / G.shape[0]
         cpos = img.get_corner(UL) + RIGHT * (wt["j"] + 0.5) * cell_w + DOWN * (wt["i"] + 0.5) * cell_h
         ring = Circle(radius=0.16, color=YELLOW, stroke_width=4).move_to(cpos)
-        cap3 = self.T("real ∂loss/∂W · layer 3 MLP output · 64 × 256", 24, MUTED).next_to(frame, UP, buff=0.18)
+        cap3 = self.T("real ∂loss/∂W, layer 3 MLP (64 × 256)", 24, MUTED).next_to(frame, UP, buff=0.18)
         cap3.align_to(frame, LEFT)
         leg = VGroup(self.T("teal: increase", 24, TEAL), self.T("orange: decrease", 24, ORANGE)).arrange(RIGHT, buff=0.5)
         leg.next_to(frame, DOWN, buff=0.18).align_to(frame, LEFT)
@@ -306,7 +306,7 @@ class Backprop(CScene):
                      self.M(f"     = {wt['step']:+.5f}", 26, YELLOW),
                      VGroup(self.T("new weight", 26, FG), self.M(f"{wt['w_new']:.4f}", 32, YELLOW)).arrange(RIGHT, buff=0.25)
                      ).arrange(DOWN, aligned_edge=LEFT, buff=0.22).next_to(info, DOWN, buff=0.55).align_to(info, LEFT)
-        VGroup(info, upd).move_to([0.6, -0.1, 0], aligned_edge=LEFT)
+        VGroup(info, upd).move_to([0.75, -0.1, 0], aligned_edge=LEFT)
         with self.say(f"Zoom into one real weight. Its gradient is minus {abs(wt['g']):.2f}. Negative means: "
                       f"increase me, and the loss drops. A step at learning rate 0.003 adds just {wt['step']:.4f}.",
                       scene=f"Heat map of the real gradient of layer 3's MLP output matrix (64×256). Highlighted: row "

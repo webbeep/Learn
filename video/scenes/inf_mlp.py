@@ -224,7 +224,7 @@ class MLP(VScene):
         ex_rows.arrange(DOWN, aligned_edge=LEFT, buff=0.22)
         ex_t = self.T(f"its strongest firings in {N_DOCS} fresh stories", 26, MUTED)
         ex_s = self.T(f"{n_col} / 200 come right before a color", 32, PINK, BOLD)
-        ex_g = VGroup(ex_t, ex_rows, ex_s).arrange(DOWN, aligned_edge=LEFT, buff=0.3).move_to(LEFT * 3.0 + DOWN * 0.2)
+        ex_g = VGroup(ex_t, ex_rows, ex_s).arrange(DOWN, aligned_edge=LEFT, buff=0.3).move_to(LEFT * 2.6 + DOWN * 0.2)
         push, _ = neuron_push(L, N, 5)
         p_chips = VGroup(*[self.chip(t, PINK if tid(t) in colors else MUTED, 28) for t, _ in push]).arrange(DOWN, buff=0.18)
         p_t = VGroup(self.T("its output weights push", 26, MUTED), self.T("(roughly) toward:", 26, MUTED)).arrange(DOWN, buff=0.08)
@@ -239,7 +239,7 @@ class MLP(VScene):
                               f"push toward (projected through the unembedding, roughly): "
                             + ", ".join(f"{t.strip()}" for t, _ in push) + "."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(rows, vals, nxt)), ntitle.animate.scale(0.85).to_corner(UR, buff=0.4), run_time=0.5)
+            self.play(FadeOut(VGroup(rows, vals, nxt, ntitle[1])), ntitle[0].animate.scale(0.85).to_corner(UR, buff=0.45), run_time=0.5)
             self.play(FadeIn(ex_t), LaggedStart(*[FadeIn(r, shift=RIGHT * 0.2) for r in ex_rows], lag_ratio=0.2), run_time=1.0)
             self.mark("examples", ex_rows, f"top-activating contexts of L{L + 1} #{N} in fresh text: " +
                       "; ".join(f"…{c}[{u}] → {n_} (act {v:.2f})" for c, u, n_, v in exs))
@@ -286,7 +286,7 @@ class MLP(VScene):
                             + ". Colors are highlighted pink; most neurons mix unrelated tokens (polysemantic).",
                       chapter="The final \"the\""):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ntitle, ex_g, p_g, p_note)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
+            self.play(FadeOut(VGroup(ntitle[0], ex_g, p_g, p_note)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
             self.play(FadeIn(hd), LaggedStart(*[AnimationGroup(FadeIn(r[0]), GrowFromEdge(r[1], LEFT), FadeIn(r[2]))
                                                 for r in n_rows], lag_ratio=0.12), run_time=1.0)
             for k, (n, v, ps) in enumerate(tops):

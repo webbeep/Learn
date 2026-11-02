@@ -209,7 +209,7 @@ class TrainYourOwn(VScene):
         hdr5 = self.header("More data closes the gap")
         mini = VGroup()
         for r in RUNS:
-            p = Plot([0, STEPS], [0, ymax], width=2.35, height=2.2, xticks=[0, STEPS], yticks=[0, 3], tick_size=20,
+            p = Plot([0, STEPS], [0, ymax], width=2.35, height=2.2, xticks=[0, STEPS], yticks=[0, 3], tick_size=24,
                      xlabel="", ylabel="", xfmt=lambda v: f"{v:g}")
             cc = r["curve"]
             l1 = p.line(cc["step"], cc["train"], YELLOW, 3)
