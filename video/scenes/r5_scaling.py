@@ -221,7 +221,7 @@ class Scaling(VScene):
         # ------------------------------------------------------------ our tokens per param
         hdr4 = self.header("Our runs, in that light")
         tpp = [TOK / r["params"] for r in RUNS]
-        pb = Plot([0.5, 3000], [0, len(RUNS)], width=8.0, height=4.4, xlog=True, xticks=[1, 10, 100, 1000], yticks=[],
+        pb = Plot([0.5, 3000], [0, len(RUNS)], width=8.0, height=3.9, xlog=True, xticks=[1, 10, 100, 1000], yticks=[],
                   xlabel="training tokens per parameter (log scale)", ylabel="").move_to(DOWN * 0.25 + RIGHT * 0.9)
         bars = VGroup(); names = VGroup()
         for i, (r, t, col) in enumerate(zip(RUNS, tpp, COLS)):

@@ -17,6 +17,7 @@ interface Run {
   id: string; label: string; what: string; config: Record<string, number | boolean | string>;
   params: number; curve: { step: number[]; train: (number | null)[]; val: (number | null)[] };
   final_val: number | null; final_train?: number | null; diverged: boolean; seconds?: number;
+  probe_set?: { n: number; mean_p_correct: number; median_p_correct?: number; top1_acc: number };
   samples: { prompt: string; text: string }[]; probe_top: { token: string; p: number }[];
 }
 interface Ablations { steps: number; batch: number; tokens_per_step?: number; note: string; probe_prompt: string; runs: Run[] }
@@ -172,6 +173,7 @@ export function ArchLab() {
                   <th className="py-2 pr-2 pl-4 text-left sm:pl-0">{sortBtn("label", "Run")}</th>
                   <th className="px-2 py-2 text-right">{sortBtn("final_val", "Val loss", "justify-end whitespace-nowrap")}</th>
                   <th className="px-2 py-2 text-right">{sortBtn("delta", "vs full", "justify-end whitespace-nowrap")}</th>
+                  <th className="px-2 py-2 text-right" title="On 100 freshly generated trade stories: how often the right color is the top guess">Copies color</th>
                   <th className="hidden px-2 py-2 text-right @lg:table-cell">{sortBtn("params", "Params", "justify-end")}</th>
                   <th className="py-2 pr-4 pl-2 text-right sm:pr-0"><span className="sr-only">Retrain</span></th>
                 </tr>
@@ -181,7 +183,7 @@ export function ArchLab() {
                   const d = delta(r), worst = Math.max(...runs.map((x) => delta(x) ?? 0), 0.01);
                   return (
                     <tr key={r.id} className="border-b last:border-0 align-top" data-ask-id={`lab-row-${r.id}`}
-                      data-ask={`Ablation "${r.label}": ${r.what} Final validation loss ${lossTxt(r.final_val)} (train ${lossTxt(r.final_train)}), ${d == null ? "" : `${d >= 0 ? "+" : ""}${d.toFixed(3)} vs the full model, `}${r.params.toLocaleString()} parameters${r.diverged ? ", DIVERGED" : ""}${r.seconds ? `, trained in ${r.seconds}s on CPU` : ""}.`}>
+                      data-ask={`Ablation "${r.label}": ${r.what} Final validation loss ${lossTxt(r.final_val)} (train ${lossTxt(r.final_train)}), ${d == null ? "" : `${d >= 0 ? "+" : ""}${d.toFixed(3)} vs the full model, `}${r.params.toLocaleString()} parameters${r.diverged ? ", DIVERGED" : ""}${r.seconds ? `, trained in ${r.seconds}s on CPU` : ""}${r.probe_set ? `; on ${r.probe_set.n} fresh trade stories it picks the right color first ${Math.round(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1))}% of the time` : ""}.`}>
                       <td className="py-2.5 pr-2 pl-4 sm:pl-0">
                         <div className="flex items-center gap-2 font-medium"><span className="size-2.5 shrink-0 rounded-full" style={{ background: color(r.id) }} />{r.label}{r.diverged && <Badge variant="destructive" className="h-5">diverged</Badge>}</div>
                         <div className="mt-0.5 max-w-md pl-[18px] text-xs text-muted-foreground">{r.what}</div>
@@ -195,6 +197,7 @@ export function ArchLab() {
                           </div>
                         )}
                       </td>
+                      <td className="px-2 py-2.5 text-right tabular-nums">{r.probe_set ? <span className={cn(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1) >= 90 ? "text-foreground" : "text-muted-foreground")}>{Math.round(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1))}%</span> : "—"}</td>
                       <td className="hidden px-2 py-2.5 text-right text-muted-foreground tabular-nums @lg:table-cell">{fmtP(r.params)}</td>
                       <td className="py-2 pr-4 pl-2 text-right sm:pr-0">
                         <Button size="sm" variant="outline" asChild title="Open this setup in the Train lab (a smaller, browser-sized model)">

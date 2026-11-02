@@ -11738,7 +11738,7 @@
       "label": "8,432 params trained on 3,072,000 tokens = 364.3 tokens/param",
       "box": [
        0.282,
-       0.1719,
+       0.2424,
        0.4695,
        0.05
       ]
@@ -11748,7 +11748,7 @@
       "label": "22,176 params trained on 3,072,000 tokens = 138.5 tokens/param",
       "box": [
        0.282,
-       0.2504,
+       0.3121,
        0.4075,
        0.05
       ]
@@ -11758,7 +11758,7 @@
       "label": "35,712 params trained on 3,072,000 tokens = 86.0 tokens/param",
       "box": [
        0.282,
-       0.329,
+       0.3817,
        0.3643,
        0.05
       ]
@@ -11768,7 +11768,7 @@
       "label": "170,560 params trained on 3,072,000 tokens = 18.0 tokens/param",
       "box": [
        0.282,
-       0.4076,
+       0.4513,
        0.2626,
        0.05
       ]
@@ -11778,7 +11778,7 @@
       "label": "478,272 params trained on 3,072,000 tokens = 6.4 tokens/param",
       "box": [
        0.282,
-       0.4862,
+       0.521,
        0.2085,
        0.05
       ]
@@ -11788,7 +11788,7 @@
       "label": "834,304 params trained on 3,072,000 tokens = 3.7 tokens/param",
       "box": [
        0.282,
-       0.5647,
+       0.5906,
        0.1735,
        0.05
       ]
@@ -11798,7 +11798,7 @@
       "label": "1,841,280 params trained on 3,072,000 tokens = 1.7 tokens/param",
       "box": [
        0.282,
-       0.6433,
+       0.6603,
        0.1219,
        0.05
       ]
@@ -11808,9 +11808,9 @@
       "label": "Chinchilla rule of thumb: about 20 training tokens per parameter for compute-optimal large web-text runs",
       "box": [
        0.1639,
-       0.1049,
+       0.1799,
        0.7132,
-       0.6027
+       0.5402
       ]
      },
      {
