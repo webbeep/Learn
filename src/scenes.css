@@ -72,7 +72,7 @@
 .lens-bar { position: relative; display: flex; justify-content: space-between; gap: 4px; font-size: 12px; padding: 2px 5px; margin: 3px 0; border-radius: 5px; overflow: hidden; background: var(--card); }
 .lens-bar .fill { position: absolute; inset: 0 auto 0 0; opacity: .5; }
 .lens-bar span { position: relative; white-space: nowrap; overflow: hidden; }
-.mlp-row { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; transition: opacity .3s; }
+.mlp-row { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; transition: opacity .3s; }
 .neuron-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; }
 .neuron-grid i { aspect-ratio: 1; border-radius: 2px; }
 .neuron-line { display: grid; grid-template-columns: 50px 120px 1fr; gap: 8px; align-items: center; margin: 6px 0; font-family: var(--font-mono); }
@@ -103,8 +103,20 @@
   .stream { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 }
 @container (max-width: 620px) {
-  .arc-wrap { overflow-x: auto; } .arc-wrap .arc-svg { min-width: 760px; }
-  .vec-head, .vec-row { grid-template-columns: 54px 1fr 10px 1fr 10px 1fr; gap: 3px; }
+  .stage { min-height: 0; }
+  .vocab-grid { max-height: 168px; overflow-y: auto; overscroll-behavior: contain; padding-right: 2px; }
+  .arc-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; } .arc-wrap .arc-svg { min-width: 760px; }
+  .vec-head, .vec-row { grid-template-columns: 46px 1fr 8px 1fr 8px 1fr; gap: 3px; }
+  .vec-head span:nth-child(2), .vec-head span:nth-child(4), .vec-head span:nth-child(6) { font-size: 9.5px; line-height: 1.1; }
+  .vec-head em { display: none; }
+  .strip { height: 16px; }
+  .raw-text { font-size: 15px; }
+  .tok { padding: 2px 6px; }
+  .mlp-row { grid-template-columns: minmax(0, 1fr); }
+  .neuron-line { grid-template-columns: 40px 70px 1fr; font-size: 12px; }
+  .stream { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .heads-grid { max-width: none; }
+  .temp-box { padding: 12px; }
   .vocab-grid { grid-template-columns: repeat(8, 1fr); }
   .ph, .pr { grid-template-columns: 70px 1fr 14px 1.2fr; }
 }

@@ -42,7 +42,7 @@ export function SiteHeader({ title }: { title: string }) {
           </TooltipTrigger>
           <TooltipContent>Ask out loud about what you're looking at</TooltipContent>
         </Tooltip>
-        <Button variant={open ? "secondary" : "default"} size="sm" onClick={() => ask.set({ open: !open })}>
+        <Button variant={open ? "secondary" : "default"} size="sm" className="hidden md:inline-flex" onClick={() => ask.set({ open: !open })}>
           <MessageSquare /><span className="hidden sm:inline">Tutor</span>
         </Button>
       </div>

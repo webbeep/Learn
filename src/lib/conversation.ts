@@ -25,7 +25,7 @@ export function currentPointer(maxAgeS = 10) {
 /** Text highlighted with the mouse (in the app or in an answer) becomes part of the selection. */
 export function trackTextSelection() {
   const up = (e: MouseEvent) => {
-    if ((e.target as Element).closest?.("textarea, input, .popover, .region-layer")) return;
+    if ((e.target as Element | null)?.closest?.("textarea, input, .popover, .region-layer, [data-slot=card].fixed")) return;
     setTimeout(() => {
       const sel = window.getSelection(); const text = sel?.toString().trim() ?? "";
       if (text.length < 2 || text.length > 3000) return;
@@ -38,7 +38,19 @@ export function trackTextSelection() {
     }, 10);
   };
   document.addEventListener("mouseup", up);
-  return () => document.removeEventListener("mouseup", up);
+  // Touch devices: long-press selection never fires mouseup, so watch selection changes instead.
+  let t = 0;
+  const onSel = () => {
+    if (!matchMedia("(pointer: coarse)").matches) return;
+    clearTimeout(t);
+    t = window.setTimeout(() => {
+      const sel = window.getSelection(); const text = sel?.toString().trim() ?? "";
+      if (text.length < 2 || text.length > 3000 || !sel?.anchorNode?.parentElement?.closest("main")) return;
+      up(new MouseEvent("mouseup", { bubbles: true }) as MouseEvent & { target: Element });
+    }, 700);
+  };
+  document.addEventListener("selectionchange", onSel);
+  return () => { document.removeEventListener("mouseup", up); document.removeEventListener("selectionchange", onSel); clearTimeout(t); };
 }
 
 /** Called after a region / text highlight — does whatever the learner chose in settings. */

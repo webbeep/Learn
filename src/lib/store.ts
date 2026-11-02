@@ -41,11 +41,15 @@ export interface Learner {
   wishes: Wish[];
   visited: Record<string, number>;
   prefs: Prefs;
+  /** Self-reported experience; tailors defaults, recommendations and the tutor. null = not asked yet. */
+  level: "beginner" | "intermediate" | "advanced" | null;
+  /** Per-chapter progress: watched (0..1 of the video), quiz score, done flag. */
+  progress: Record<string, { watched?: number; quiz?: number; done?: boolean; ts?: number }>;
 }
 const KEY = "topdown-ai-learner-v1";
 const DEFAULT: Learner = {
   goal: "Understand LLMs top-down, then train models from scratch and invent a brand-new kind of AI model/training framework.",
-  depth: "balanced", length: "medium", history: [], profile: null, wishes: [], visited: {}, prefs: DEFAULT_PREFS,
+  depth: "balanced", length: "medium", history: [], profile: null, wishes: [], visited: {}, prefs: DEFAULT_PREFS, level: null, progress: {},
 };
 function load(): Learner {
   try {
@@ -64,6 +68,14 @@ export function addWish(text: string, source: string) {
     { wishes: [...s.wishes, { id: uid(), ts: Date.now(), text: t, source }] });
 }
 export const setPrefs = (p: Partial<Prefs>) => learner.set((s) => ({ prefs: { ...s.prefs, ...p } }));
+export function setProgress(chapter: string, patch: { watched?: number; quiz?: number; done?: boolean }) {
+  learner.set((s) => {
+    const cur = s.progress[chapter] ?? {};
+    const next = { ...cur, ...patch, watched: Math.max(cur.watched ?? 0, patch.watched ?? 0), ts: Date.now() };
+    if ((next.watched ?? 0) > 0.9 || (next.quiz ?? 0) >= 2) next.done = patch.done ?? true;
+    return { progress: { ...s.progress, [chapter]: next } };
+  });
+}
 export function markVisited(page: string) {
   learner.set((s) => ({ visited: { ...s.visited, [page]: (s.visited[page] ?? 0) + 1 } }));
 }

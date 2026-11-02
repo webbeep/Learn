@@ -139,7 +139,7 @@ function Chat() {
         <div className="flex items-center gap-1.5 px-2 pb-2">
           <Button type="button" variant={listening ? "destructive" : "ghost"} size="icon-sm" className={cn(listening && "animate-pulse")} title="Talk (V)"
             onClick={() => (listening ? stopListening() : listenAndAsk())}><Mic /></Button>
-          <span className="flex-1 truncate text-[11px] text-muted-foreground"><Kbd>Enter</Kbd> send · <Kbd>V</Kbd> talk · <Kbd>E</Kbd> explain</span>
+          <span className="flex-1 truncate text-[11px] text-muted-foreground"><span className="hidden [@media(pointer:fine)]:inline"><Kbd>Enter</Kbd> send · <Kbd>V</Kbd> talk · <Kbd>E</Kbd> explain</span><span className="[@media(pointer:fine)]:hidden">Tap the mic to talk</span></span>
           {busy || speaking
             ? <Button type="button" size="icon-sm" variant="secondary" onClick={stopAll} title="Stop"><Square className="fill-current" /></Button>
             : <Button type="submit" size="icon-sm" disabled={!input.trim()} title="Send"><ArrowUp /></Button>}
@@ -197,10 +197,11 @@ export function AskPopover() {
   }, []);
   useEffect(() => { if (open || !sel.length) setPos(null); }, [open, sel.length]);
   if (!pos || open || !sel.length) return null;
+  const phone = window.innerWidth < 640;
   const x = Math.min(pos.x, window.innerWidth - 330), y = Math.min(pos.y + 12, window.innerHeight - 220);
   const go = (fn: () => void) => { setPos(null); ask.set({ open: true }); fn(); };
   return (
-    <Card className="fixed z-50 w-80 gap-3 p-3 shadow-lg animate-in fade-in-0 zoom-in-95" style={{ left: Math.max(8, x), top: y }}
+    <Card className={cn("fixed z-50 gap-3 p-3 shadow-lg animate-in fade-in-0", phone ? "inset-x-2 bottom-[4.75rem] slide-in-from-bottom-4" : "w-80 zoom-in-95")} style={phone ? undefined : { left: Math.max(8, x), top: y }}
       onMouseUp={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1 text-sm font-medium line-clamp-3">{sel[0].label}</div>

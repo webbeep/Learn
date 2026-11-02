@@ -46,7 +46,7 @@ export async function streamAsk(question: string, thread: Turn[], onText: (t: st
     context: { page: a.page, scene: a.scene, summary: a.summary, region: a.region,
       selection: compressSelection(a.selection), elements: visibleElements(), pointer: extra.pointer, viewport: viewportNote() },
     mode: extra.mode ?? "text",
-    learner: { goal: l.goal, depth: l.depth, length: l.length,
+    learner: { goal: l.goal, depth: l.depth, length: l.length, level: l.level ?? undefined,
       profile: p ? `${p.summary} Style: ${p.style}. Confusions: ${p.confusions.join("; ")}` : undefined,
       recent: l.history.slice(-5).map((h) => h.q) },
   };

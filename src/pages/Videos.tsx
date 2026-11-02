@@ -11,10 +11,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ask, select, setScreen } from "../lib/store";
 import { FurtherWatching } from "./FurtherWatching";
+import { CHAPTERS } from "../content/curriculum";
+import { setProgress } from "../lib/store";
 
 export interface VObject { id: string; label: string; box: [number, number, number, number] }
 export interface VSegment { start: number; end: number; text: string; scene: string; objects: VObject[] }
-export interface VideoMeta { id: string; title: string; subtitle: string; duration: number; src: string; poster: string; relates?: string; chapters: { t: number; title: string }[]; segments: VSegment[] }
+export interface VideoMeta { id: string; title: string; subtitle: string; duration: number; src: string; poster: string; relates?: string; track?: string; order?: number; chapters: { t: number; title: string }[]; segments: VSegment[] }
+
+let indexPromise: Promise<VideoMeta[]> | null = null;
+export function loadVideos() {
+  indexPromise ??= fetch("/videos/index.json").then((r) => { if (!r.ok) throw new Error("no index"); return r.json(); });
+  return indexPromise;
+}
+const TRACK_TITLES: Record<string, string> = { inference: "How a model thinks", training: "How a model learns", design: "How models are designed", research: "Invent your own" };
+const LAB: Record<string, string> = { xray: "#/xray", training: "#/training", train: "#/train", backprop: "#/backprop", lab: "#/lab", scaling: "#/scaling", invent: "#/invent" };
+const chapterFor = (videoId: string) => CHAPTERS.find((c) => c.video === videoId);
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const WATCHED = "topdown-ai-watched-v1";
@@ -25,7 +36,7 @@ export function Videos() {
   const [failed, setFailed] = useState(false);
   const [curId, setCurId] = useState<string | null>(null);
   useEffect(() => {
-    fetch("/videos/index.json").then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+    loadVideos()
       .then((l: VideoMeta[]) => { setList(l); setCurId((c) => c ?? (location.hash.split("/")[2] || l[0]?.id)); })
       .catch(() => setFailed(true));
   }, []);
@@ -48,7 +59,7 @@ export function Videos() {
   );
 }
 
-function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; onPick: (id: string) => void }) {
+export function SeriesPlayer({ v, list, onPick, embedded }: { v: VideoMeta; list?: VideoMeta[]; onPick?: (id: string) => void; embedded?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [time, setTime] = useState(0);
@@ -108,7 +119,10 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
 
   const onTime = () => {
     const t = video.current!.currentTime; setTime(t);
-    if (Math.floor(t) % 5 === 0) { const w = { ...readWatched(), [v.id]: Math.max(readWatched()[v.id] ?? 0, t / v.duration) }; try { localStorage.setItem(WATCHED, JSON.stringify(w)); } catch { /* */ } setWatched(w); }
+    if (Math.floor(t) % 5 === 0 || t >= v.duration - 1) {
+      const w = { ...readWatched(), [v.id]: Math.max(readWatched()[v.id] ?? 0, t / v.duration) }; try { localStorage.setItem(WATCHED, JSON.stringify(w)); } catch { /* */ } setWatched(w);
+      const ch = chapterFor(v.id); if (ch) setProgress(ch.id, { watched: t / v.duration });
+    }
   };
   const askMoment = () => {
     video.current?.pause();
@@ -118,7 +132,7 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
   const objs = !playing ? seg?.objects ?? [] : [];
 
   return (
-    <div className="@container"><div className="grid gap-4 @5xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="@container"><div className={cn("grid gap-4", !embedded && "@5xl:grid-cols-[minmax(0,1fr)_340px]", embedded && "@4xl:grid-cols-[minmax(0,1fr)_300px]")}>
       <div className="min-w-0 space-y-3">
         <div ref={frame} className="group @container/frame relative overflow-hidden rounded-xl border bg-black shadow-sm">
           <video ref={video} src={blobUrl ?? undefined} poster={v.poster} className="block aspect-video w-full" preload="metadata" playsInline muted={muted}
@@ -140,9 +154,13 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
           )}
           {!playing && (
             <div className="pointer-events-none absolute top-3 right-3 flex gap-2">
-              {time === 0 ? <Badge className="pointer-events-auto cursor-pointer" onClick={toggle}><Play className="fill-current" />Play · {fmt(v.duration)}</Badge>
-                : <Badge variant="secondary" className="bg-black/70 text-white"><MousePointerClick />Paused: click anything in the frame</Badge>}
+              {time > 0 && <Badge variant="secondary" className="hidden bg-black/70 text-white @md/frame:inline-flex"><MousePointerClick />Paused: tap anything in the frame</Badge>}
             </div>
+          )}
+          {!playing && time === 0 && (
+            <button onClick={toggle} aria-label={`Play (${fmt(v.duration)})`} className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-black/65 text-white shadow-xl ring-1 ring-white/20 backdrop-blur transition-transform hover:scale-105 @md/frame:size-20">
+              <Play className="size-7 translate-x-0.5 fill-current @md/frame:size-9" />
+            </button>
           )}
           {/* control bar */}
           <div className={cn("absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pt-8 pb-2 text-white transition-opacity", playing && "opacity-0 group-hover:opacity-100")}>
@@ -154,12 +172,12 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
               <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={toggle}>{playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}</Button>
               <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
               <span className="text-xs tabular-nums">{fmt(time)} / {fmt(v.duration)}</span>
-              <span className="mx-2 hidden truncate text-xs text-white/70 sm:inline">· {chapter?.title}</span>
+              <span className="mx-2 hidden truncate text-xs text-white/70 @lg/frame:inline">· {chapter?.title}</span>
               <span className="flex-1" />
-              <Button size="icon-sm" variant="ghost" className={cn("text-white hover:bg-white/15 hover:text-white", showObjs && "bg-white/20")} title="Show clickable objects" onClick={() => setShowObjs(!showObjs)}><MousePointerClick /></Button>
+              <Button size="icon-sm" variant="ghost" className={cn("hidden text-white hover:bg-white/15 hover:text-white @md/frame:inline-flex", showObjs && "bg-white/20")} title="Show clickable objects" onClick={() => setShowObjs(!showObjs)}><MousePointerClick /></Button>
               <Button size="icon-sm" variant="ghost" className={cn("text-white hover:bg-white/15 hover:text-white", cc && "bg-white/20")} title="Captions" onClick={() => setCc(!cc)}><Captions /></Button>
               <Select value={String(rate)} onValueChange={(r) => { if (video.current) video.current.playbackRate = +r; }}>
-                <SelectTrigger size="sm" className="h-7 w-[64px] border-white/20 bg-transparent text-xs text-white dark:bg-transparent"><SelectValue /></SelectTrigger>
+                <SelectTrigger size="sm" className="hidden h-7 w-[64px] border-white/20 bg-transparent text-xs text-white @sm/frame:flex dark:bg-transparent"><SelectValue /></SelectTrigger>
                 <SelectContent>{[0.75, 1, 1.25, 1.5, 2].map((r) => <SelectItem key={r} value={String(r)}>{r}×</SelectItem>)}</SelectContent>
               </Select>
               <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => frame.current?.requestFullscreen?.()}><Maximize /></Button>
@@ -168,12 +186,13 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
         </div>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-xl font-semibold tracking-tight">{v.title}</h2>
+            <h2 className={cn("font-semibold tracking-tight", embedded ? "text-base" : "text-xl")}>{v.title}</h2>
             <p className="text-sm text-muted-foreground">{v.subtitle}</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={askMoment}><MessageSquare />Ask about {fmt(time)}</Button>
-            {v.relates && <Button variant="outline" asChild><a href={v.relates === "training" ? "#/training" : "#/xray"}>Try it live</a></Button>}
+            {v.relates && LAB[v.relates] && <Button variant="outline" asChild><a href={LAB[v.relates]}>Try it live</a></Button>}
+            {!embedded && chapterFor(v.id) && <Button variant="ghost" asChild><a href={`#/learn/${chapterFor(v.id)!.id}`}>Chapter</a></Button>}
           </div>
         </div>
       </div>
@@ -182,7 +201,7 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
         <Tabs defaultValue="chapters" className="flex min-h-0 flex-1 flex-col gap-0">
           <div className="border-b p-2"><TabsList className="w-full"><TabsTrigger value="chapters"><ListVideo />Chapters</TabsTrigger><TabsTrigger value="transcript"><ScrollText />Transcript</TabsTrigger></TabsList></div>
           <TabsContent value="chapters" className="min-h-0 flex-1">
-            <ScrollArea className="h-full max-h-[60vh] @5xl:max-h-none">
+            <ScrollArea className="h-full">
               <div className="p-2">
                 {v.chapters.map((c, i) => (
                   <button key={c.t} onClick={() => seek(c.t + 0.01)} className={cn("flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-muted", chapter === c && "bg-muted font-medium")}>
@@ -190,19 +209,19 @@ function SeriesPlayer({ v, list, onPick }: { v: VideoMeta; list: VideoMeta[]; on
                   </button>
                 ))}
               </div>
-              <div className="border-t p-2">
-                <div className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">Up next in the series</div>
-                {list.map((x, i) => (
+              {list && onPick && <div className="border-t p-2">
+                {list.map((x, i) => (<div key={x.id}>
+                  {(i === 0 || list[i - 1].track !== x.track) && <div className="px-2 pt-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{TRACK_TITLES[x.track ?? ""] ?? "More"}</div>}
                   <button key={x.id} onClick={() => onPick(x.id)} className={cn("flex w-full gap-3 rounded-lg p-1.5 text-left hover:bg-muted", x.id === v.id && "bg-muted")}>
                     <div className="relative w-28 shrink-0 overflow-hidden rounded-md">
                       <img src={x.poster} alt="" className="aspect-video w-full object-cover" loading="lazy" />
                       <span className="absolute right-1 bottom-1 rounded bg-black/80 px-1 text-[10px] text-white tabular-nums">{fmt(x.duration)}</span>
                       {watched[x.id] ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-red-500" style={{ width: `${Math.min(100, watched[x.id] * 100)}%` }} /> : null}
                     </div>
-                    <span className="min-w-0 text-sm leading-snug"><span className="line-clamp-2 font-medium">{i + 1}. {x.title}</span><span className="line-clamp-1 text-xs text-muted-foreground">{x.subtitle}</span></span>
+                    <span className="min-w-0 text-sm leading-snug"><span className="line-clamp-2 font-medium">{x.title}</span><span className="line-clamp-1 text-xs text-muted-foreground">{x.subtitle}</span></span>
                   </button>
-                ))}
-              </div>
+                </div>))}
+              </div>}
             </ScrollArea>
           </TabsContent>
           <TabsContent value="transcript" className="min-h-0 flex-1">

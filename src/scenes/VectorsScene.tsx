@@ -57,7 +57,7 @@ export function VectorsScene({ m, step, t, extra }: SceneProps) {
             );
           })}
         </svg>
-        <div className="small muted">Hover a dot to see its nearest neighbours. Similar words end up near each other — nobody told the model that; it learned it.</div>
+        <div className="small muted">Tap or hover a dot to see its nearest neighbours. Similar words end up near each other — nobody told the model that; it learned it.</div>
       </div>
     </div>
   );

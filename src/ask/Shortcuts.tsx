@@ -87,7 +87,7 @@ export function VoiceHUD() {
   useEffect(() => { if (v.error) { toast.error(v.error); voice.set({ error: "" }); } }, [v.error]);
   if (!(v.listening || v.transcribing || v.speaking)) return null;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-36 z-50 flex justify-center px-4 md:bottom-24">
       <div className="pointer-events-auto flex max-w-xl items-center gap-3 rounded-full border bg-popover/95 py-2 pr-2 pl-4 text-popover-foreground shadow-xl backdrop-blur animate-in fade-in-0 slide-in-from-bottom-2">
         {v.listening ? (<>
           <span className="relative flex size-3"><span className="absolute inline-flex size-full animate-ping rounded-full bg-destructive opacity-60" /><span className="relative inline-flex size-3 rounded-full bg-destructive" style={{ transform: `scale(${1 + v.level * 0.5})` }} /></span>

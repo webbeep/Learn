@@ -48,6 +48,11 @@ export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string })
   const N = SCENES.length, total = steps.length * N;
   const si = Math.min(steps.length - 1, Math.floor(pos / N)), sc = Math.floor(pos) % N, t = pos - Math.floor(pos);
   const step = steps[si], key = SCENES[sc].key;
+  const activeStep = useRef<HTMLButtonElement>(null);
+  useEffect(() => { // keep the active step visible in the swipeable row without scrolling the page
+    const el = activeStep.current, row = el?.parentElement; if (!el || !row || row.scrollWidth <= row.clientWidth) return;
+    row.scrollTo({ left: el.offsetLeft - row.clientWidth / 2 + el.clientWidth / 2, behavior: "smooth" });
+  }, [sc]);
   const setView = useCallback((v: Partial<View>) => setViewState((o) => ({ ...o, ...v })), []);
 
   const run = useCallback((text: string, s: GenSettings, autoplay = true) => {
@@ -133,15 +138,15 @@ export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string })
         </CardContent>
       </Card>
 
-      <nav className="grid grid-cols-3 gap-2 @3xl:grid-cols-6">
+      <nav className="-mx-1 grid snap-x auto-cols-[minmax(108px,1fr)] grid-flow-col gap-2 overflow-x-auto px-1 pb-1 @3xl:mx-0 @3xl:grid-flow-row @3xl:grid-cols-6 @3xl:overflow-visible @3xl:px-0 @3xl:pb-0">
         {SCENES.map((s, i) => {
           const Icon = ICONS[s.key];
           return (
-            <button key={s.key} onClick={() => { setPos(si * N + i); setPlaying(false); }}
-              className={cn("relative flex items-center gap-2.5 overflow-hidden rounded-lg border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted/60",
+            <button key={s.key} ref={i === sc ? activeStep : undefined} onClick={() => { setPos(si * N + i); setPlaying(false); }}
+              className={cn("relative flex snap-start items-center gap-2.5 overflow-hidden rounded-lg border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/60 @3xl:py-2.5",
                 i === sc && "border-foreground/30 bg-muted ring-1 ring-foreground/10", i < sc && "text-muted-foreground")}>
               <span className={cn("hidden size-7 shrink-0 items-center justify-center rounded-md border text-xs @xl:flex", i === sc ? "bg-primary text-primary-foreground" : "bg-background")}><Icon className="size-3.5" /></span>
-              <span className="min-w-0 leading-tight"><span className="block text-[11px] text-muted-foreground">Step {i + 1}</span><span className="block truncate text-sm font-medium">{s.title}</span></span>
+              <span className="min-w-0 leading-tight"><span className="block text-[11px] text-muted-foreground">{i + 1} of 6</span><span className="block truncate text-sm font-medium">{s.title}</span></span>
               {i === sc && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-pin" style={{ width: `${t * 100}%` }} />}
             </button>
           );
@@ -150,17 +155,17 @@ export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string })
 
       <Card className="py-0">
         <div className="stage p-4 md:p-5" key={key}><Scene {...props} /></div>
-        <div className="flex items-start gap-3 border-t bg-muted/30 px-4 py-3 md:px-5">
+        <div className="flex flex-wrap items-start gap-x-3 gap-y-2 border-t bg-muted/30 px-4 py-3 md:px-5">
           <Sparkles className="mt-0.5 size-4 shrink-0 text-pin" />
-          <p className="flex-1 text-[15px] leading-relaxed text-pretty">{caption(key, m, step, view, depth === "math")}</p>
-          <div className="flex shrink-0 items-center gap-2">
+          <p className="min-w-0 flex-1 basis-[calc(100%-2rem)] text-[15px] leading-relaxed text-pretty @2xl:basis-0">{caption(key, m, step, view, depth === "math")}</p>
+          <div className="ml-7 flex shrink-0 items-center gap-2 @2xl:ml-0">
             <Label htmlFor="math" className="text-xs text-muted-foreground">Show the math</Label>
             <Switch id="math" checked={depth === "math"} onCheckedChange={(c) => learner.set({ depth: c ? "math" : "intuition" })} />
           </div>
         </div>
       </Card>
 
-      <div className="sticky bottom-3 z-20 flex justify-center">
+      <div className="sticky bottom-[4.5rem] z-20 flex justify-center md:bottom-3">
         <div className="flex w-full max-w-4xl items-center gap-1.5 rounded-xl border bg-popover/90 p-2 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-popover/75">
           <ButtonGroup>
             <Button variant="outline" size="icon-sm" onClick={() => setPos(Math.max(0, (si - 1) * N))} title="Previous token"><SkipBack /></Button>

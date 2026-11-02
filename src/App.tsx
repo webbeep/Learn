@@ -8,6 +8,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppSidebar, NAV, isActive } from "@/components/app/app-sidebar";
 import { SiteHeader } from "@/components/app/site-header";
+import { Onboarding } from "@/components/app/onboarding";
+import { MobileNav } from "@/components/app/mobile-nav";
 import { loadModel, type TinyGPT } from "./model/gpt";
 import { ask, markVisited, useStore } from "./lib/store";
 import { setVizDark } from "./lib/theme";
@@ -67,7 +69,7 @@ function Shell() {
   if (needsModel && !model) page = err
     ? <div className="p-10 text-center text-destructive">Couldn't load the model: {err}</div>
     : <div className="flex items-center justify-center gap-2 p-16 text-muted-foreground"><Spinner />Loading TinyGPT (680 KB of weights)…</div>;
-  else if (hash.startsWith("#/xray")) page = <XRay m={model!} initialScene={hash.split("/")[2]} />;
+  else if (hash.startsWith("#/xray")) page = <XRay key={hash} m={model!} initialScene={hash.split("/")[2]} />;
   else if (route(hash, "#/training")) page = <Training corpus={model!.meta.corpus_sample} />;
   else if (hash.startsWith("#/videos")) page = <Videos />;
   else if (hash.startsWith("#/path")) page = <Path />;
@@ -87,7 +89,7 @@ function Shell() {
       <SidebarInset className="min-w-0">
         <SiteHeader title={title} />
         <div className="flex min-h-0 flex-1">
-          <div ref={main as React.RefObject<HTMLDivElement>} key={resolvedTheme} className="min-w-0 flex-1 px-4 py-5 md:px-6 lg:px-8">
+          <div ref={main as React.RefObject<HTMLDivElement>} key={resolvedTheme} className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-4 md:px-6 md:pt-5 md:pb-5 lg:px-8">
             <div className="mx-auto w-full max-w-6xl">{page}</div>
           </div>
           {panelOpen && !isMobile && (
@@ -97,7 +99,7 @@ function Shell() {
       </SidebarInset>
       {isMobile && (
         <Sheet open={panelOpen} onOpenChange={(o) => ask.set({ open: o })}>
-          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md [&>button.absolute]:hidden">
+          <SheetContent side="right" className="w-full gap-0 p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-md pb-[env(safe-area-inset-bottom)] sm:max-w-md [&>button.absolute]:hidden">
             <SheetTitle className="sr-only">Tutor</SheetTitle>
             <TutorPanel />
           </SheetContent>
@@ -108,6 +110,8 @@ function Shell() {
       <MarkStyles />
       <VoiceHUD />
       <ShortcutHelp open={help} onOpenChange={setHelp} />
+      <Onboarding />
+      <MobileNav hash={hash} />
     </SidebarProvider>
   );
 }

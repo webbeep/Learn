@@ -12,7 +12,7 @@ interface Body {
     viewport?: string;
   };
   mode?: "text" | "voice";
-  learner?: { goal?: string; depth?: string; length?: string; profile?: string; recent?: string[] };
+  learner?: { goal?: string; depth?: string; length?: string; level?: string; profile?: string; recent?: string[] };
 }
 
 const SYSTEM = `You are the tutor inside "Top-Down AI", a visual, hands-on app for someone who learns TOP-DOWN:
@@ -57,7 +57,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const b = (await request.json()) as Body;
     const c = b.context ?? {}, l = b.learner ?? {};
     const lines = [
-      `LEARNER: goal=${l.goal ?? "train models from scratch, invent new AI"}; prefers depth=${l.depth ?? "balanced"}, length=${l.length ?? "medium"}.`,
+      `LEARNER: goal=${l.goal ?? "train models from scratch, invent new AI"}; experience=${l.level ?? "unknown"}; prefers depth=${l.depth ?? "balanced"}, length=${l.length ?? "medium"}. Pitch the explanation for their experience: beginner = no jargon without a plain-words definition and an analogy; intermediate = mechanisms with light math; advanced = precise math, shapes, code-level detail.`,
       l.profile ? `LEARNER PROFILE (from past questions): ${l.profile}` : "",
       l.recent?.length ? `RECENT QUESTIONS: ${l.recent.join(" / ")}` : "",
       `CONTEXT — page: ${c.page ?? "?"}; scene: ${c.scene ?? "?"}`,
