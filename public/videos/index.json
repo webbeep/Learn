@@ -3,52 +3,52 @@
   "id": "gpt-in-100s",
   "title": "GPT, start to finish",
   "subtitle": "The whole pipeline on a real tiny GPT: tokens → vectors → attention → probabilities → loop",
-  "duration": 139.47,
+  "duration": 224.17,
   "track": "inference",
   "order": 10,
   "src": "/videos/gpt-in-100s.mp4",
   "poster": "/videos/gpt-in-100s.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The hook"
    },
    {
-    "t": 18.4,
+    "t": 30.8,
     "title": "Tokens"
    },
    {
-    "t": 27.77,
+    "t": 46.47,
     "title": "Embeddings"
    },
    {
-    "t": 48.83,
+    "t": 81.57,
     "title": "Attention"
    },
    {
-    "t": 75.27,
+    "t": 122.73,
     "title": "Layers"
    },
    {
-    "t": 105.4,
+    "t": 167.97,
     "title": "Probabilities"
    },
    {
-    "t": 117.93,
+    "t": 189.27,
     "title": "Pick & repeat"
    },
    {
-    "t": 131.0,
+    "t": 211.0,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 9.17,
-    "text": "Now Tom has the... what? This tiny GPT says red. 87 percent sure. Nobody told it the rules.",
+    "end": 15.43,
+    "text": "Mia gives her red ball to Tom. Now Tom has the... what? This tiny GPT, a model that predicts the next word, says red. It's 87 percent sure. Nobody told it the rules.",
     "scene": "The prompt 'mia has a red ball. tom has a blue kite. mia gives the ball to tom. now tom has the ___' appears line by line; the blank fills with 'red' and an 87% badge.",
     "objects": [
      {
@@ -74,9 +74,9 @@
     ]
    },
    {
-    "start": 9.17,
-    "end": 18.4,
-    "text": "Three layers. 170 thousand parameters. Trained for 80 seconds on a CPU. About a million times smaller than GPT-3.",
+    "start": 15.43,
+    "end": 30.37,
+    "text": "And this model is tiny. It has three layers and 170 thousand parameters, the numbers it learns. It was trained for 80 seconds on an ordinary CPU. That's about a million times smaller than GPT-3.",
     "scene": "Three stat cards: 3 layers, 170,560 parameters, ~80 s of training on a CPU. Punchline flash: about 1,000,000x smaller than GPT-3.",
     "objects": [
      {
@@ -132,9 +132,9 @@
     ]
    },
    {
-    "start": 18.4,
-    "end": 27.77,
-    "text": "Step one, chop the text into tokens. Spaces stick to the front of words, and every chunk gets an ID number. 23 tokens.",
+    "start": 30.8,
+    "end": 46.03,
+    "text": "Step one: chop the text into tokens, the small chunks the model reads. Spaces stick to the front of words. Every chunk gets an ID number, since models only work with numbers. Our story comes to 23 tokens.",
     "scene": "The four prompt lines turn into 23 colored token chips (one row per sentence), each with its ID underneath; the leading space shows as ␣.",
     "objects": [
      {
@@ -370,9 +370,9 @@
     ]
    },
    {
-    "start": 27.77,
-    "end": 39.0,
-    "text": "Each ID grabs a row of 64 numbers from a lookup table, its embedding. Add a position vector, and every token becomes a point in 64-dimensional space.",
+    "start": 46.47,
+    "end": 64.47,
+    "text": "Step two: each ID grabs a row of 64 numbers from a lookup table. That row, called an embedding, stands for the token. Add a position vector, another list of numbers that marks where the token sits. Now every token is a point in 64-dimensional space.",
     "scene": "The ' red' chip (id 157) is pulled out; below it a strip of 64 colored cells (its real embedding: orange positive, blue negative), plus the position-3 vector, equals the input vector.",
     "objects": [
      {
@@ -418,9 +418,9 @@
     ]
    },
    {
-    "start": 39.0,
-    "end": 48.83,
-    "text": "Squash those 64 numbers down to two, and you can see what it learned. Names land in one neighborhood. Colors land in another. Nobody told it that.",
+    "start": 64.47,
+    "end": 81.13,
+    "text": "We can't picture 64 numbers at once. So let's squash them down to two, and draw every token as a dot. Now you can see what it learned. Names land in one neighborhood. Colors land in another, close to things like ball and kite. Nobody told it that.",
     "scene": "A 2-D PCA map of all 256 real token embeddings: names (teal) cluster at the bottom, colors (pink) form a tight cluster near the things (yellow); other tokens are faint gray dots. Caveat on screen: these 2 axes keep only 13% of the spread.",
     "objects": [
      {
@@ -476,9 +476,9 @@
     ]
    },
    {
-    "start": 48.83,
-    "end": 58.6,
-    "text": "Now the tokens talk. In every attention layer, each token looks back at the tokens so far, itself included, and pulls in whatever looks useful.",
+    "start": 81.57,
+    "end": 98.97,
+    "text": "Step three: the tokens talk to each other. This is called attention, and every layer does it. Each token looks back at the tokens so far, itself included, and pulls in whatever looks useful. Here, the last 'the' looks back, and thicker lines mean more attention.",
     "scene": "The 23 tokens slide into a column; on the right, the last token ' the' is the query. Lines fan out from it to the tokens so far, itself included (on-screen caption: layer 2, averaged over its 4 heads; line thickness = attention weight).",
     "objects": [
      {
@@ -734,9 +734,9 @@
     ]
    },
    {
-    "start": 58.6,
-    "end": 75.27,
-    "text": "One head in layer two, looking from the last 'the', puts 93 percent of its attention on 'red'. Switch that head off, and red drops from 87 percent to 2. On stories like this, it fetches the handed-over item's color.",
+    "start": 98.97,
+    "end": 122.3,
+    "text": "Each layer's attention is split into four heads, which each learn to look for different things. Watch one head in layer two. From the last 'the', it puts 93 percent of its attention on 'red'. Switch that head off, and the chance of red drops from 87 percent to just 2. So on stories like this one, this head fetches the color of the item that was handed over.",
     "scene": "Only layer 2 head 4 remains: a thick yellow line from the final ' the' to ' red' (position 3) labeled 93%, and two thin unlabeled lines (each under 3%) to '.' and ' ball'. Flash: 'head off: red 87% → 2%' (real ablation: this head's output zeroed).",
     "objects": [
      {
@@ -1012,9 +1012,9 @@
     ]
    },
    {
-    "start": 75.27,
-    "end": 89.13,
-    "text": "Attention moves information between tokens. Then a small MLP works on each token alone. Each one adds its result onto the token's vector, the residual stream. That pair is a layer, and this model stacks three.",
+    "start": 122.73,
+    "end": 146.97,
+    "text": "Step four: the layers. Attention moves information between tokens. Then a small MLP, a simple neural network, works on each token alone. Each one adds its result onto the token's vector, the running list of numbers for that token. That running total is called the residual stream. One attention plus one MLP make a layer, and this model stacks three.",
     "scene": "Diagram: vectors → three layer panels, each with a '+ attention' and a '+ MLP' box → scores. Caption: residual stream, each block adds its output onto the token's vector (x = x + attention(x), x = x + MLP(x)).",
     "objects": [
      {
@@ -1060,9 +1060,9 @@
     ]
    },
    {
-    "start": 89.13,
-    "end": 105.4,
-    "text": "Peek at its best guess after each layer. Layer one says 'the', layer two says 'white', and only the final MLP locks in red, at 87 percent. Layer two fetched the color, MLP three turns it into the answer.",
+    "start": 146.97,
+    "end": 167.53,
+    "text": "Here's a peek at its best guess at each stage, as if we stopped right there. Layer one says 'the'. Layer two says 'white', which is at least a color. Only the final MLP locks in red, at 87 percent. So layer two fetched the color, and MLP three turned it into the answer.",
     "scene": "Under each layer panel, the model's top guess for the next token if we stopped there (logit lens): layer 1 ' the' 33%, layer 2 ' white' 12%, layer 3 ' red' 87%.",
     "objects": [
      {
@@ -1138,9 +1138,9 @@
     ]
    },
    {
-    "start": 105.4,
-    "end": 117.93,
-    "text": "The final vector is scored against all 256 tokens, and softmax turns the scores into probabilities. Red 87 percent, white 6, purple 5, crumbs for the rest.",
+    "start": 167.97,
+    "end": 188.83,
+    "text": "Step five: turn that into a prediction. The final vector is compared with all 256 tokens it knows, giving each one a score. Then softmax turns the scores into probabilities, chances that add up to one. Red gets 87 percent, white 6, purple 5, and the rest get crumbs.",
     "scene": "Horizontal probability bars for the next token: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, ' black' 0.28%, ' ava' 0.15%, all 251 others combined 1.54%.",
     "objects": [
      {
@@ -1206,9 +1206,9 @@
     ]
    },
    {
-    "start": 117.93,
-    "end": 131.0,
-    "text": "Take the top pick, append it, run it again. Red. Ball. Period. Newline. Once upon a time. Always taking the top pick is greedy. Rolling weighted dice is sampling.",
+    "start": 189.27,
+    "end": 210.57,
+    "text": "Step six: pick and repeat. Take the top pick, add it to the end, and run it again. Out comes red, then ball, a period, a newline, and once upon a time. Always taking the top pick is called greedy. Rolling weighted dice, so likely tokens come up more often, is called sampling.",
     "scene": "Greedy decoding: the context '… now tom has the' gets the model's top pick appended each step (' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time', with their probabilities); the row slides left as it grows, with a loop arrow feeding the output back in.",
     "objects": [
      {
@@ -1304,9 +1304,9 @@
     ]
    },
    {
-    "start": 131.0,
-    "end": 138.87,
-    "text": "That's GPT. Text in, probabilities out, one token at a time. Now go poke it in the X-ray.",
+    "start": 211.0,
+    "end": 223.57,
+    "text": "That's GPT. Text goes in and becomes tokens, then numbers. They flow through the layers, and out come probabilities, one token at a time. Now go poke it in the X-ray lab.",
     "scene": "Summary pipeline: text → tokens → vectors → 3 × (attention + MLP) → probs → pick, with a 'repeat' arrow looping back. Final card: 'now go poke it in the X-ray'.",
     "objects": [
      {
@@ -1387,44 +1387,44 @@
   "id": "tokens",
   "title": "Tokens: how a model reads",
   "subtitle": "Byte-pair encoding, merge by merge, with TinyGPT's real 256-token vocab",
-  "duration": 147.83,
+  "duration": 224.23,
   "track": "inference",
   "order": 20,
   "src": "/videos/tokens.mp4",
   "poster": "/videos/tokens.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The problem"
    },
    {
-    "t": 5.73,
+    "t": 11.13,
     "title": "Characters"
    },
    {
-    "t": 26.67,
+    "t": 41.07,
     "title": "Byte-pair encoding"
    },
    {
-    "t": 70.2,
+    "t": 110.07,
     "title": "Encoding a word"
    },
    {
-    "t": 90.93,
+    "t": 144.43,
     "title": "Weird splits"
    },
    {
-    "t": 129.0,
+    "t": 194.77,
     "title": "Scale"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 5.73,
-    "text": "Models can't read letters. They only eat numbers. So how does a word like Wednesday get in?",
+    "end": 10.7,
+    "text": "Models can't read letters. They only take in numbers. So how does a word like Wednesday get in? The answer is tokens, numbered chunks of text.",
     "scene": "The word 'wednesday' in big letters above a box labelled 'the model — only eats numbers', with an arrow and '[ ?, ?, ? ]' between them.",
     "objects": [
      {
@@ -1450,9 +1450,9 @@
     ]
    },
    {
-    "start": 5.73,
-    "end": 18.53,
-    "text": "The simplest trick is one number per character. Our model starts with 35 base symbols. 26 letters, space, newline, six punctuation marks, and an unknown token.",
+    "start": 11.13,
+    "end": 28.57,
+    "text": "The simplest trick is to give each character its own number. Our model starts with 35 base symbols. There are 26 letters, plus a space and a newline, which starts a new line. Then come six punctuation marks, and an unknown token for anything else.",
     "scene": "A grid of the 35 base tokens with their ids: <unk> (0), newline (1), space (2), a–z (3–28), and . , ? ! : ' (29–34).",
     "objects": [
      {
@@ -1508,9 +1508,9 @@
     ]
    },
    {
-    "start": 18.53,
-    "end": 26.67,
-    "text": "But then Wednesday costs ten tokens, and the model has to re-spell every common word from scratch. Slow, and wasteful.",
+    "start": 28.57,
+    "end": 40.63,
+    "text": "But then Wednesday, with the space in front of it, costs ten tokens. And the model has to re-spell every common word from scratch, letter by letter. That's slow and wasteful.",
     "scene": "' wednesday' (with its leading space, shown as ␣) split into 10 single-character chips with ids 2, 25, 7, 6, 16, 7, 21, 6, 3, 27. Flash: '10 tokens for one word?!'",
     "objects": [
      {
@@ -1616,9 +1616,9 @@
     ]
    },
    {
-    "start": 26.67,
-    "end": 36.93,
-    "text": "Byte-pair encoding fixes this. First, chop the training text into words, each keeping its leading space. Merges never cross from one word into the next.",
+    "start": 41.07,
+    "end": 58.5,
+    "text": "A method called byte-pair encoding fixes this. It builds bigger tokens by merging pairs that often appear together. First, chop the text it learns from into words. Each word keeps the space in front of it. Merges never cross from one word into the next.",
     "scene": "The corpus snippet 'tom has a blue boat. tom gives' is split into word pieces (tom · ␣has · ␣a · ␣blue · ␣boat · . · ␣tom · ␣gives), with yellow separators: merges never cross a word boundary.",
     "objects": [
      {
@@ -1714,9 +1714,9 @@
     ]
    },
    {
-    "start": 36.93,
-    "end": 51.8,
-    "text": "Then count every pair of neighbors inside those words, across the first 400 thousand characters. The winner is space t, 13,558 times. Merge it into a brand new token, and repeat.",
+    "start": 58.5,
+    "end": 82.33,
+    "text": "Next, count every pair of neighbors inside those words, meaning two symbols side by side. It counts across the first 400 thousand characters of text. The winner is space t, a space followed by the letter t, found 13,558 times. Merge it into a brand new token, and repeat.",
     "scene": "Bars of the most frequent adjacent pairs inside words, in the first 400k characters of the corpus (the part BPE was trained on): '␣+t' 13,558, 'h+e' 11,868, '␣+a' 10,413, 't+h' 10,372. The winner becomes new token #35 '␣t'.",
     "objects": [
      {
@@ -1852,9 +1852,9 @@
     ]
    },
    {
-    "start": 51.8,
-    "end": 60.5,
-    "text": "The first four merges already build 'the', with its space. Each merge is a rule, and the rules are kept in the order they were learned.",
+    "start": 82.33,
+    "end": 95.63,
+    "text": "The first four merges already build the word 'the', with its space, into a single token. Each merge is saved as a rule, and the rules are kept in the order they were learned. That order will matter in a moment.",
     "scene": "Left: the first four merge rules (␣+t→␣t id 35, h+e→he id 36, ␣+a→␣a id 37, ␣t+he→␣the id 38). Right: '␣the' fusing from 4 characters into one token, id 38.",
     "objects": [
      {
@@ -1910,9 +1910,9 @@
     ]
    },
    {
-    "start": 60.5,
-    "end": 70.2,
-    "text": "Do that 221 times, and you get 35 plus 221. A vocabulary of exactly 256 tokens.",
+    "start": 95.63,
+    "end": 109.63,
+    "text": "Repeat that 221 times. You end up with the 35 base symbols plus 221 new tokens. That's a vocabulary of exactly 256 tokens, the full set it knows.",
     "scene": "Big equation: 35 base symbols + 221 merges = 256 vocab size.",
     "objects": [
      {
@@ -1948,9 +1948,9 @@
     ]
    },
    {
-    "start": 70.2,
-    "end": 82.43,
-    "text": "To encode new text, start from characters and replay the merges in the order they were learned. Space w goes first, then a y, then e d. Lowest rule number first, every time.",
+    "start": 110.07,
+    "end": 127.2,
+    "text": "Now let's use the rules to turn new text, like Wednesday, into tokens. Start from single characters, and replay the merges in the order they were learned. Space w merges first, then a y, then e d. The lowest rule number always goes first.",
     "scene": "' wednesday' as 10 character chips; below, a panel shows the merge being applied. Merges fire in learned order: ␣+w → ␣w (rank 9), a+y → ay (rank 10), e+d → ed (rank 13).",
     "objects": [
      {
@@ -2036,9 +2036,9 @@
     ]
    },
    {
-    "start": 82.43,
-    "end": 90.93,
-    "text": "Then e s. Then d plus ay makes day, and es plus day makes esday. Ten characters, four tokens.",
+    "start": 127.2,
+    "end": 144.0,
+    "text": "Then e s join together. Then d plus ay makes day, and es plus day makes esday. So ten characters have become just four tokens: space w, ed, n, and esday.",
     "scene": "Remaining merges: e+s → es, d+ay → day, es+day → esday. Final result: ␣w (43) · ed (47) · n (16) · esday (202) — 4 tokens.",
     "objects": [
      {
@@ -2094,9 +2094,9 @@
     ]
    },
    {
-    "start": 90.93,
-    "end": 106.37,
-    "text": "Notice the splits ignore grammar. 'esday' exists because Tuesday and Wednesday share it. Jumping becomes space, j, um, p, ing. The model never sees inside a token.",
+    "start": 144.43,
+    "end": 163.3,
+    "text": "Notice that these splits ignore grammar. The piece 'esday' exists because Tuesday and Wednesday both end with it. Jumping becomes space, j, um, p, ing, not jump plus ing. And the model never sees inside a token, only its ID number.",
     "scene": "Examples: ' tuesday' → ␣t · u · esday (shares 'esday', id 202, with wednesday); ' jumping' → ␣ · j · um · p · ing.",
     "objects": [
      {
@@ -2122,9 +2122,9 @@
     ]
    },
    {
-    "start": 106.37,
-    "end": 115.37,
-    "text": "Frequent words get a token all to themselves. Space red is just ID 157, one single chunk.",
+    "start": 163.3,
+    "end": 174.13,
+    "text": "Words that show up a lot get a token all to themselves. Space red, the word red with its space, is just ID 157, one single chunk.",
     "scene": "' red' → a single token, id 157.",
     "objects": [
      {
@@ -2160,9 +2160,9 @@
     ]
    },
    {
-    "start": 115.37,
-    "end": 129.0,
-    "text": "One catch. This tiny world is all lowercase, so a capital W becomes the unknown token. Most real tokenizers start from the 256 possible bytes instead, so nothing is ever unknown.",
+    "start": 174.13,
+    "end": 194.33,
+    "text": "There's one catch. This model's tiny world of stories is all lowercase, so a capital W becomes the unknown token. Most real tokenizers, the tools that do this chopping, start from the 256 possible bytes instead. All text on a computer is stored as bytes, so nothing is ever unknown.",
     "scene": "'Wednesday' with a capital W encodes as <unk> (id 0) · ed · n · esday: TinyGPT's vocab is lowercase only. Note: most real tokenizers start from the 256 possible bytes, so nothing is ever unknown.",
     "objects": [
      {
@@ -2198,9 +2198,9 @@
     ]
    },
    {
-    "start": 129.0,
-    "end": 139.77,
-    "text": "Our vocab has 256 entries. GPT-2 had 50,257. Newer models go past 100 thousand. Same algorithm, bigger table.",
+    "start": 194.77,
+    "end": 210.0,
+    "text": "So how big do vocabularies get? Our vocab has 256 entries. GPT-2 had 50,257. Newer models go past 100 thousand. It's the same algorithm, just with a bigger table.",
     "scene": "Vocab-size bars to scale: TinyGPT 256 (a sliver), GPT-2 50,257, newer LLMs drawn at 100,000 with an arrow for 'and up'. Flash: 'same algorithm, bigger table'.",
     "objects": [
      {
@@ -2236,9 +2236,9 @@
     ]
    },
    {
-    "start": 139.77,
-    "end": 147.33,
-    "text": "A bigger vocab means shorter sequences, but a bigger embedding table. It's a knob you'll get to turn when you build your own.",
+    "start": 210.0,
+    "end": 223.73,
+    "text": "A bigger vocab means fewer tokens per sentence. But it means a bigger embedding table, with a row of numbers for each token. It's a knob you'll get to turn when you build your own. So tokens are numbered chunks of text.",
     "scene": "Trade-off: bigger vocab → fewer tokens per sentence but a bigger embedding table (TinyGPT 256×64 = 16,384 numbers; GPT-2 50,257×768 = 38.6 million).",
     "objects": [
      {
@@ -2279,48 +2279,48 @@
   "id": "embeddings",
   "title": "Embeddings: words as directions",
   "subtitle": "The lookup table that turns token ids into 64 numbers, and the meaning hiding in them",
-  "duration": 146.63,
+  "duration": 216.23,
   "track": "inference",
   "order": 30,
   "src": "/videos/embeddings.mp4",
   "poster": "/videos/embeddings.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Just a number"
    },
    {
-    "t": 7.6,
+    "t": 14.5,
     "title": "The lookup table"
    },
    {
-    "t": 35.47,
+    "t": 58.83,
     "title": "Meaning = direction"
    },
    {
-    "t": 65.03,
+    "t": 100.9,
     "title": "The map"
    },
    {
-    "t": 100.13,
+    "t": 147.87,
     "title": "Position"
    },
    {
-    "t": 125.33,
+    "t": 186.67,
     "title": "Bigger models"
    },
    {
-    "t": 140.03,
+    "t": 203.47,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 7.6,
-    "text": "To this model, red is just token 157. A row number. So how does a number come to mean anything?",
+    "end": 14.07,
+    "text": "To this model, the word red is just token 157, a numbered chunk of text. That number is just a row in a table. So how does a number come to mean anything? The answer is embeddings.",
     "scene": "A big token chip '␣red' with its id 157 underneath and the question 'what does 157 mean?'.",
     "objects": [
      {
@@ -2336,9 +2336,9 @@
     ]
    },
    {
-    "start": 7.6,
-    "end": 20.33,
-    "text": "The very first step is a lookup table. 256 rows, one per token, 64 numbers in each row. Token 157 just grabs row 157. That row is its embedding.",
+    "start": 14.5,
+    "end": 35.7,
+    "text": "The very first step is a lookup table. It has 256 rows, one for each token, with 64 numbers in each row. Orange cells are positive, blue ones negative. Token 157 simply grabs row 157. That row is its embedding, the list of numbers that stands for the token.",
     "scene": "The real 256×64 embedding table as a heatmap (orange positive, blue negative). Row 157 is outlined and slides out as a strip of 64 cells; its first values are -0.17, -0.14, -0.18, +0.07 … -0.19.",
     "objects": [
      {
@@ -2374,9 +2374,9 @@
     ]
    },
    {
-    "start": 20.33,
-    "end": 35.47,
-    "text": "All 16,384 numbers started as random noise. And the same table is reused at the very end, to score every possible next token. So training pulls tokens that fit the same slots toward similar rows.",
+    "start": 35.7,
+    "end": 58.4,
+    "text": "All 16,384 numbers in this table started as random noise. And the same table is reused at the very end, to score every possible next token. So training, the model's learning process, pulls tokens that fit the same slots toward similar rows. In other words, tokens that fill the same spot in a sentence, like two colors, get similar numbers.",
     "scene": "Same view; captions: 'started random → shaped by training' and 'reused at the end to score every next token (weight tying)'. The table holds 16,384 of the model's 170,560 parameters.",
     "objects": [
      {
@@ -2422,9 +2422,9 @@
     ]
    },
    {
-    "start": 35.47,
-    "end": 48.57,
-    "text": "No single number means red. What matters is the direction the whole row points. We compare directions with cosine similarity: one means same way, zero means unrelated.",
+    "start": 58.83,
+    "end": 77.47,
+    "text": "No single number means red. Think of the whole row as an arrow: what matters is the direction it points. Purple points almost the same way. We compare directions with cosine similarity, which measures how well two arrows line up. One means same way, zero means unrelated.",
     "scene": "Toy 2-D picture: arrows for ' red' and ' purple' point almost the same way, ' tom' points elsewhere. Text: cosine similarity = how aligned two arrows are (+1 same way, 0 unrelated, −1 opposite).",
     "objects": [
      {
@@ -2450,9 +2450,9 @@
     ]
    },
    {
-    "start": 48.57,
-    "end": 65.03,
-    "text": "Now the real thing. Red's nearest neighbours: purple at 0.92, white, black. Tom's neighbours are names. Cat's are animals. Park's are places. A random pair of tokens scores about 0.1.",
+    "start": 77.47,
+    "end": 100.47,
+    "text": "Now the real thing. Red's nearest neighbours are the tokens whose rows point most nearly the same way. First comes purple, with a score of 0.92, then white and black. Tom's neighbours are other names. Cat's are animals. Park's are places. A random pair of tokens scores only about 0.1, so these really are close.",
     "scene": "Four real nearest-neighbour lists (cosine similarity over all 64 dims): 'red' → purple 0.92, white 0.85, black 0.84, yellow 0.75; 'tom' → max 0.63, finn 0.59, leo 0.58, zoe 0.58; 'cat' → bear 0.59, fish 0.57, dog 0.56, owl 0.54; 'park' → river 0.75, school 0.73, forest 0.71, house 0.71. Average token pair: 0.12.",
     "objects": [
      {
@@ -2508,9 +2508,9 @@
     ]
    },
    {
-    "start": 65.03,
-    "end": 78.57,
-    "text": "Squash all 256 rows from 64 dimensions down to two, with PCA, and plot them. The names split off into their own island. Colors, animals, objects and places crowd together.",
+    "start": 100.9,
+    "end": 121.27,
+    "text": "Now let's squash all 256 rows from 64 dimensions, one per number, down to two. We use a standard method called PCA, and plot each token as a dot. The names split off into their own island. Colors, animals, objects and places crowd together in one big group.",
     "scene": "Real 2-D PCA of all 256 token embeddings (axes keep 12.6% of the variance). Names (teal) form a separate island at the bottom; colors, animals, objects and places bunch together on the right; other tokens are faint gray dots.",
     "objects": [
      {
@@ -2576,9 +2576,9 @@
     ]
    },
    {
-    "start": 78.57,
-    "end": 100.13,
-    "text": "Re-run PCA on just these 48 words. Names sit far away. Colors and places get their own patches. Animals and objects overlap: they fill the same slot, nouns after 'the', and often after a color. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group.",
+    "start": 121.27,
+    "end": 147.43,
+    "text": "Let's zoom in. Re-run PCA on just these 48 words. The names sit far away. Colors and places get their own patches. Animals and objects overlap, and that makes sense: they fill the same slot in a sentence. They're nouns that come after 'the', and often after a color, like 'the red ball'. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group.",
     "scene": "Real PCA of only the 48 group words (names, colors, animals, objects, places): names far off, colors and places in their own patches, animals and objects overlapping (both fill the same noun slot: after 'the', often after a color). Verdict: 48/48 words have their nearest cosine neighbour (in 64-D) in their own group.",
     "objects": [
      {
@@ -2654,9 +2654,9 @@
     ]
    },
    {
-    "start": 100.13,
-    "end": 111.23,
-    "text": "But red at position 3 and red at position 20 would look identical. So a second table holds one learned vector per position, and it's simply added on.",
+    "start": 147.87,
+    "end": 166.67,
+    "text": "But red at position 3 and red at position 20 would look identical. The model couldn't tell where each word sits. So a second table holds one learned vector, another list of numbers, for each position. And it's simply added on. The sum is what the first layer sees.",
     "scene": "Three real 64-cell strips: the ' red' token embedding (length 1.18) + the learned position-3 embedding (length 0.59) = the vector layer 1 actually sees.",
     "objects": [
      {
@@ -2692,9 +2692,9 @@
     ]
    },
    {
-    "start": 111.23,
-    "end": 125.33,
-    "text": "Compare all 64 position vectors with each other. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, even opposite. A smooth, learned sense of where.",
+    "start": 166.67,
+    "end": 186.23,
+    "text": "Now compare all 64 position vectors with each other, using cosine similarity again. Bright means similar. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, and some even point the opposite way. So the model has learned a smooth sense of where each token is.",
     "scene": "Real 64×64 cosine-similarity heatmap of the learned position embeddings: a bright diagonal band (neighbours average 0.95) fading to blue far from it (position 0 vs 63: -0.74). Position vectors average length 0.40 vs 1.12 for token vectors.",
     "objects": [
      {
@@ -2750,9 +2750,9 @@
     ]
    },
    {
-    "start": 125.33,
-    "end": 140.03,
-    "text": "Sixty-four numbers is tiny. GPT-3's largest version uses 12,288 per token, 192 times the room. More directions means more distinctions it can keep apart at once.",
+    "start": 186.67,
+    "end": 203.03,
+    "text": "Sixty-four numbers per token is tiny. The largest version of GPT-3 uses 12,288 numbers per token, which is 192 times the room. With more directions to point in, the model can keep more distinctions apart at once.",
     "scene": "TinyGPT's 64-number embedding as one row of 64 squares vs GPT-3's (largest) 12,288: 30 visible rows of 64 squares and a note that 162 more rows would be needed (192× more room).",
     "objects": [
      {
@@ -2778,9 +2778,9 @@
     ]
    },
    {
-    "start": 140.03,
-    "end": 146.03,
-    "text": "An embedding is a learned row of numbers whose meaning lives in its direction. Go find them in the X-ray.",
+    "start": 203.47,
+    "end": 215.63,
+    "text": "So, to sum up: an embedding is a learned row of numbers for each token. Its meaning lives in the direction it points. Similar tokens point similar ways. Go find them in the X-ray lab.",
     "scene": "Recap: token id 157 → its 64-number row (+ position) → a direction in space. Card: 'now find them in the X-ray'.",
     "objects": [
      {
@@ -2811,48 +2811,48 @@
   "id": "attention",
   "title": "Attention, visually",
   "subtitle": "Queries, keys, values, softmax, the causal mask — and a real head that fetches a color",
-  "duration": 125.13,
+  "duration": 201.8,
   "track": "inference",
   "order": 40,
   "src": "/videos/attention.mp4",
   "poster": "/videos/attention.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The question"
    },
    {
-    "t": 6.67,
+    "t": 12.13,
     "title": "Query, key, value"
    },
    {
-    "t": 19.0,
+    "t": 35.83,
     "title": "Scores"
    },
    {
-    "t": 38.2,
+    "t": 64.37,
     "title": "Softmax"
    },
    {
-    "t": 66.63,
+    "t": 116.17,
     "title": "Causal mask"
    },
    {
-    "t": 79.63,
+    "t": 137.43,
     "title": "A real head"
    },
    {
-    "t": 104.5,
+    "t": 171.27,
     "title": "Many heads"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 6.67,
-    "text": "How does the word 'the' know to look back at 'red'? Attention. Let's build it from three arrows.",
+    "end": 11.7,
+    "text": "How does the last word, 'the', find its way back to 'red'? The answer is attention. It lets each word look back at earlier words. Let's build it from three arrows.",
     "scene": "The prompt start 'mia has a red ball' … 'tom has the' with a yellow curved arrow from the last ' the' back to ' red' and a question mark.",
     "objects": [
      {
@@ -2878,9 +2878,9 @@
     ]
    },
    {
-    "start": 6.67,
-    "end": 19.0,
-    "text": "Every token turns its vector into three new ones. A query that asks, what am I looking for. A key that says, here's what I've got. And a value, the info it hands over if it gets picked.",
+    "start": 12.13,
+    "end": 35.4,
+    "text": "Every token, a chunk of text, carries a vector, a list of numbers. It turns that vector into three new ones. A query, which asks, what am I looking for? A key, which says, here's what I've got. And a value, the information it hands over if it gets picked. Each one comes from multiplying the vector by its own learned grid of numbers, called a matrix.",
     "scene": "The token ' the' spawns three arrows: query (blue) 'what am I looking for?', key (teal) 'what do I contain?', value (orange) 'what do I hand over if picked?'. Note: each = the token's vector × its own learned matrix (W_Q, W_K, W_V).",
     "objects": [
      {
@@ -2936,9 +2936,9 @@
     ]
    },
    {
-    "start": 19.0,
-    "end": 30.53,
-    "text": "To score a match, take the dot product of a query with each earlier key. Pointing the same way scores high. At right angles, zero. Opposite, negative.",
+    "start": 35.83,
+    "end": 52.43,
+    "text": "How well does a query match each earlier key? To score it, take the dot product: multiply the matching numbers, then add them up. Arrows pointing the same way score high. At right angles, the score is zero. Opposite arrows score negative.",
     "scene": "Toy 2-D plane: a blue query arrow and a teal key arrow sweeping around it; a live readout of q · k goes high when aligned, 0 at right angles, negative when opposite.",
     "objects": [
      {
@@ -2974,9 +2974,9 @@
     ]
    },
    {
-    "start": 30.53,
-    "end": 38.2,
-    "text": "Do it for every earlier token, and you get one score each. Red's key lines up with the query, so it scores highest.",
+    "start": 52.43,
+    "end": 63.93,
+    "text": "Do this for every earlier token, and you get one score for each. Here are three of them: red, Mia and ball. Red's key lines up with the query, so it scores highest.",
     "scene": "Three toy keys for ' red', ' mia', ' ball' drawn in the plane; a table of dot products: ' red' +4.8, ' mia' +0.2, ' ball' −0.8.",
     "objects": [
      {
@@ -3062,9 +3062,9 @@
     ]
    },
    {
-    "start": 38.2,
-    "end": 55.53,
-    "text": "Divide by the square root of the vector size. Real heads here use 16 numbers, so divide by 4. That stops scores from growing with size and saturating the softmax. Then softmax turns every score into a positive weight, and the weights add up to one.",
+    "start": 64.37,
+    "end": 96.9,
+    "text": "First, one small adjustment. Divide each score by the square root of the vector size. In this model, each attention unit is called a head. Each head uses keys of 16 numbers, so we divide by 4. This stops scores from growing just because the vectors are bigger. Big scores would push the next step, softmax, to extremes. Then softmax turns every score into a positive weight, and the weights add up to one. Here, red ends up with almost all the weight.",
     "scene": "Score bars drawn from a zero line (q·k/√2: ' red' +3.39 and ' mia' +0.14 to the right, ' ball' −0.57 to the left) morph into softmax weight bars: ' red' 94.5%, ' mia' 3.7%, ' ball' 1.8%. Note: d is the key size, 2 in the toy, 16 in TinyGPT's heads.",
     "objects": [
      {
@@ -3110,9 +3110,9 @@
     ]
    },
    {
-    "start": 55.53,
-    "end": 66.63,
-    "text": "The output is the weighted sum of the values, so it's mostly the value of whatever matched best. One more matrix mixes the heads' outputs, and the result gets added onto the token's vector.",
+    "start": 96.9,
+    "end": 115.73,
+    "text": "Now use those weights. The output is the weighted sum of the values: scale each value by its weight, then add them up. So it's mostly the value of whatever matched best, here red. One more matrix mixes the outputs of all the heads, and the result gets added onto the token's vector.",
     "scene": "Left: the three weights shrink to the side. Right: toy value vectors (orange) for ' red', ' mia', ' ball'; scaled by their weights and added tip to tail, they give the yellow output arrow, almost exactly red's value (red's value arrow stays visible on top). Caption: one more matrix (W_O) mixes the heads and the result is added onto the token's vector.",
     "objects": [
      {
@@ -3178,9 +3178,9 @@
     ]
    },
    {
-    "start": 66.63,
-    "end": 79.63,
-    "text": "Every token asks its own query at the same time, one row each. One rule. No peeking at the future. A causal mask blocks each token from looking at anything after itself, which keeps next-token training honest.",
+    "start": 116.17,
+    "end": 137.0,
+    "text": "All of this happens for every token at the same time. Each token asks its own query and gets one row in this grid. There's one rule: no peeking at the future. A causal mask blocks each token from looking at anything after itself. That keeps training honest. The model learns by guessing the next token, so it mustn't see the answer.",
     "scene": "The real 23×23 attention matrix of layer 2 head 4 on the prompt (rows = query positions 0–22, columns = key positions 0–22): lower triangle colored by weight, the upper triangle (future positions) blocked in dark red and outlined along the cell edges.",
     "objects": [
      {
@@ -3236,9 +3236,9 @@
     ]
    },
    {
-    "start": 79.63,
-    "end": 90.9,
-    "text": "Now the real thing. Layer two, head four, on our prompt. From the final 'the', it puts 93 percent of its attention on 'red', way back at position three.",
+    "start": 137.43,
+    "end": 152.07,
+    "text": "Now let's look at the real thing: layer two, head four, reading our story. From the final 'the', it puts 93 percent of its attention on 'red', way back at position three. Every other token gets only a thin line.",
     "scene": "All 23 prompt tokens in a column; lines fan from the final ' the' (query) to the tokens so far. The line to ' red' (position 3) is thick and yellow, labeled score 4.28 → 93%; the other lines are thin and unlabeled (each under 3%).",
     "objects": [
      {
@@ -3524,9 +3524,9 @@
     ]
    },
    {
-    "start": 90.9,
-    "end": 104.5,
-    "text": "So red's value gets carried forward, right to the spot where the model has to name a color. Switch this one head off, and red drops from 87 percent to 2. Nobody programmed that. It fell out of training.",
+    "start": 152.07,
+    "end": 170.83,
+    "text": "So red's value gets carried forward, right to the spot where the model has to name a color. That answers our opening question. Switch this one head off, and the model's confidence in red drops from 87 percent to just 2. Nobody programmed that. It emerged on its own during training.",
     "scene": "An orange 'value' dot travels from ' red' along the yellow line into the final ' the'. Real ablation (this head's output zeroed): P(' red') 87.1% → 2.2%. Flash: 'nobody programmed this'.",
     "objects": [
      {
@@ -3822,9 +3822,9 @@
     ]
    },
    {
-    "start": 104.5,
-    "end": 118.0,
-    "text": "Each layer has four heads, and each one learns its own habit. Layer one, head four stares at 'now'. Layer two, head one looks at 'ball'. Twelve heads, twelve habits.",
+    "start": 171.27,
+    "end": 190.63,
+    "text": "That was just one head. There are twelve in all, and each one learns its own habit. Each panel shows where one head looks from the final 'the'. Layer one, head four stares at 'now'. Layer two, head one looks at 'ball'. Four heads in each of three layers makes twelve heads, and twelve habits.",
     "scene": "A 3×4 grid of all 12 heads. Each panel shows that head's real attention from the final ' the' over the 23 positions as a mini bar chart, plus its top target (e.g. L1H4 → ' now' 87%, L2H1 → ' ball' 60%, L2H4 → ' red' 93%).",
     "objects": [
      {
@@ -3950,9 +3950,9 @@
     ]
    },
    {
-    "start": 118.0,
-    "end": 124.63,
-    "text": "Many heads, many habits, all running in parallel. Go find your favorite head in the X-ray.",
+    "start": 190.63,
+    "end": 201.3,
+    "text": "So that's attention: words looking back at earlier words. Many heads, many habits, all running at the same time. Go find your favorite head in the X-ray lab.",
     "scene": "The 12-head grid stays up; final card: 'go find your favorite head in the X-ray'.",
     "objects": [
      {
@@ -4093,44 +4093,44 @@
   "id": "mlp",
   "title": "The MLP: where tokens think alone",
   "subtitle": "Expand, GELU, project back: real neurons in TinyGPT that detect patterns and push predictions",
-  "duration": 146.5,
+  "duration": 199.8,
   "track": "inference",
   "order": 50,
   "src": "/videos/mlp.mp4",
   "poster": "/videos/mlp.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "After attention"
    },
    {
-    "t": 11.17,
+    "t": 16.3,
     "title": "Anatomy"
    },
    {
-    "t": 38.63,
+    "t": 60.07,
     "title": "Neurons as detectors"
    },
    {
-    "t": 74.1,
+    "t": 103.9,
     "title": "The final \"the\""
    },
    {
-    "t": 109.57,
+    "t": 151.03,
     "title": "Where facts live"
    },
    {
-    "t": 132.53,
+    "t": 179.97,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 11.17,
-    "text": "Attention lets tokens share information. Then every token goes off alone, through a small network called the MLP. It holds two thirds of each layer's weights.",
+    "end": 15.87,
+    "text": "Each layer of the model has two parts. Attention lets tokens, chunks of text, share information. Then every token goes off alone, through a small neural network called the MLP. It holds two thirds of each layer's weights, the numbers it learns.",
     "scene": "One transformer layer: an attention box ('tokens share information') above an MLP box ('each token thinks alone'). A bar splits each layer's weights: attention 16,640 vs MLP 33,088 (67%).",
     "objects": [
      {
@@ -4166,9 +4166,9 @@
     ]
    },
    {
-    "start": 11.17,
-    "end": 28.13,
-    "text": "Inside, three steps. Expand the 64 numbers into 256 neurons. Pass each through GELU, which lets positive signals through and squashes negatives to nearly zero. Then project back to 64, and add the result to the token's vector.",
+    "start": 16.3,
+    "end": 42.9,
+    "text": "Inside, there are three steps. First, expand the 64 numbers into 256 neurons, small units that each compute one number. Next, pass each through GELU, a simple curve that lets positive signals through and squashes negatives to nearly zero. Then project back down to 64, and add the result to the token's vector, its running list of numbers.",
     "scene": "Network diagram: 64 inputs (blue) fan out to 256 hidden neurons (yellow; drawn 2 per dot) then back to 64 outputs (teal). Inset: the real GELU curve (negative in → ~0, positive in → passes). The output is added back to the token's vector.",
     "objects": [
      {
@@ -4214,9 +4214,9 @@
     ]
    },
    {
-    "start": 28.13,
-    "end": 38.63,
-    "text": "Here are the real 256 neuron values in layer 3, for the last word of our story. Most stay quiet. Only 18 percent fire above 0.1.",
+    "start": 42.9,
+    "end": 59.63,
+    "text": "Let's see it for real. Here are all 256 neuron values in layer 3. They're for the last word of our story, 'now Tom has the'. Most stay quiet, close to zero. Only 18 percent fire, with a value above 0.1.",
     "scene": "Bar chart of the 256 real post-GELU activations in layer 3 at the final ' the' of 'mia has a red ball … now tom has the'. Most are ≈0 (gray); 18% exceed 0.1 (yellow); the largest is neuron #212 at 2.17.",
     "objects": [
      {
@@ -4242,9 +4242,9 @@
     ]
    },
    {
-    "start": 38.63,
-    "end": 54.23,
-    "text": "Each neuron's input weights are a pattern it's looking for. Here's one we found by browsing: neuron 1 in layer 1. It fires on 'a' after 'has': right before the thing being owned. Here, a color.",
+    "start": 60.07,
+    "end": 78.9,
+    "text": "So what makes a neuron fire? Each neuron's input weights, the numbers that feed into it, are a pattern it's looking for. Here's one we found by browsing: neuron 1 in layer 1. It fires on 'a' after 'has', right before the thing being owned. Here, that's a color: red, and then blue.",
     "scene": "The 23 story tokens as chips; each chip glows yellow by how strongly layer 1 neuron #1 fires on it. It fires on both ' a' tokens (1.21, 1.64), right before ' red' and ' blue'; elsewhere it is near zero.",
     "objects": [
      {
@@ -4490,9 +4490,9 @@
     ]
    },
    {
-    "start": 54.23,
-    "end": 74.1,
-    "text": "In 400 fresh stories, 200 of its 200 strongest firings came right before a color word. And its output weights push, roughly, toward red, purple, black, green. In these stories, a 'color comes next' detector that nobody designed.",
+    "start": 78.9,
+    "end": 103.47,
+    "text": "Is that just luck? We checked 400 freshly generated stories. Of the 200 times it fired hardest, all 200 came right before a color word. And its output weights, the numbers it passes on, push roughly toward red, purple, black and green. That makes those words more likely. So in these stories, it works as a 'color comes next' detector that nobody designed.",
     "scene": "Left: real top contexts for layer 1 neuron #1 in 400 freshly generated stories, e.g. '…zoe has[ a] →  red'; '…nora has[ a] →  blue'; 200/200 of its strongest firings are followed by a color. Right: tokens its output weights push toward (projected through the unembedding, roughly): red, purple, black, green, white.",
     "objects": [
      {
@@ -4538,9 +4538,9 @@
     ]
    },
    {
-    "start": 74.1,
-    "end": 96.3,
-    "text": "The five neurons firing hardest in layer 3, on the final 'the': Number 212 pushes toward so, red and purple. Number 77, toward says and word fragments. Most of them look mixed, with unrelated tokens at the top. That's often called polysemantic.",
+    "start": 103.9,
+    "end": 129.27,
+    "text": "Now back to layer 3 and the final 'the'. Here are the five neurons firing hardest there, with the tokens each one pushes toward. Number 212 pushes toward 'so', red and purple. Number 77 pushes toward 'says', and bits of words. Most of them look mixed, with unrelated tokens at the top. That's often called polysemantic, meaning many meanings in one neuron.",
     "scene": "The five most active real layer-3 neurons at the final ' the', each with its activation bar and the 4 tokens its output weights push toward (roughly): #212 (2.17) → so, red, i, purple; #77 (1.88) → says, bl, lo, j; #228 (1.79) → white, fo, py, ing; #72 (1.64) → ed, oo, she, t; #203 (1.61) → g, p, l, k. Colors are highlighted pink; most of these look mixed, with unrelated tokens near the top (often called polysemantic).",
     "objects": [
      {
@@ -4646,9 +4646,9 @@
     ]
    },
    {
-    "start": 96.3,
-    "end": 109.57,
-    "text": "Attention in layer 2 already fetched red from earlier in the story. This MLP turns that into the prediction. Just before it, red had 1.9 percent. Right after it, 87.",
+    "start": 129.27,
+    "end": 150.6,
+    "text": "So how does the answer come together? Attention in layer 2 already fetched red from earlier in the story. This MLP, in the last layer, turns that into the prediction. Just before it, red had only 1.9 percent. Right after it, 87 percent. It goes from a long shot to quite sure.",
     "scene": "Two bars for P(' red') read out with the logit lens: 1.9% just before layer 3's MLP vs 87.1% right after it. Note: before the MLP the top guess was 'e' at 28.3%. Layer 2's attention fetched ' red' (head 4); layer 3's MLP turns it into the prediction.",
     "objects": [
      {
@@ -4684,9 +4684,9 @@
     ]
    },
    {
-    "start": 109.57,
-    "end": 132.53,
-    "text": "So where do facts live? One leading view: an MLP works like a key-value memory. Input weights are keys that recognize a situation. Output weights are values that write an answer. Researchers have changed facts a model states with one targeted edit to a single MLP layer. Strong evidence, but not the whole story.",
+    "start": 151.03,
+    "end": 179.53,
+    "text": "So where does a model store facts? One leading view says an MLP works like a key-value memory, a bit like a dictionary. Input weights are keys that recognize a situation, like 'has a'. Output weights are values that write an answer, like a push toward colors. That's just what our neuron did. Researchers have even changed facts a model states with one targeted edit to a single MLP layer. That's strong evidence, but not the whole story.",
     "scene": "Diagram: key (input weights: recognize a situation) → value (output weights: write an answer). Example from this model: '… has a' → push toward colors (layer 1 neuron #1). Footnote: one leading view (Geva et al. 2021; Meng et al. 2022), not the whole story.",
     "objects": [
      {
@@ -4732,9 +4732,9 @@
     ]
    },
    {
-    "start": 132.53,
-    "end": 145.9,
-    "text": "Attention moves information between tokens. The MLP transforms it, inside each token. Stack both three times, and the vector at 'the' reads as red. Go poke the neurons in the X-ray.",
+    "start": 179.97,
+    "end": 199.2,
+    "text": "So, to sum up. Attention moves information between tokens. The MLP looks at each token on its own and transforms it. Stack both three times, and by the end, the vector at 'the' reads as red. Go poke the neurons yourself in the X-ray lab.",
     "scene": "Recap cards: attention (blue) moves information between tokens (an arc from ' red' to ' the'); the MLP (teal) transforms each token on its own (the vector at ' the' → MLP → now reads as ' red'). CTA: poke the neurons in the X-ray.",
     "objects": [
      {
@@ -4775,44 +4775,44 @@
   "id": "residual-stream",
   "title": "The residual stream: a shared whiteboard",
   "subtitle": "Every block reads it and adds a note: real vector sizes, the logit lens, LayerNorm, and knockouts",
-  "duration": 146.47,
+  "duration": 216.57,
   "track": "inference",
   "order": 60,
   "src": "/videos/residual-stream.mp4",
   "poster": "/videos/residual-stream.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The whiteboard"
    },
    {
-    "t": 19.73,
+    "t": 33.77,
     "title": "Adding up"
    },
    {
-    "t": 47.27,
+    "t": 74.53,
     "title": "Logit lens"
    },
    {
-    "t": 79.07,
+    "t": 120.07,
     "title": "LayerNorm"
    },
    {
-    "t": 109.27,
+    "t": 160.6,
     "title": "Why it matters"
    },
    {
-    "t": 139.57,
+    "t": 206.6,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 12.33,
-    "text": "Every token carries one vector through the model: the residual stream. Think of it as a whiteboard. Blocks never wipe it. Each one reads it, then adds a note, which can even cancel what's there.",
+    "end": 20.67,
+    "text": "Every token carries one vector, a list of numbers, through the whole model. That vector is called the residual stream. Think of it as a whiteboard. The six blocks above it, an attention and an MLP for each layer, never wipe it. Each one reads it, then adds a note, which can even cancel what's there.",
     "scene": "A long horizontal arrow (the residual stream) runs from the token ' the' to the readout. Six blocks sit above it (attention 1, MLP 1, … MLP 3); each has a gray 'read' arrow up from the stream and a colored 'add' arrow back down with a + sign.",
     "objects": [
      {
@@ -4888,9 +4888,9 @@
     ]
    },
    {
-    "start": 12.33,
-    "end": 19.73,
-    "text": "In code it's one line per block. x equals x, plus something. Nothing is overwritten, only added.",
+    "start": 20.67,
+    "end": 33.33,
+    "text": "In code, it's one line per block: x equals x, plus something. Here x is the stream, and the something is that block's note. Nothing is overwritten, only added.",
     "scene": "The two lines of code that define the stream: x = x + attention(LayerNorm(x)); x = x + MLP(LayerNorm(x)), repeated for each of the 3 layers. A dot travels along the stream picking up each block's note.",
     "objects": [
      {
@@ -4976,9 +4976,9 @@
     ]
    },
    {
-    "start": 19.73,
-    "end": 31.73,
-    "text": "Here's the real stream for the last word of our story. It starts as token plus position. Block by block, notes pile up, and its length grows from 1.19 to 3.23.",
+    "start": 33.77,
+    "end": 52.3,
+    "text": "Here's the real stream for the last word of our story, 'now Tom has the'. It starts as the token's own numbers plus numbers for its position. Block by block, notes pile up. Its length, a measure of how big the vector is, grows from 1.19 to 3.23.",
     "scene": "Seven real 64-cell strips for the final ' the' (orange positive, blue negative): token + position, then after each block. Their lengths: token + position 1.19, + attention 1 1.73, + MLP 1 1.63, + attention 2 1.70, + MLP 2 1.92, + attention 3 2.00, + MLP 3 3.23.",
     "objects": [
      {
@@ -5054,9 +5054,9 @@
     ]
    },
    {
-    "start": 31.73,
-    "end": 47.27,
-    "text": "Notes add as arrows, not lengths: MLP 1's note even makes the board shorter. Most are around length one, but the last MLP writes a big one, 3.68, larger than the whole board before it.",
+    "start": 52.3,
+    "end": 74.1,
+    "text": "Next to each strip is the length of the note that block added. Notes add as arrows, not lengths. A note can point partly against the board, and MLP 1's note even makes the board shorter. Most notes are around length one, but the last MLP writes a big one, 3.68. That's larger than the whole board before it.",
     "scene": "Next to each strip, the size (length) of the note that block added: attention 1 1.25, MLP 1 1.19, attention 2 1.24, MLP 2 1.34, attention 3 1.00, MLP 3 3.68. MLP 3's note (3.68) is larger than the stream before it (2.00). Caption: notes add as arrows, not lengths.",
     "objects": [
      {
@@ -5202,9 +5202,9 @@
     ]
    },
    {
-    "start": 47.27,
-    "end": 59.33,
-    "text": "Because every block shares one board, you can read it at any depth with the model's own final readout. That's the logit lens: a rough peek, since early layers were never trained to be read this way.",
+    "start": 74.53,
+    "end": 93.1,
+    "text": "Because every block shares one board, you can read it at any point along the way. Just use the model's own final readout, the step that turns the board into next-token guesses. That's called the logit lens. It's only a rough peek, though, since early layers were never trained to be read this way.",
     "scene": "Four checkpoints on the stream (token + position, after layer 1, after layer 2, after layer 3) will each be decoded with the model's final LayerNorm + unembedding + softmax: the logit lens.",
     "objects": [
      {
@@ -5220,9 +5220,9 @@
     ]
    },
    {
-    "start": 59.33,
-    "end": 79.07,
-    "text": "Straight after embedding, it just says 'the', 100 percent: the readout reuses the embedding table, so it sees the token it's sitting on. After layer 1, still 'the', 33. After layer 2, 'white', 12. After layer 3, red, 87.",
+    "start": 93.1,
+    "end": 119.63,
+    "text": "At the very start, with just the token and its position, the lens says 'the', at 100 percent. That's because the readout reuses the table that turned tokens into numbers. So it simply sees the token it's sitting on. After layer 1, it still says 'the', at 33 percent. After layer 2, it says 'white', at 12 percent. After layer 3, it says red, at 87 percent.",
     "scene": "Logit-lens top-3 at each checkpoint for the final ' the': token + position: ' the' 100.0%, ' tom' 0.0%, ' mia' 0.0%; after layer 1: ' the' 32.6%, ' black' 9.2%, ' purple' 8.3%; after layer 2: ' white' 11.6%, 'day' 11.2%, ' ho' 8.8%; after layer 3: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%.",
     "objects": [
      {
@@ -5278,9 +5278,9 @@
     ]
    },
    {
-    "start": 79.07,
-    "end": 98.07,
-    "text": "One catch: the board's scale drifts. Averaged over the story, its length grows from 1.3 to 7.3. So before any block reads it, LayerNorm re-centres the vector and rescales it to a standard size. Only the copy a block reads gets normalized; the board itself stays a plain running sum.",
+    "start": 120.07,
+    "end": 145.47,
+    "text": "One catch: the board's scale drifts. Averaged over the whole story, its length grows from 1.3 to 7.3. So before any block reads it, a step called LayerNorm tidies it up. It re-centres the numbers so they average zero, and rescales the vector to a standard size. Only the copy a block reads gets normalized like this. The board itself stays a plain running sum of all the notes.",
     "scene": "Line chart of the real average stream length over the 23 story tokens at each stage: embed 1.34, attn1 1.62, mlp1 2.70, attn2 2.75, mlp2 4.65, attn3 4.52, mlp3 7.34. Right: the final stream vector before and after LayerNorm (subtract the mean, divide by the spread; then a learned scale and shift).",
     "objects": [
      {
@@ -5316,9 +5316,9 @@
     ]
    },
    {
-    "start": 98.07,
-    "end": 109.27,
-    "text": "The final readout needs one too. Skip it, and red drops from 87 percent to 6, but it's still the top guess: LayerNorm mostly sets the confidence.",
+    "start": 145.47,
+    "end": 160.17,
+    "text": "The final readout needs a LayerNorm too. Skip it, and red drops from 87 percent to 6. But it's still the top guess. So here, LayerNorm mostly sets how confident the model is, not which word it picks.",
     "scene": "P(' red') at the end: 87.1% with the final LayerNorm vs 5.7% if the raw stream is fed straight into the unembedding.",
     "objects": [
      {
@@ -5374,9 +5374,9 @@
     ]
    },
    {
-    "start": 109.27,
-    "end": 125.37,
-    "text": "For interpretability, every note is just a vector you can measure, read, or erase. Erase layer 3's MLP note, and red falls to 2 percent. Erase layer 2's attention, home of the color-copying head, and it falls to 4.",
+    "start": 160.6,
+    "end": 182.27,
+    "text": "Why does this matter? First, for interpretability, which means understanding what's going on inside a model. Every note is just a vector you can measure, read, or remove. Erase layer 3's MLP note, and red falls to 2 percent. Erase layer 2's attention, home of the head that copies the color, and it falls to 4 percent.",
     "scene": "Real knockouts: P(' red') with nothing removed vs with one block's output erased (zeroed at every position): nothing removed 87.1%, attention 1 0.1%, MLP 1 0.1%, attention 2 4.0%, MLP 2 32.9%, attention 3 57.4%, MLP 3 1.9%.",
     "objects": [
      {
@@ -5452,9 +5452,9 @@
     ]
    },
    {
-    "start": 125.37,
-    "end": 139.57,
-    "text": "For design: because blocks add instead of overwrite, gradients flow straight back through the plus signs, a big part of why deep networks can train at all. Many newer architectures keep the whiteboard and change what writes on it.",
+    "start": 182.27,
+    "end": 206.17,
+    "text": "Second, for design. Because blocks add instead of overwriting, gradients flow straight back through the plus signs. Gradients tell each number which way, and how much, to change during training. That's a big part of why deep networks, with many layers, can train at all. Many newer architectures, meaning model designs, keep the whiteboard and change what writes on it.",
     "scene": "Two design takeaways: 'add, don't overwrite' (gradients flow straight back through the additions, which lets very deep networks train) and 'keep the board, swap the writers' (e.g. mixture-of-experts MLPs, new kinds of token mixing).",
     "objects": [
      {
@@ -5490,9 +5490,9 @@
     ]
    },
    {
-    "start": 139.57,
-    "end": 145.87,
-    "text": "One shared board. Six notes. One readout. Go watch it fill up in the X-ray.",
+    "start": 206.6,
+    "end": 215.97,
+    "text": "So the residual stream is one shared board. Six blocks add notes, and one readout reads the result. Go watch it fill up in the X-ray lab.",
     "scene": "Recap: the stream arrow with the logit-lens guesses along it (' the' → ' the' → ' white' → ' red'). CTA: watch the board fill up in the X-ray.",
     "objects": [
      {
@@ -5523,52 +5523,52 @@
   "id": "next-token",
   "title": "Next token: logits, softmax & temperature",
   "subtitle": "How 256 raw scores become one word: softmax, temperature, top-k/top-p, greedy vs sampling",
-  "duration": 121.9,
+  "duration": 184.23,
   "track": "inference",
   "order": 70,
   "src": "/videos/next-token.mp4",
   "poster": "/videos/next-token.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "256 numbers"
    },
    {
-    "t": 7.37,
+    "t": 13.2,
     "title": "Logits"
    },
    {
-    "t": 19.23,
+    "t": 32.03,
     "title": "Softmax"
    },
    {
-    "t": 31.47,
+    "t": 50.2,
     "title": "Temperature"
    },
    {
-    "t": 55.03,
+    "t": 83.9,
     "title": "Top-k"
    },
    {
-    "t": 72.07,
+    "t": 108.97,
     "title": "The dice roll"
    },
    {
-    "t": 85.63,
+    "t": 130.27,
     "title": "When it's unsure"
    },
    {
-    "t": 108.87,
+    "t": 166.1,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 7.37,
-    "text": "The model never outputs a word. It outputs 256 numbers. Here's how those turn into one word.",
+    "end": 12.77,
+    "text": "How does a model pick its next word? It never outputs a word. Instead, it outputs 256 numbers. That's one score for every token, each small chunk of text it knows.",
     "scene": "A wall of 256 thin bars — the model's real raw scores for every token in the vocab after the prompt; the tallest (pink) is ' red'.",
     "objects": [
      {
@@ -5594,9 +5594,9 @@
     ]
    },
    {
-    "start": 7.37,
-    "end": 19.23,
-    "text": "These raw scores are called logits. For our prompt, red scores 10.4, white 7.7, purple 7.5. Two thirds of the vocab sits below zero.",
+    "start": 13.2,
+    "end": 31.6,
+    "text": "These raw scores are called logits, and higher means more likely. Our prompt ends with the words, now Tom has the. Red scores highest, at 10.4. White gets 7.7, and purple 7.5. Two thirds of all the tokens score below zero.",
     "scene": "Bar chart of the six highest logits: ' red' 10.37, ' white' 7.68, ' purple' 7.53, ' black' 4.62, ' ava' 3.98, ',' 3.72; the other 250 range from 3.61 down to −5.88.",
     "objects": [
      {
@@ -5672,9 +5672,9 @@
     ]
    },
    {
-    "start": 19.23,
-    "end": 31.47,
-    "text": "Softmax turns them into probabilities. Raise e to each logit, then divide by the total. Exponentials blow small gaps up into big ones, so red ends up with 87 percent.",
+    "start": 32.03,
+    "end": 49.77,
+    "text": "Softmax then turns these scores into probabilities that add up to one. Raise e to the power of each logit, then divide each by their total. Those powers blow small gaps up into big ones. So red ends up with 87 percent, which means the model is quite sure.",
     "scene": "The logit bars morph into probability bars: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, ' black' 0.28%, ' ava' 0.15%, ',' 0.11%, all 250 others together 1.42%. Formula: p = exp(logit) / sum of exp over all 256 logits.",
     "objects": [
      {
@@ -5750,9 +5750,9 @@
     ]
    },
    {
-    "start": 31.47,
-    "end": 37.7,
-    "text": "Temperature divides every logit before the softmax. At temperature one, nothing changes.",
+    "start": 50.2,
+    "end": 58.0,
+    "text": "Next comes a dial called temperature. It divides every logit before the softmax. Set to one, it changes nothing.",
     "scene": "A big 'T = 1.0' dial appears top right and the formula gains '/ T': p = exp(logit / T) / sum of exp(all 256 logits / T); the bars stay at their T = 1 values.",
     "objects": [
      {
@@ -5848,9 +5848,9 @@
     ]
    },
    {
-    "start": 37.7,
-    "end": 46.83,
-    "text": "Turn it down to 0.3, and the gaps get stretched. Red jumps to 99.98 percent. Basically deterministic.",
+    "start": 58.0,
+    "end": 70.7,
+    "text": "Turn it down to 0.3, and the gaps get stretched. Red jumps to 99.98 percent, while the rest nearly vanish. So the pick is basically fixed: almost always red.",
     "scene": "T slides to 0.3: ' red' grows to 99.98%, every other bar collapses to ~0.",
     "objects": [
      {
@@ -5946,9 +5946,9 @@
     ]
    },
    {
-    "start": 46.83,
-    "end": 55.03,
-    "text": "Crank it to 2, and everything flattens. Red drops to 32 percent, and almost half the probability leaks into the long tail of junk.",
+    "start": 70.7,
+    "end": 83.47,
+    "text": "Now turn it up to 2, and everything flattens out. Red drops to 32 percent. And almost half the probability leaks into the long tail of junk, all those unlikely tokens that don't fit here.",
     "scene": "T slides to 2.0: ' red' falls to 32.4%, ' white' 8.4%, ' purple' 7.8%, and the 250 others together reach 47.1%.",
     "objects": [
      {
@@ -6044,9 +6044,9 @@
     ]
    },
    {
-    "start": 55.03,
-    "end": 72.07,
-    "text": "Top k is the safety net. Keep only the k best tokens, zero out the rest, and renormalize. With k equals 3, the junk is gone, and red is back to 67 percent. Its cousin, top p, keeps the fewest tokens whose probabilities add up to p.",
+    "start": 83.9,
+    "end": 108.53,
+    "text": "Top k is the safety net against that junk. Keep only the k best tokens, zero out the rest, and renormalize. That means scaling the survivors back up so they add up to one again. With k equals 3, the junk is gone. Red is back to 67 percent. Its cousin is top p. It keeps the fewest top tokens whose probabilities add up to p, a share you choose.",
     "scene": "At T = 2 with top-k = 3: only ' red', ' white', ' purple' survive and renormalize to 66.6%, 17.3%, 16.1%; everything else drops to 0. Note: top-p keeps the fewest tokens whose probabilities add up to p.",
     "objects": [
      {
@@ -6162,9 +6162,9 @@
     ]
    },
    {
-    "start": 72.07,
-    "end": 85.63,
-    "text": "Then we roll a weighted die. Lay the probabilities end to end, throw a dart, and take whatever it lands on. Here are 20 rolls at temperature one. 18 came up red, plus one white and one purple.",
+    "start": 108.97,
+    "end": 129.83,
+    "text": "Then we pick a token by rolling a weighted die. Lay the probabilities end to end, like a strip. Red takes up most of it. Throw a dart, and take whatever token it lands on. Here are 20 rolls at temperature one. 18 came up red, plus one white and one purple. So unlikely tokens still win sometimes.",
     "scene": "The T = 1 probabilities laid end to end as a strip (' red' 87% takes most of it, then ' white', ' purple', and a sliver for everything else). 20 random darts (fixed seed, not picked) land on it; the picked tokens appear below: 18 came up red, plus one white and one purple.",
     "objects": [
      {
@@ -6380,9 +6380,9 @@
     ]
    },
    {
-    "start": 85.63,
-    "end": 108.87,
-    "text": "Sampling matters most when the model is torn. Zoe has a yellow shoe. What color is the shoe? Yellow, 47 percent. Pink, 46. A coin flip. Greedy says yellow, just barely. Sample at temperature one, and it names the wrong color more often than not. Even at 0.3, yellow only gets 52 percent. The model just doesn't know.",
+    "start": 130.27,
+    "end": 165.67,
+    "text": "This random pick, called sampling, matters most when the model is torn. Here's a test. The prompt tells it the color of Zoe's shoe. Then it asks: what color is the shoe? Yellow, the right answer, gets 47 percent. Pink gets 46. That's a coin flip. Greedy, which always takes the top token, says yellow, but only just. Sample at temperature one, and it names the wrong color more often than not. Even at 0.3, yellow only gets 52 percent. The model just doesn't know.",
     "scene": "A real near coin flip: for 'zoe has a yellow shoe. q: what color is the shoe? a: the shoe is' the model gives ' yellow' 47.1%, ' pink' 45.9%, ' black' 3.1%, ' purple' 1.1%. Greedy decoding picks yellow (correct, barely); sampling at T = 1 picks a wrong color 52.9% of the time; at T = 0.3 yellow only reaches 52.3%. Flash: 'coin flip'.",
     "objects": [
      {
@@ -6458,9 +6458,9 @@
     ]
    },
    {
-    "start": 108.87,
-    "end": 121.4,
-    "text": "Greedy takes the top token every time. Temperature sharpens or flattens the odds. Top k and top p cut off the junk. Then you roll. Go turn the dial yourself in the X-ray.",
+    "start": 166.1,
+    "end": 183.73,
+    "text": "Let's sum up how one word gets picked. Greedy takes the top token every time. Temperature sharpens or flattens the odds. Top k and top p cut off the junk in the long tail. Then you roll the weighted die. Go turn the dial yourself in the X-ray.",
     "scene": "Recap list: greedy (always take the top token), temperature (sharpen or flatten the odds), top-k · top-p (cut off the long tail of junk), sample (roll the weighted dice). Final card: 'go turn the dial yourself in the X-ray'.",
     "objects": [
      {
@@ -6521,48 +6521,48 @@
   "id": "training",
   "title": "How it learned",
   "subtitle": "Training in under 2 minutes: loss, gradient descent, and real samples from step 0 to step 3000",
-  "duration": 142.07,
+  "duration": 212.73,
   "track": "training",
   "order": 10,
   "src": "/videos/training.mp4",
   "poster": "/videos/training.jpg",
   "relates": "training",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Gibberish to stories"
    },
    {
-    "t": 7.23,
+    "t": 15.1,
     "title": "Random start"
    },
    {
-    "t": 22.57,
+    "t": 37.33,
     "title": "The loss"
    },
    {
-    "t": 45.77,
+    "t": 72.97,
     "title": "Gradient descent"
    },
    {
-    "t": 78.2,
+    "t": 124.6,
     "title": "The loss curve"
    },
    {
-    "t": 105.7,
+    "t": 164.33,
     "title": "What it wrote"
    },
    {
-    "t": 133.73,
+    "t": 201.3,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 7.23,
-    "text": "At step zero, this model wrote this. 80 seconds of training later, it wrote this. What happened in between?",
+    "end": 14.67,
+    "text": "This video is about how a model learns. At step zero, before any training, it wrote this gibberish. 80 seconds of training later, it wrote this short story. What happened in between?",
     "scene": "Two real samples from the prompt 'mia has a red ball. tom': at step 0 the continuation is gibberish ('sh hill w timog say litam…'); at step 3000 it is a coherent story ending 'now tom has the red ball.'",
     "objects": [
      {
@@ -6588,9 +6588,9 @@
     ]
    },
    {
-    "start": 7.23,
-    "end": 22.57,
-    "text": "Most weights start as tiny random noise. So at first, it spreads its bets almost evenly over all 256 tokens. Its loss is 5.56, almost exactly what pure guessing scores.",
+    "start": 15.1,
+    "end": 36.9,
+    "text": "Weights are the numbers a model learns. Most start as tiny random noise. So at first, the model spreads its bets almost evenly over all 256 tokens, the chunks of text it can pick. Its loss, a score for how wrong its guesses are, is 5.56. That's almost exactly what pure guessing scores.",
     "scene": "256 near-equal bars (each ≈ 0.39%): the untrained model's flat guess. Below: real loss at step 0 = 5.56 vs ln 256 = 5.55 for uniform guessing.",
     "objects": [
      {
@@ -6616,9 +6616,9 @@
     ]
    },
    {
-    "start": 22.57,
-    "end": 32.4,
-    "text": "Training is one game. At every position, predict the next token. The score is cross-entropy, minus the log of the probability you gave the right answer.",
+    "start": 37.33,
+    "end": 53.3,
+    "text": "Training is one simple game. At every position in the text, predict the next token. Each token on top points to the one that comes after it. The score is called cross-entropy: minus the log of the probability you gave the right answer. Lower is better.",
     "scene": "Tokens of 'mia has a red ball.' on top, each with an arrow down to the token that follows it (the target). Formula: cross-entropy loss = −log(p[correct next token]).",
     "objects": [
      {
@@ -6684,9 +6684,9 @@
     ]
    },
    {
-    "start": 32.4,
-    "end": 45.77,
-    "text": "Give the right token 87 percent, and the loss is 0.14. Give it one in 256, and it's 5.55. Confidently wrong is the most expensive of all.",
+    "start": 53.3,
+    "end": 72.53,
+    "text": "Give the right token 87 percent, and the loss is only 0.14. Give it one in 256, which is a blind guess, and the loss is 5.55. Being confidently wrong, giving the right answer almost no chance, costs the most of all.",
     "scene": "Plot of loss = −log p: p = 0.87 → 0.14 (pink), p = 1/256 → 5.55 (blue), p = 0.001 → 6.91 (orange, 'confidently wrong').",
     "objects": [
      {
@@ -6732,9 +6732,9 @@
     ]
    },
    {
-    "start": 45.77,
-    "end": 64.1,
-    "text": "Backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss. Gradient descent takes a small step that way, and repeats. Like a ball rolling downhill. The real optimizer, AdamW, is a smarter version of that step.",
+    "start": 72.97,
+    "end": 103.3,
+    "text": "So how does the model get better? First, backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss, and by how much. That is the gradient. Then gradient descent takes a small step that way, and repeats. It's like a ball rolling downhill. The real optimizer, the rule TinyGPT actually uses, is AdamW. It's a smarter version of that step.",
     "scene": "A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step shown with a slope arrow, settling near a low point. Note: the real optimizer is AdamW, learning rate 0.003.",
     "objects": [
      {
@@ -6770,9 +6770,9 @@
     ]
    },
    {
-    "start": 64.1,
-    "end": 78.2,
-    "text": "Each step grades 64 random snippets of 64 tokens at once. That's 4,096 predictions per step, for 3000 steps. That's about 7.7 passes over the training text.",
+    "start": 103.3,
+    "end": 124.17,
+    "text": "Each step grades 64 random snippets of 64 tokens at once. Each tiny square is one prediction. That's 4,096 predictions per step, for 3000 steps in all. That's about 7.7 passes over the training text. One pass means reading all of it once.",
     "scene": "A 64×64 grid of tiny squares = 4,096 next-token predictions per training step; × 3,000 steps ≈ 12.3 million graded guesses ≈ 7.7 passes over the 1,602,516-token training split.",
     "objects": [
      {
@@ -6808,9 +6808,9 @@
     ]
    },
    {
-    "start": 78.2,
-    "end": 105.7,
-    "text": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is held-out text it doesn't train on. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45, so it learned patterns, not pages.",
+    "start": 124.6,
+    "end": 163.9,
+    "text": "Here's the real loss curve, on a log scale, which makes small late gains easier to see. It starts at 5.56, right at chance, which means pure guessing. It crashes below 1 by step 150. Then it keeps grinding down to about 0.46. The dashed line is the loss on held-out text, which the model never trains on. Our tiny world reuses sentence templates, so that text isn't all new. But freshly generated stories score 0.45. So the model learned patterns, not pages. It didn't just memorize the text.",
     "scene": "The real training curve from training.json (121 points every 25 steps), log-scale loss axis: train loss (yellow) and held-out loss (dashed teal; 54.7% of held-out lines also occur verbatim in training, since the tiny world reuses templates) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and keep falling to 0.46 (held-out 0.46) at step 3000. Note: freshly generated stories (new seed) score 0.45.",
     "objects": [
      {
@@ -6886,9 +6886,9 @@
     ]
    },
    {
-    "start": 105.7,
-    "end": 122.73,
-    "text": "And here's what it wrote along the way, one sample each from the same prompt. Step zero is word salad, though it's made of real words, because many tokens are whole words. Step 100, broken grammar. Step 300, actual sentences.",
+    "start": 164.33,
+    "end": 187.13,
+    "text": "And here's what the model wrote along the way, one sample at each stage, all from the same prompt. At step zero, it's word salad, a jumble of words that means nothing. It's made of real words, though, because many tokens are whole words. By step 100, the grammar is still broken. By step 300, it writes actual sentences.",
     "scene": "One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 (loss 0.69) well-formed sentences.",
     "objects": [
      {
@@ -6914,9 +6914,9 @@
     ]
    },
    {
-    "start": 122.73,
-    "end": 133.73,
-    "text": "At step 1000, it still handed Tom the yellow ball. Wrong. By step 3000, it's the red ball. Correct, and nobody told it why.",
+    "start": 187.13,
+    "end": 200.87,
+    "text": "At step 1000, the model still handed Tom the yellow ball. That's wrong, because Mia gave him the red one. By step 3000, it's the red ball. That's correct, and nobody ever told the model why.",
     "scene": "Step 1000 sample ends 'now tom has the yellow ball' (highlighted pink — wrong, mia gave him the red ball); step 3000 sample ends 'now tom has the red ball' (highlighted teal — correct).",
     "objects": [
      {
@@ -6952,9 +6952,9 @@
     ]
    },
    {
-    "start": 133.73,
-    "end": 141.47,
-    "text": "Nobody wrote a single rule. Predict, measure the miss, nudge, repeat. Next up, train your own.",
+    "start": 201.3,
+    "end": 212.13,
+    "text": "Nobody wrote a single rule. It all came from one loop: predict, measure the miss, nudge the weights, repeat. Next up, train your own model.",
     "scene": "The training loop as pills: predict → measure the miss → nudge the weights → repeat, with an arrow looping back. Final card: 'next: train your own'.",
     "objects": [
      {
@@ -7015,52 +7015,52 @@
   "id": "loss",
   "title": "Loss: the one number training cares about",
   "subtitle": "Next-token prediction, cross-entropy with real probabilities, perplexity, and why averaging works",
-  "duration": 149.23,
+  "duration": 219.33,
   "track": "training",
   "order": 20,
   "src": "/videos/loss.mp4",
   "poster": "/videos/loss.jpg",
   "relates": "training",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The training signal"
    },
    {
-    "t": 8.3,
+    "t": 15.03,
     "title": "Cross-entropy"
    },
    {
-    "t": 21.8,
+    "t": 35.3,
     "title": "Every guess, scored"
    },
    {
-    "t": 52.17,
+    "t": 81.47,
     "title": "Pure guessing"
    },
    {
-    "t": 66.4,
+    "t": 100.4,
     "title": "Perplexity"
    },
    {
-    "t": 82.67,
+    "t": 125.4,
     "title": "The real curve"
    },
    {
-    "t": 110.03,
+    "t": 163.43,
     "title": "Why averaging works"
    },
    {
-    "t": 142.03,
+    "t": 210.13,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 8.3,
-    "text": "How do you learn from raw text with no labels? Hide the next token and make the model guess. Every position becomes a free quiz question.",
+    "end": 14.6,
+    "text": "How can a model learn from raw text, with no answer key? Hide the next token, a small chunk of text, and make the model guess it. Every position becomes a free quiz question. This video is about how those guesses are graded.",
     "scene": "Tokens of 'mia has a red ball.' on top; under each, the next token is hidden behind a '?' card, then revealed. Caption: our 26-token story = 25 free quiz questions.",
     "objects": [
      {
@@ -7126,9 +7126,9 @@
     ]
    },
    {
-    "start": 8.3,
-    "end": 21.8,
-    "text": "Each guess is scored with cross-entropy: minus the natural log of the probability it gave the right token. Sure and right is nearly free. Unsure costs more. Badly wrong costs a lot.",
+    "start": 15.03,
+    "end": 34.87,
+    "text": "Each guess gets a score called cross-entropy, and that score is the loss for that guess. It's minus the natural log of the probability the model gave the right token. Here's that curve. If it's sure and right, it costs almost nothing. If it's unsure, it costs more. And if it's badly wrong, it costs a lot.",
     "scene": "Formula: loss = −ln(p[right token]) (natural log); its curve; four real guesses from the story placed on it: ' now' → ' tom' p = 99.70%, loss 0.003; ' the' → ' red' p = 87.07%, loss 0.138; ' a' → ' red' p = 12.43%, loss 2.085; '.' → ' tom' p = 4.52%, loss 3.096.",
     "objects": [
      {
@@ -7234,9 +7234,9 @@
     ]
    },
    {
-    "start": 21.8,
-    "end": 32.37,
-    "text": "Every guess on our story: 16 of the 25 are nearly free. The spikes are the real coin flips: which color Mia has, which toy, who comes next.",
+    "start": 35.3,
+    "end": 51.4,
+    "text": "Here's the loss for every guess on our story, one bar each. 16 of the 25 are nearly free. The spikes are the real coin flips, where several answers make sense. Which color does Mia have? Which toy? Who comes next?",
     "scene": "Bar chart of the real loss for each of the 25 next-token predictions in the story (labels = the token being predicted). 16 cost under 0.05; the spikes (pink) are ' red' (2.08), ' ball' (2.68), ' tom' (3.10), ' blue' (2.11), ' kite' (2.37).",
     "objects": [
      {
@@ -7492,9 +7492,9 @@
     ]
    },
    {
-    "start": 32.37,
-    "end": 52.17,
-    "text": "The first red is a pure guess. Only 8 colors can follow 'a', since orange takes 'an', so the best possible is 12.5 percent. The model gives 12.4: essentially perfect. The last red follows from the story: 87 percent. Averaged, the story's loss is 0.52.",
+    "start": 51.4,
+    "end": 81.03,
+    "text": "Look at two of those guesses. The first red is a pure guess: nothing earlier tells you Mia's color. Only 8 colors can follow the word a, since you'd say an orange, not a orange. So the best anyone could do is 12.5 percent. The model gives 12.4, which is essentially perfect. The last red can be worked out from the story, so the model gives it 87 percent. Averaged over every guess, the story's loss is 0.52.",
     "scene": "Two callouts: 'mia has a' → 'red' p = 12.43% (loss 2.085); 8 colors can follow 'a' (orange takes 'an'), so the best possible is 1/8 = 12.5% (loss 2.079): the model is essentially optimal. 'now tom has the' → 'red' p = 87.1% (loss 0.14). Average over all 25 predictions = 0.520.",
     "objects": [
      {
@@ -7780,9 +7780,9 @@
     ]
    },
    {
-    "start": 52.17,
-    "end": 66.4,
-    "text": "Now rewind. With random weights, the model spreads its bets evenly over 256 tokens: a loss of 5.55 per guess. The real step-zero loss: 5.56.",
+    "start": 81.47,
+    "end": 99.97,
+    "text": "Now rewind to the start. With random weights, the numbers a model learns, it spreads its bets evenly over all 256 tokens. Then every guess has a loss of 5.55. The real step-zero loss is 5.56. That's almost exactly the same.",
     "scene": "256 equal bars (illustration of a uniform guess, 0.39% each). Every guess costs ln 256 = 5.545; the real step-0 training loss from training.json is 5.5593.",
     "objects": [
      {
@@ -7818,9 +7818,9 @@
     ]
    },
    {
-    "start": 66.4,
-    "end": 82.67,
-    "text": "Take e to the loss, and you get perplexity: roughly how many tokens it's choosing between. At step zero, about 260. After training, 1.6 on average: near one for most tokens, more for a fresh color or name.",
+    "start": 100.4,
+    "end": 124.97,
+    "text": "There's another way to read the loss. Raise e to the power of the loss, and you get perplexity. That's roughly how many tokens the model is choosing between. At step zero, it's about 260, roughly every token it knows. After training, it's 1.6 on average. That's near one for most tokens, where it's almost sure, and more for a fresh color or name.",
     "scene": "Perplexity = e^loss ≈ the effective number of choices. Step 0: e^5.56 ≈ 260 squares (≈ the 256-token vocabulary). Step 3000: e^0.46 ≈ 1.58: one full square plus a partial one; an average: ~1 for most tokens, several for a fresh color or name.",
     "objects": [
      {
@@ -7856,9 +7856,9 @@
     ]
    },
    {
-    "start": 82.67,
-    "end": 110.03,
-    "text": "Here's the real run: 5.56 at the start, below one by step 150, then 0.46. Held-out text scores 0.46 too. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45: it learned patterns, not pages. Some of what's left is coin flips no model can beat.",
+    "start": 125.4,
+    "end": 163.0,
+    "text": "Here's our real training run. It begins at 5.56, drops below one by step 150, and then ends at 0.46. Held-out text, which the model never trains on, scores 0.46 too. But our tiny world reuses sentence templates, so that text isn't all new. Freshly generated stories, though, score 0.45. So it learned patterns, not pages: it didn't just memorize. And some of the loss that's left comes from coin flips, like a random color or name, that no model can beat.",
     "scene": "The real training-loss curve from training.json (121 points): 5.56 at step 0 on the pure-guessing line (ln 256 = 5.55), 0.99 at step 150, 0.46 at step 3000; held-out loss (dashed teal; shares sentence templates with training) ends at 0.46; freshly generated stories (new seed) score 0.45. Part of the remaining loss is irreducible (random colors, names).",
     "objects": [
      {
@@ -7934,9 +7934,9 @@
     ]
    },
    {
-    "start": 110.03,
-    "end": 128.9,
-    "text": "Each step averages 4,096 guesses: 64 snippets of 64 tokens. Single tokens are wildly uneven: 73 percent are nearly free, while the hard 18 percent carry 92 percent of the loss. Yet the batch average barely moves.",
+    "start": 163.43,
+    "end": 186.77,
+    "text": "Each training step averages a batch of 4,096 guesses: 64 snippets of 64 tokens. In this grid, brighter means a higher loss. Single tokens are wildly uneven. 73 percent are nearly free, while the hardest 18 percent carry 92 percent of the loss. Yet the batch average barely moves from one batch to the next.",
     "scene": "Heatmap of real per-token losses for one 64×64 batch of fresh tiny-world text (brighter = higher loss). Stats over 82,944 fresh predictions: 73.2% cost < 0.1; 18.0% cost > 1 and carry 92.2% of the total. Six random batch averages: 0.476, 0.452, 0.426, 0.459, 0.458, 0.437.",
     "objects": [
      {
@@ -7982,9 +7982,9 @@
     ]
    },
    {
-    "start": 128.9,
-    "end": 133.87,
-    "text": "Why does that work? The gradient of an average is the average of the gradients.",
+    "start": 186.77,
+    "end": 194.63,
+    "text": "Why does averaging work? A gradient says which way to nudge a weight. And the gradient of an average is the average of the gradients.",
     "scene": "Caption: gradient of the average = average of the gradients.",
     "objects": [
      {
@@ -8040,9 +8040,9 @@
     ]
    },
    {
-    "start": 133.87,
-    "end": 142.03,
-    "text": "So every token casts a small vote on how to nudge each weight. The votes disagree, but their average points somewhere steady.",
+    "start": 194.63,
+    "end": 209.7,
+    "text": "So every token casts a small vote on how to nudge each weight. In this toy picture, each gray arrow is one vote. Those votes often disagree, but their average, this thick yellow arrow, points somewhere steady.",
     "scene": "Toy picture (illustration): twelve thin gray arrows (per-token gradient directions) scattered around one thick yellow arrow (their average). Caption: every token casts a small vote on each nudge.",
     "objects": [
      {
@@ -8088,9 +8088,9 @@
     ]
    },
    {
-    "start": 142.03,
-    "end": 148.63,
-    "text": "Predict, score, average, nudge. Now watch the loss fall in the training lab.",
+    "start": 210.13,
+    "end": 218.73,
+    "text": "Predict the next token, score the guess, average the scores, and nudge the weights. Now watch the loss fall in the training lab.",
     "scene": "Recap loop: predict the next token → score: −ln p → average everything → nudge, looping back. CTA: watch the loss fall in the Training lab.",
     "objects": [
      {
@@ -8151,44 +8151,44 @@
   "id": "backprop",
   "title": "Backprop: blame flows backwards",
   "subtitle": "The chain rule on a toy graph, then TinyGPT's real gradients for one prediction",
-  "duration": 144.23,
+  "duration": 221.73,
   "track": "training",
   "order": 30,
   "src": "/videos/backprop.mp4",
   "poster": "/videos/backprop.jpg",
   "relates": "backprop",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Who's to blame?"
    },
    {
-    "t": 13.77,
+    "t": 22.03,
     "title": "The chain rule"
    },
    {
-    "t": 49.37,
+    "t": 79.6,
     "title": "Real gradients"
    },
    {
-    "t": 77.93,
+    "t": 121.63,
     "title": "One step"
    },
    {
-    "t": 122.97,
+    "t": 186.47,
     "title": "The cost"
    },
    {
-    "t": 136.03,
+    "t": 207.0,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 13.27,
-    "text": "TinyGPT guessed red at 87 percent. Which of its 170,560 weights deserve the blame, and how much? Backprop answers for all of them, in one sweep backwards.",
+    "end": 21.6,
+    "text": "TinyGPT guessed red at 87 percent. That still leaves some loss, our score for how wrong it was. Which of its 170,560 weights, the numbers it learns, deserve the blame? And how much? Backpropagation, or backprop, answers that for all of them, in one sweep backwards.",
     "scene": "The end of the probe prompt '… tom has the' → ' red' at 87.1%, loss 0.138; below, a grid of dots standing for the model's 170,560 weights with the question 'which ones are to blame?'.",
     "objects": [
      {
@@ -8224,9 +8224,9 @@
     ]
    },
    {
-    "start": 13.77,
-    "end": 24.57,
-    "text": "A toy version first. Forward: two times three is six, plus one is seven. That misses the target five by two. Squared, the loss is four.",
+    "start": 22.03,
+    "end": 39.43,
+    "text": "Let's start with a toy version. Here, x is two, and w, the weight, is three. Going forward, two times three is six, plus one is seven. That misses the target, five, by two. Squared, the loss is four.",
     "scene": "Toy computational graph (labelled toy): x = 2 and w = 3 feed a × node giving a = 6; a and b = 1 feed a + node giving z = 7; (z − t)² with target t = 5 gives loss L = 4. Forward values in teal.",
     "objects": [
      {
@@ -8322,9 +8322,9 @@
     ]
    },
    {
-    "start": 24.57,
-    "end": 39.2,
-    "text": "Now backwards. The slope at z is twice the miss: four. A plus node passes blame straight through: a and b get four. A times node scales it by the other input: w gets eight, x gets twelve.",
+    "start": 39.43,
+    "end": 62.0,
+    "text": "Now we go backwards, passing blame from the loss back to the inputs. The slope at z is how fast the loss changes when z moves. Here it's twice the miss: four. A plus node passes blame straight through. So a and b each get four. A times node scales the blame by the other input. So w gets eight, and x gets twelve.",
     "scene": "Backward pass on the toy graph, arrows reversed, gradients in orange flowing right-to-left: ∂L/∂z = 2(z − 5) = 4; the + node copies it: ∂L/∂a = 4, ∂L/∂b = 4; the × node multiplies by the other input: ∂L/∂w = 4 × 2 = 8, ∂L/∂x = 4 × 3 = 12.",
     "objects": [
      {
@@ -8470,9 +8470,9 @@
     ]
    },
    {
-    "start": 39.2,
-    "end": 48.87,
-    "text": "Brute-force check: nudge w by a hair, and the loss moves eight times as much. Each node just multiplies the blame from above by its own local slope.",
+    "start": 62.0,
+    "end": 79.17,
+    "text": "Let's check that the brute-force way. Nudge w by a hair, a tiny amount, and the loss moves eight times as much. That's just what we predicted. So the rule is simple. Each node just multiplies the blame from above by its own local slope, and passes it on.",
     "scene": "Finite-difference check of the toy gradient: (L(w+ε) − L(w−ε))/2ε with ε = 0.0001 gives 8.0000, matching ∂L/∂w = 8. Rule shown on top: blame in = blame from above × local slope.",
     "objects": [
      {
@@ -8628,9 +8628,9 @@
     ]
    },
    {
-    "start": 49.37,
-    "end": 63.23,
-    "text": "Now the real thing. Each output logit's blame is its probability, minus one for the right answer. Red: minus 0.13, push up. White and purple: plus, push down.",
+    "start": 79.6,
+    "end": 102.37,
+    "text": "Now the real thing. The model gives each token, each possible next piece of text, a final score called a logit. Each logit's blame is its probability, minus one if it's the right answer. Red: minus 0.13, so push its score up. White and purple: plus, so push theirs down.",
     "scene": "Real gradient of the loss w.r.t. TinyGPT's output logits on the probe prompt (target ' red'): ∂loss/∂logit = p − onehot. ' red' -0.129 (teal, push up), ' white' +0.059, ' purple' +0.051, ' black' +0.0028, ' ava' +0.0015 (orange, push down); the other 251 are each between 0 and +0.0011.",
     "objects": [
      {
@@ -8706,9 +8706,9 @@
     ]
    },
    {
-    "start": 63.23,
-    "end": 77.43,
-    "text": "That blame flows down through all three layers. Where paths merge, like the residual stream, blames add up. From this one prediction, 167,744 weights get some blame.",
+    "start": 102.37,
+    "end": 121.2,
+    "text": "That blame flows down through all three layers, from the output back to the input. Where paths merge, like the residual stream, blames add up. That stream is the running total that every layer adds to. From this one prediction, 167,744 weights get some blame, nearly all of them.",
     "scene": "Real gradient norms per part of TinyGPT for this one prediction, top (output) to bottom (input): final LayerNorm 0.10, layer 3 MLP 0.84, layer 3 attention 1.06, layer 2 MLP 1.93, layer 2 attention 2.82, layer 1 MLP 3.34, layer 1 attention 5.09, position embedding 2.14, token embedding (tied) 2.84. 167,744 of 170,560 weights have a nonzero gradient; the 192 attention key biases and 2,624 unused position weights get exactly zero.",
     "objects": [
      {
@@ -8824,9 +8824,9 @@
     ]
    },
    {
-    "start": 77.93,
-    "end": 92.97,
-    "text": "One real weight: gradient minus 0.07. Negative means: increase me, and the loss drops. A plain step at learning rate 0.003 adds 0.0002.",
+    "start": 121.63,
+    "end": 142.57,
+    "text": "Look at one real weight. Its gradient, its share of the blame, is minus 0.07. Negative means: increase me, and the loss drops. A plain step at learning rate 0.003, which sets the step size, adds 0.0002.",
     "scene": "Heat map of the real gradient of layer 3's MLP output matrix (64×256). Highlighted: row 57, column 212, weight 0.0974, gradient -0.0702 (finite-difference check -0.0702). Gradient step at lr 0.003: −lr × grad = +0.00021, new weight 0.0976. Labelled as a toy: plain gradient descent on one prediction.",
     "objects": [
      {
@@ -8872,9 +8872,9 @@
     ]
    },
    {
-    "start": 92.97,
-    "end": 108.97,
-    "text": "Take that step on every weight at once, and it overshoots: red falls to 51 percent. TinyGPT's training clips gradients longer than one, and this one is 7.95. Clipped, red rises to 87.5.",
+    "start": 142.57,
+    "end": 166.1,
+    "text": "But take that step on every weight at once, and it overshoots: red falls to 51 percent. So TinyGPT's training clips the gradient whenever its overall length is more than one, scaling it down to length one. This gradient's length is 7.95, far too long. Clipped, red rises to 87.5, a small gain in the right direction.",
     "scene": "Two real outcomes of one gradient step at lr 0.003 on all 170,560 weights: raw gradient (length 7.95) → p(red) 87.1% → 50.6% (overshoot); gradient clipped to length 1 (train.py clips whenever the length exceeds 1) → 87.1% → 87.5%.",
     "objects": [
      {
@@ -8900,9 +8900,9 @@
     ]
    },
    {
-    "start": 108.97,
-    "end": 122.47,
-    "text": "And real training averages blame over 4,096 predictions per batch, uses 0.003 only as a cosine schedule's peak, and lets AdamW set each weight's step.",
+    "start": 166.1,
+    "end": 186.03,
+    "text": "Real training is different. It averages blame over each batch, a group of 4,096 predictions. It uses 0.003 only as the peak of a cosine schedule, which ramps the rate up, then down. And it lets AdamW, a smarter update rule, set each weight's step.",
     "scene": "Real training differs from the toy step: averages over 4,096 predictions per batch, clips the gradient only when its length exceeds 1, uses lr 0.003 as the peak of a warmup + cosine schedule, and AdamW adapts each weight's step size.",
     "objects": [
      {
@@ -8948,9 +8948,9 @@
     ]
    },
    {
-    "start": 122.97,
-    "end": 135.53,
-    "text": "Why does backward cost about twice forward? Each forward matrix multiply needs two going back: blame for its inputs, and for its weights. So a training step is roughly three forward passes.",
+    "start": 186.47,
+    "end": 206.57,
+    "text": "Why does the backward pass cost about twice the forward pass? The model's main work is matrix multiplies, which combine big grids of numbers. Each forward matrix multiply needs two going back. It must work out blame for its inputs, and for its weights. So a training step costs roughly three forward passes.",
     "scene": "Matrix diagram: forward Y = X·W (one multiply); backward dX = dY·Wᵀ (blame for inputs) and dW = Xᵀ·dY (blame for weights): two multiplies. Tally: forward ≈ 1, backward ≈ 2, training step ≈ 3 units (approximate). Note: activations must be stored for the backward pass.",
     "objects": [
      {
@@ -9006,9 +9006,9 @@
     ]
    },
    {
-    "start": 136.03,
-    "end": 143.63,
-    "text": "Forward, backward, nudge. In PyTorch, loss dot backward does the middle step for you. Go watch the gradients flow.",
+    "start": 207.0,
+    "end": 221.13,
+    "text": "Go forward to get the loss. Go backward to share the blame. Then nudge every weight. In PyTorch, a coding library, loss dot backward does the middle step for you. Go watch the gradients flow.",
     "scene": "Recap loop: forward (get the loss) → backward (share the blame) → nudge every weight, looping back, × 3,000 steps. Final card: 'watch the gradients in the Backprop lab'.",
     "objects": [
      {
@@ -9069,52 +9069,52 @@
   "id": "optimizers",
   "title": "Optimizers: learning rate, momentum & Adam",
   "subtitle": "Why the learning rate is the knob that matters most, and why AdamW is the default (real sweeps)",
-  "duration": 137.37,
+  "duration": 212.77,
   "track": "training",
   "order": 40,
   "src": "/videos/optimizers.mp4",
   "poster": "/videos/optimizers.jpg",
   "relates": "train",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "One knob"
    },
    {
-    "t": 8.97,
+    "t": 13.77,
     "title": "Downhill"
    },
    {
-    "t": 19.63,
+    "t": 30.8,
     "title": "Too small, too big"
    },
    {
-    "t": 43.67,
+    "t": 62.63,
     "title": "Momentum"
    },
    {
-    "t": 72.1,
+    "t": 105.53,
     "title": "Adam"
    },
    {
-    "t": 93.97,
+    "t": 144.1,
     "title": "Why AdamW"
    },
    {
-    "t": 111.8,
+    "t": 174.1,
     "title": "Schedule"
    },
    {
-    "t": 126.6,
+    "t": 196.83,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 8.97,
-    "text": "Same model, same data, same 1,000 steps. Only one number changed: the learning rate. And it decides everything.",
+    "end": 13.33,
+    "text": "Here are seven training runs: same model, same data, same 1,000 steps. Only one number changed: the learning rate, which sets the step size. And it decides everything.",
     "scene": "Real validation-loss curves of TinyGPT trained 1000 steps with AdamW at 7 learning rates (1e-4 … 0.1): lr 1e-4 → 1.74, lr 3e-4 → 0.81, lr 1e-3 → 0.66, lr 3e-3 → 0.55, lr 0.01 → 0.55, lr 0.03 → 1.13, lr 0.1 → 3.72.",
     "objects": [
      {
@@ -9210,9 +9210,9 @@
     ]
    },
    {
-    "start": 8.97,
-    "end": 19.63,
-    "text": "Picture the loss as a landscape and the weights as a ball. The gradient is the slope under the ball. Step downhill by the learning rate times the slope. Repeat.",
+    "start": 13.77,
+    "end": 30.37,
+    "text": "Picture the loss, our score for how wrong the model is, as a hilly landscape. The weights, the numbers it learns, are a ball on it. The gradient is the slope under the ball. Step downhill by the learning rate times the slope. Then repeat.",
     "scene": "Toy 1-D loss landscape (illustration) with a yellow ball, an orange tangent showing the slope, and the update rule w ← w − lr × slope; the ball takes 8 steps downhill.",
     "objects": [
      {
@@ -9238,9 +9238,9 @@
     ]
    },
    {
-    "start": 19.63,
-    "end": 28.17,
-    "text": "Too small: you crawl. Just right: you settle in a few steps. Too big: every step overshoots, bouncing higher and higher.",
+    "start": 30.8,
+    "end": 43.4,
+    "text": "Here are three toy bowls. If the learning rate is too small, you crawl. Just right, and you settle at the bottom in a few steps. Too big, and every step overshoots, bouncing higher and higher.",
     "scene": "Three toy bowls (illustration): too small (creeps), just right (settles), too big (overshoots, bouncing out of the valley).",
     "objects": [
      {
@@ -9276,9 +9276,9 @@
     ]
    },
    {
-    "start": 28.17,
-    "end": 43.67,
-    "text": "The real runs agree. Learning rate one e minus four is still crawling at 1.74. three e minus three reaches 0.55. At 0.1, it thrashes around and ends at 3.72.",
+    "start": 43.4,
+    "end": 62.2,
+    "text": "The real runs agree. Learning rate one e minus four, which is tiny, is still crawling, at a loss of 1.74. Three e minus three reaches 0.55, the best of these three. At 0.1, the steps are too big: it thrashes around and ends at 3.72.",
     "scene": "Real AdamW validation curves: lr 1e-4 (too small) ends at 1.74, lr 3e-3 (best) ends at 0.55, lr 0.1 (too big) ends at 3.72.",
     "objects": [
      {
@@ -9314,9 +9314,9 @@
     ]
    },
    {
-    "start": 43.67,
-    "end": 60.43,
-    "text": "Loss landscapes often have long, narrow valleys. Plain gradient descent zigzags across the walls and creeps along the floor. Momentum adds up past gradients: the back-and-forth parts cancel, and the steady downhill part builds speed.",
+    "start": 62.63,
+    "end": 86.37,
+    "text": "Loss landscapes often have long, narrow valleys, like this toy one seen from above. Plain gradient descent, the simple rule from before, zigzags across the walls. It only creeps along the floor. Momentum adds up past gradients, like a heavy ball that keeps rolling. The back-and-forth parts cancel out. The steady downhill part builds speed.",
     "scene": "Toy 2-D elongated valley (illustration, contour ellipses), same learning rate 0.19 for both. Top: plain gradient descent zigzags for all 30 steps and ends 1.41 from the minimum; bottom: with momentum (β=0.5, v = 0.5·v + gradient) the zigzag dies out within ~8 steps and it ends 0.32 from the minimum.",
     "objects": [
      {
@@ -9342,9 +9342,9 @@
     ]
    },
    {
-    "start": 60.43,
-    "end": 72.1,
-    "text": "On the real model, the best plain SGD ends at 0.74. With momentum, 0.57, at a lower learning rate, since momentum sums gradients.",
+    "start": 86.37,
+    "end": 105.1,
+    "text": "Now the real model. The best run of plain SGD, the simple rule we just saw, ends at 0.74. With momentum, it reaches 0.57. That's at a lower learning rate, since momentum sums gradients, which makes its steps bigger.",
     "scene": "Real runs, best learning rate of each: SGD (lr 1) → 0.74, SGD + momentum 0.9 (lr 0.3) → 0.57.",
     "objects": [
      {
@@ -9370,9 +9370,9 @@
     ]
    },
    {
-    "start": 72.1,
-    "end": 81.77,
-    "text": "Here's the catch. At step zero, typical gradient sizes differ 274 times between weight tensors. One learning rate can't suit them all.",
+    "start": 105.53,
+    "end": 121.47,
+    "text": "But here's the catch. The weights come in separate groups, called tensors. At step zero, typical gradient sizes differ hugely between these weight tensors. The biggest is 274 times the smallest. So one learning rate can't suit them all.",
     "scene": "Real per-weight gradient size (RMS of the gradient) for 8 of TinyGPT's tensors at initialisation, log scale: from 7.1e-05 (blocks.0.ln1.weight) to 1.9e-02 (blocks.0.attn_out.bias), a 274× spread.",
     "objects": [
      {
@@ -9478,9 +9478,9 @@
     ]
    },
    {
-    "start": 81.77,
-    "end": 93.97,
-    "text": "Adam keeps two running averages for every weight: the gradient, which is momentum, and the gradient squared. Dividing one by the square root of the other gives each weight its own step size.",
+    "start": 121.47,
+    "end": 143.67,
+    "text": "Adam fixes this. For every weight, it keeps two running averages, updated every step. On top is the average of the gradient. That's the gradient, smoothed out, which is momentum. Below is the average of the gradient squared: that weight's typical gradient size. Dividing one by the square root of the other gives each weight its own step size.",
     "scene": "Adam's update: step = lr × avg(gradient) / √avg(gradient²). Top term = momentum (smoothed direction); bottom = each weight's own typical gradient size, so each weight moves at most about lr per step. PyTorch defaults β1 0.9, β2 0.999, + ε.",
     "objects": [
      {
@@ -9516,9 +9516,9 @@
     ]
    },
    {
-    "start": 93.97,
-    "end": 111.8,
-    "text": "AdamW adds weight decay, a small shrink of every weight each step, applied directly to the weights. In this one sweep its good range spans 10 times; momentum SGD's, 3; plain SGD never got close. That forgiveness is a big reason it's the usual default.",
+    "start": 144.1,
+    "end": 173.67,
+    "text": "AdamW adds weight decay: a small shrink of every weight at each step, applied directly to the weights. This grid shows every run in this one sweep, and teal boxes came close to the best. For AdamW, the biggest good learning rate is 10 times the smallest. For SGD with momentum, just 3 times. Plain SGD never got close. That forgiveness, not needing a perfect learning rate, is a big reason AdamW is the usual default.",
     "scene": "Grid of every real sweep run (learning rate → final val loss). Teal boxes are within 25% of the best (0.68): AdamW 3/7, SGD+momentum 2/4, SGD 0/4.",
     "objects": [
      {
@@ -9684,9 +9684,9 @@
     ]
    },
    {
-    "start": 111.8,
-    "end": 126.6,
-    "text": "Our real recipe also uses a schedule: warm up for 100 steps while Adam's averages are still noisy, then decay along a cosine so the model settles. The sweep kept the rate constant on purpose.",
+    "start": 174.1,
+    "end": 196.4,
+    "text": "Our real recipe for TinyGPT also changes the learning rate over time. That's called a schedule. First, warm up for 100 steps. The rate rises gradually while Adam's averages are still noisy. Then decay along a cosine curve. The rate falls smoothly toward zero, so the model settles. The sweep kept the rate constant on purpose.",
     "scene": "Real learning-rate schedule of the shipped TinyGPT recipe (train/train.py): linear warm-up over 100 steps to 0.003, then cosine decay to 0 at step 3000; plus gradient clipping at norm 1.0. The sweep in this video used a constant rate instead.",
     "objects": [
      {
@@ -9732,9 +9732,9 @@
     ]
    },
    {
-    "start": 126.6,
-    "end": 136.77,
-    "text": "So: start with AdamW, sweep the learning rate in steps of three, warm up then decay, and if the loss spikes, turn it down.",
+    "start": 196.83,
+    "end": 212.17,
+    "text": "So here's the recipe. Start with AdamW. Sweep the learning rate in steps of three, trying each value three times bigger than the last. Warm up, then decay. And if the loss suddenly spikes, turn the learning rate down.",
     "scene": "Recap pills: start with AdamW; sweep the learning rate ×3 at a time; warm up, then decay; loss spikes → lower it.",
     "objects": [
      {
@@ -9785,56 +9785,56 @@
   "id": "train-your-own",
   "title": "Train your own: data, batches, epochs & overfitting",
   "subtitle": "The whole training recipe, and what to watch, with real overfitting runs",
-  "duration": 139.13,
+  "duration": 205.93,
   "track": "training",
   "order": 50,
   "src": "/videos/train-your-own.mp4",
   "poster": "/videos/train-your-own.jpg",
   "relates": "train",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The recipe"
    },
    {
-    "t": 7.93,
+    "t": 9.3,
     "title": "Data"
    },
    {
-    "t": 22.77,
+    "t": 28.83,
     "title": "A catch: leakage"
    },
    {
-    "t": 40.17,
+    "t": 55.5,
     "title": "Batches & steps"
    },
    {
-    "t": 65.77,
+    "t": 97.83,
     "title": "Train vs validation"
    },
    {
-    "t": 84.87,
+    "t": 123.03,
     "title": "Overfitting"
    },
    {
-    "t": 110.93,
+    "t": 158.83,
     "title": "More data closes the gap"
    },
    {
-    "t": 121.97,
+    "t": 178.27,
     "title": "What to watch"
    },
    {
-    "t": 134.73,
+    "t": 197.17,
     "title": "Your turn"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 7.93,
-    "text": "Here's the whole recipe for training your own model: data, batches, steps, and two numbers to watch.",
+    "end": 8.87,
+    "text": "This video gives you the whole recipe for training your own model. It comes down to data, batches, steps, and two numbers to keep an eye on.",
     "scene": "Title 'training your own model' and four pills joined by arrows: data → batches → steps → watch the loss.",
     "objects": [
      {
@@ -9880,9 +9880,9 @@
     ]
    },
    {
-    "start": 7.93,
-    "end": 22.77,
-    "text": "Start with text. Ours is 5.2 million characters, which the tokenizer turns into 1.69 million tokens. Hold back the last five percent of documents. The model never trains on them. That's your validation set.",
+    "start": 9.3,
+    "end": 28.4,
+    "text": "Start with text. Ours is 5.2 million characters, which the tokenizer turns into 1.69 million tokens, the small chunks of text the model reads. Hold back the last five percent of documents. The model never trains on them, so they can test it fairly. That's your validation set.",
     "scene": "A long bar of 1,686,858 tokens split into train (1,602,516, blue, 95%) and validation (84,342, teal, 5%) from 5,177,530 characters of corpus.",
     "objects": [
      {
@@ -9928,9 +9928,9 @@
     ]
    },
    {
-    "start": 22.77,
-    "end": 40.17,
-    "text": "One catch. Our tiny world reuses the same sentence templates, so 55 percent of the validation stories also appear word for word in training. Real projects deduplicate before splitting. So we also test on the 1,359 stories that are new combinations.",
+    "start": 28.83,
+    "end": 55.07,
+    "text": "There's one catch. Our tiny world of stories reuses the same sentence templates. So 55 percent of the validation stories also appear word for word in training. That's like seeing the exam questions in advance. Real projects deduplicate before splitting, which means removing repeated copies first. So we also test on the 1,359 stories that are new combinations. The model never saw those word for word.",
     "scene": "Leakage check: 1,642 of 3,001 validation lines (54.7%) appear verbatim in the training text (pink squares); the 1,359 that do not (48,444 tokens, teal) form a deduplicated validation set. Every validation sentence pattern still occurs in training.",
     "objects": [
      {
@@ -9976,9 +9976,9 @@
     ]
    },
    {
-    "start": 40.17,
-    "end": 50.17,
-    "text": "Each step grabs 32 random windows of 64 tokens, predicts the next token at every position, averages the loss, and nudges every weight once.",
+    "start": 55.5,
+    "end": 74.13,
+    "text": "Now the training itself. Each step grabs 32 random windows of 64 tokens. Together, those windows make one batch. The model predicts the next token at every position, averages the loss, the score for how wrong those guesses were, and nudges every weight once.",
     "scene": "32 yellow windows light up at random spots of the training bar and drop into a 32×64 grid (2,048 predictions); then average loss → gradient → nudge every weight = one step.",
     "objects": [
      {
@@ -10014,9 +10014,9 @@
     ]
    },
    {
-    "start": 50.17,
-    "end": 65.77,
-    "text": "An epoch is one full pass over the training data: about 782 steps here. Our 1,500-step runs see each token about twice, on average. Windows are random, so some tokens get seen more, and some never.",
+    "start": 74.13,
+    "end": 97.4,
+    "text": "How much of the data does training actually see? An epoch is one full pass over the training data. Here, that takes about 782 steps. Our 1,500-step runs see each token about twice, on average. But windows are random. So some tokens get seen more often, and some are never seen at all.",
     "scene": "Equation: 1,602,516 training tokens ÷ 2,048 tokens per step ≈ 782 steps per epoch; 1,500 steps ≈ 1.9 epochs.",
     "objects": [
      {
@@ -10062,9 +10062,9 @@
     ]
    },
    {
-    "start": 65.77,
-    "end": 84.87,
-    "text": "Now watch two numbers. Training loss: how well it does on text it studies. Validation loss: held-out text. With all the data they move together, and the deduplicated set lands at 0.51. Here, unseen means new combinations of familiar sentences.",
+    "start": 97.83,
+    "end": 122.6,
+    "text": "Now watch two numbers. Training loss shows how well the model does on the text it studies. Validation loss shows how it does on held-out text it never trains on. With all the data, the two move together, and the deduplicated set, the stories never seen word for word, lands at 0.51. So here, unseen means new combinations of sentences it already knows.",
     "scene": "Real curves, all 1,602,516 training tokens, 1500 steps, loss axis 0–6: train (yellow), validation (pink) and deduplicated validation (dashed blue) start at 5.56 and end at 0.483 / 0.488 / 0.514.",
     "objects": [
      {
@@ -10110,9 +10110,9 @@
     ]
    },
    {
-    "start": 84.87,
-    "end": 104.6,
-    "text": "Now the same model and the same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs. Training loss dives to 0.07. Validation loss bottoms out around step 200, then climbs.",
+    "start": 123.03,
+    "end": 147.23,
+    "text": "Now let's see what goes wrong with too little data. Same model, same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs, so it sees the same text over and over. Training loss dives to 0.07, almost perfect. Validation loss bottoms out around step 200, then climbs back up.",
     "scene": "Real overfitting run (axis zoomed to 0–3): 4,096 training tokens (750 epochs). Train loss (yellow) → 0.067; validation loss (pink) is best (1.156) at step 200 and ends at 1.728 (deduplicated validation: 1.784).",
     "objects": [
      {
@@ -10168,9 +10168,9 @@
     ]
    },
    {
-    "start": 104.6,
-    "end": 110.93,
-    "text": "It memorized those few thousand tokens instead of learning the language. That widening gap is overfitting.",
+    "start": 147.23,
+    "end": 158.4,
+    "text": "The model memorized those few thousand tokens instead of learning the language. So it does badly on anything new. That widening gap between the two curves is called overfitting.",
     "scene": "A pink arrow spans the gap between train 0.07 and validation 1.73 at step 1500: overfitting (memorizing, not generalizing).",
     "objects": [
      {
@@ -10226,9 +10226,9 @@
     ]
    },
    {
-    "start": 110.93,
-    "end": 121.97,
-    "text": "Give it more data and the gap closes. 1.7 with four thousand tokens, and by 256 thousand it's already gone. This corpus repeats itself a lot.",
+    "start": 158.83,
+    "end": 177.83,
+    "text": "Give it more data, and the gap closes. Here are four runs, each with more data. The gap is 1.7 with four thousand tokens, and by 256 thousand it's already gone. Remember, this corpus, our training text, repeats itself a lot.",
     "scene": "Four real runs side by side (4k tokens, 32k tokens, 256k tokens, all 1.6M tokens), each with train (yellow) and validation (pink) curves; final gaps (val − train): 1.662, 0.185, 0.005, 0.005.",
     "objects": [
      {
@@ -10274,9 +10274,9 @@
     ]
    },
    {
-    "start": 121.97,
-    "end": 134.73,
-    "text": "While yours trains, check four things. First loss near log of the vocab size. A fast drop, then a slow grind. Validation following training. And no spikes.",
+    "start": 178.27,
+    "end": 196.73,
+    "text": "When you train your own, check four things. The first loss should match pure guessing: the log of the vocab size. You want a fast drop, then a slow grind. Look for validation following training. And no spikes, which mean the learning rate is too high.",
     "scene": "Checklist: 1) step-0 loss ≈ ln(256) = 5.55 (ours 5.56); 2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / early stop); 4) no spikes or NaN (else lower the learning rate).",
     "objects": [
      {
@@ -10322,9 +10322,9 @@
     ]
    },
    {
-    "start": 134.73,
-    "end": 138.33,
-    "text": "That's the whole recipe. Now train one in your browser.",
+    "start": 197.17,
+    "end": 205.13,
+    "text": "That's the whole recipe: data, batches, steps, and watching the loss. Now train one in your browser.",
     "scene": "Final card: 'now train one in your browser →'.",
     "objects": [
      {
@@ -10345,44 +10345,44 @@
   "id": "residuals-layernorm",
   "title": "Residuals & LayerNorm: why deep nets train",
   "subtitle": "Vanishing gradients, the residual highway, and what LayerNorm really rescales, with real ablations",
-  "duration": 144.2,
+  "duration": 215.3,
   "track": "design",
   "order": 10,
   "src": "/videos/residuals-layernorm.mp4",
   "poster": "/videos/residuals-layernorm.jpg",
   "relates": "lab",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Delete the plus"
    },
    {
-    "t": 21.87,
+    "t": 34.07,
     "title": "Vanishing gradients"
    },
    {
-    "t": 54.73,
+    "t": 87.23,
     "title": "It depends on init"
    },
    {
-    "t": 75.5,
+    "t": 114.2,
     "title": "The residual highway"
    },
    {
-    "t": 89.77,
+    "t": 133.1,
     "title": "LayerNorm"
    },
    {
-    "t": 126.7,
+    "t": 187.0,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 17.43,
-    "text": "Delete the x plus from every block of TinyGPT. Same data, same 3,000 steps. The normal model reaches 0.45. The edited one stalls at 4.50: about the unigram level. It only learned which words are common.",
+    "end": 25.8,
+    "text": "What lets deep networks train? Take every block of TinyGPT and delete its x plus, the part that adds the input back in. Train on the same data for the same 3,000 steps. The normal model gets its loss, the score for how wrong it is, down to 0.45. The edited one stalls at 4.50, about the unigram level: it only learned which words are common.",
     "scene": "Code 'x = x + attn(LN(x))' with 'x +' struck out. Real validation curves, 3-layer TinyGPT trained 3000 steps: with residuals (teal) → 0.450; without (pink) stalls at 4.502, close to the unigram baseline 4.556 (dashed: a model that only knows word frequencies).",
     "objects": [
      {
@@ -10428,9 +10428,9 @@
     ]
    },
    {
-    "start": 17.43,
-    "end": 21.87,
-    "text": "And it ignores you. Three different prompts, almost the same words back.",
+    "start": 25.8,
+    "end": 33.63,
+    "text": "And the edited model ignores what you write. Give it three different prompts, and you get almost the same words back.",
     "scene": "Real samples from the no-residual model for three different prompts: ' daym a. one the toam the a..ied pink no' | ' day hill a. one the toam the a..i\\n. now' | ' daym a.ed say toam the a..ied. now.. bl'.",
     "objects": [
      {
@@ -10466,9 +10466,9 @@
     ]
    },
    {
-    "start": 21.87,
-    "end": 36.8,
-    "text": "Why? Training sends a gradient backward through every layer. Without the plus, each layer multiplies it by its own slope. In a deep plain stack that's about times 0.2 per layer, and twenty-four of those leave almost nothing.",
+    "start": 34.07,
+    "end": 59.13,
+    "text": "So why does it break? To learn, training sends a gradient backward through every layer. The gradient tells each learned number which way to move. Without the plus, each layer multiplies it by its own slope, how strongly its output reacts to its input. In a deep stack without the plus, that means multiplying by about 0.2 at every layer. And twenty-four of those in a row leave almost nothing.",
     "scene": "Backward pass as a chain of ×0.19 pills (the real average per-layer shrink of the gradient in a 24-layer no-residual TinyGPT at init); 0.19^24 = 4.0e-18.",
     "objects": [
      {
@@ -10494,9 +10494,9 @@
     ]
    },
    {
-    "start": 36.8,
-    "end": 54.73,
-    "text": "Measured in a fresh 24-layer model: without residuals, the gradient reaching the first layer is 10 to the 17 times smaller than at the top. Forward, the signal keeps its size, but every position ends up holding the same vector. With residuals, the gradient is nearly flat.",
+    "start": 59.13,
+    "end": 86.8,
+    "text": "We measured this in a fresh 24-layer model, before any training. The x plus links are called residuals. And without residuals, the gradient reaching the first layer is 10 to the 17 times smaller than at the top, practically zero. Forward, from input to output, the signal keeps its size. But every position in the text ends up holding the same vector, the same list of numbers. With residuals, the gradient is nearly flat: the first layer gets about as much as the top.",
     "scene": "Real measurement, a separate 24-layer TinyGPT at initialisation: RMS of the gradient reaching each layer (log scale). Without residuals (pink) it falls from 4.9e-04 at the top to 2.0e-21 at the input (×10^-17); with residuals (teal) it stays ≈ 5.5e-05–4.3e-05. Side note: without residuals the forward signal RMS stays 0.04–0.05, but positions become identical (spread 1.4e-07).",
     "objects": [
      {
@@ -10532,9 +10532,9 @@
     ]
    },
    {
-    "start": 54.73,
-    "end": 75.5,
-    "text": "Our 3-layer model isn't that deep: its gradient shrinks only about 130 times. So how stuck it gets depends on the starting weights. With the standard small init, it stalls. Start the blocks larger, and the same plain stack does learn. Residuals make depth easy to train, whatever the init.",
+    "start": 87.23,
+    "end": 113.77,
+    "text": "But our 3-layer model isn't that deep. Without the plus, its gradient shrinks only about 130 times. So how stuck it gets depends on the init, the random weights the model begins with. With the standard small init, it stalls. Start the blocks with larger weights, and the same stack, still without the plus, does learn. So residuals make depth easy to train, whatever the init.",
     "scene": "Real: 3-layer TinyGPT without residuals at init, gradient shrinks 130× from top to embeddings. Two 600-step runs (batch 32): block init std 0.02 → val 4.569 (stalled), std 0.125 → 2.947 and still falling.",
     "objects": [
      {
@@ -10570,9 +10570,9 @@
     ]
    },
    {
-    "start": 75.5,
-    "end": 89.77,
-    "text": "The plus sign builds a highway. The signal travels straight along it, and each block reads from it and adds an edit back. On the way back, every plus passes the gradient through unchanged, so even the first layer gets a strong signal.",
+    "start": 114.2,
+    "end": 132.67,
+    "text": "So the plus sign builds a highway, called the residual stream. The signal travels straight along it, and each block reads from it and adds its own edit back. On the way back, during training, every plus passes the gradient through unchanged. So even the first layer gets a strong signal.",
     "scene": "Diagram: a yellow 'residual stream' arrow left to right; attention and MLP blocks branch off it and add their output back through '+' nodes; a pink arrow below shows the gradient flowing straight back through every +.",
     "objects": [
      {
@@ -10638,9 +10638,9 @@
     ]
    },
    {
-    "start": 89.77,
-    "end": 107.03,
-    "text": "As blocks keep adding edits, the stream itself grows. LayerNorm doesn't shrink it. It hands each block a rescaled copy: subtract the mean, divide by the spread, per token, then a learned gain and bias. Every block reads inputs of a sane size.",
+    "start": 133.1,
+    "end": 159.2,
+    "text": "But as blocks keep adding edits, the stream itself grows. This is where LayerNorm comes in. It doesn't shrink the stream. It hands each block a rescaled copy. It works on one token, one chunk of text, at a time. It subtracts the mean, the average of its numbers, and divides by their spread. Then a learned gain and bias adjust the result. So every block reads inputs of a sane size.",
     "scene": "Illustration: a 12-number vector (orange, mean 0.7, std 1.5) passes through LayerNorm, (x − mean)/std (→ mean 0, std 1), then a learned gain and bias. Applied per token across its 64 numbers, to the copy each block reads; the residual stream itself is unchanged.",
     "objects": [
      {
@@ -10686,9 +10686,9 @@
     ]
    },
    {
-    "start": 107.03,
-    "end": 126.7,
-    "text": "In real trained 12-layer models, the stream grows about 12 times from bottom to top even with LayerNorm. Without it, 165 times, and validation loss ends at 0.69 instead of 0.62. Remove the residuals instead: 4.57.",
+    "start": 159.2,
+    "end": 186.57,
+    "text": "How much does this matter? In real trained 12-layer models, the stream grows about 12 times from bottom to top, even with LayerNorm. Without it, the stream grows 165 times. And the validation loss, measured on text kept out of training, ends at 0.69 instead of 0.62, so a bit worse. Remove the residuals instead, and it ends at 4.57, far worse.",
     "scene": "Left: real RMS of the hidden state at each layer of trained 12-layer models: with LayerNorm 0.15 → 1.75; without 0.07 → 12.35. Right: real validation curves (1000 steps): residual+LN 0.620, no LN 0.693, no residual 4.569.",
     "objects": [
      {
@@ -10744,9 +10744,9 @@
     ]
    },
    {
-    "start": 126.7,
-    "end": 143.4,
-    "text": "So every block is two lines: read a normalized copy, add the result back. Virtually every modern transformer keeps both ideas: a residual stream and a normalization layer, LayerNorm or its simpler cousin RMSNorm.",
+    "start": 187.0,
+    "end": 214.5,
+    "text": "To sum up, every block is just two lines of code. Each line says the same thing: read a normalized copy, then add the result back. Virtually every modern transformer, the design TinyGPT uses, keeps both ideas. There's a residual stream that keeps gradients alive. And there's a normalization layer that keeps sizes sane, either LayerNorm or its simpler cousin RMSNorm.",
     "scene": "Recap: the pre-LN block is x = x + attn(LN(x)); x = x + mlp(LN(x)). '+' = the highway that keeps gradients alive; LN = keeps every layer's input at a sane scale.",
     "objects": [
      {
@@ -10787,40 +10787,40 @@
   "id": "arch-lab",
   "title": "Architecture lab: break it to understand it",
   "subtitle": "Remove attention, MLPs, positions, residuals or LayerNorm, retrain, and watch what breaks (real runs)",
-  "duration": 141.7,
+  "duration": 213.67,
   "track": "design",
   "order": 20,
   "src": "/videos/arch-lab.mp4",
   "poster": "/videos/arch-lab.jpg",
   "relates": "lab",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Break it"
    },
    {
-    "t": 12.33,
+    "t": 21.67,
     "title": "The control"
    },
    {
-    "t": 33.23,
+    "t": 57.03,
     "title": "Seven variants"
    },
    {
-    "t": 115.1,
+    "t": 172.17,
     "title": "Leaderboard"
    },
    {
-    "t": 128.2,
+    "t": 193.93,
     "title": "What each part does"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 12.33,
-    "text": "What does each part of a transformer actually do? Remove it, retrain from scratch, and see what breaks. Five cuts and two resizes, each trained with the shipped model's recipe.",
+    "end": 21.23,
+    "text": "What does each part of a transformer like TinyGPT actually do? To find out, remove it, retrain from scratch, and see what breaks. We try five cuts, and two resizes with fewer or more layers. Each one is trained with the shipped model's recipe, the same settings as the TinyGPT in this app.",
     "scene": "Seven pills: five parts to remove (attention, positions, MLP, residual +, LayerNorm) and two resizes (1 layer, 6 layers). Each variant is retrained from scratch with the shipped recipe.",
     "objects": [
      {
@@ -10896,9 +10896,9 @@
     ]
    },
    {
-    "start": 12.33,
-    "end": 33.23,
-    "text": "First the control: the full model. Loss 0.45. On our test prompt, Mia gives Tom the red ball, it says red, 98%. The shipped model says 87: same recipe, different batch order. Runs vary. So we also score 100 fresh stories like it: 100 of 100 right.",
+    "start": 21.67,
+    "end": 56.6,
+    "text": "First, the control: the full model we compare against. Its loss, the score for how wrong its guesses are, ends at 0.45. On our test prompt, Mia gives Tom her red ball, so the next word should be red. It says red, with 98 percent. The shipped model says 87 percent. Same recipe, but it saw the training data in a different order. So runs vary. That's why we also score 100 fresh stories like it, checking for the right colour: 100 of 100 right.",
     "scene": "Baseline (full TinyGPT, 170,560 params, 3000 steps): validation loss 0.450; on the probe prompt its top next tokens are ' red' 98%, ' black' 1.0%, ' purple' 0.4%. The shipped model (same recipe, different batch order) gives ' red' 87.1%. On 100 generated trade stories the baseline puts the right colour on top 100/100 (mean p 0.99).",
     "objects": [
      {
@@ -10944,9 +10944,9 @@
     ]
    },
    {
-    "start": 33.23,
-    "end": 45.67,
-    "text": "No attention. Every token is alone. It's exactly a bigram model: loss 1.64, bigram baseline 1.65. Right colour on 0 of 100 stories.",
+    "start": 57.03,
+    "end": 76.03,
+    "text": "No attention, so every word is alone: it can't look back at earlier ones. That makes it exactly a bigram model, which only uses the current word. Its loss, 1.64, matches the bigram baseline, 1.65. Right colour on 0 of 100 stories.",
     "scene": "Ablation 'no attention' (120,256 params): Attention removed, so each token only sees itself and cannot copy information from earlier words. Real validation curve (colored) vs baseline (gray): final 1.644 vs 0.450. Probe top tokens: ' end' 10%, ' box' 3.1%, ' house' 3.0%. On 100 generated stories: right colour on top 0/100 (mean p 0.01). One random sample (temperature 0.8): ' kite is saturday.\\nnesday woofinn has a:'.",
     "objects": [
      {
@@ -10982,9 +10982,9 @@
     ]
    },
    {
-    "start": 45.67,
-    "end": 62.73,
-    "text": "No positions. Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, already leaks word order. Loss 0.45. Right colour on 100 of 100 stories.",
+    "start": 76.03,
+    "end": 97.37,
+    "text": "No positions: we remove the numbers that tell the model where each word sits. Surprisingly, it barely matters. The causal mask, which only lets each word see earlier ones, already leaks word order. Its loss is 0.45, just like the full model. Right colour on 100 of 100 stories.",
     "scene": "Ablation 'no positions' (166,464 params): Positional embeddings removed, so the model knows which words came before but not in what order. Real validation curve (colored) vs baseline (gray): final 0.451 vs 0.450. Probe top tokens: ' red' 97%, ' black' 1.1%, ' purple' 0.9%. On 100 generated stories: right colour on top 100/100 (mean p 0.97). One random sample (temperature 0.8): ' red ball.\\nonce upon a time, there was a'.",
     "objects": [
      {
@@ -11020,9 +11020,9 @@
     ]
    },
    {
-    "start": 62.73,
-    "end": 74.67,
-    "text": "No MLP. Attention still moves information, so copying survives. Loss 0.46. Right colour on 100 of 100 stories.",
+    "start": 97.37,
+    "end": 112.87,
+    "text": "No MLP, the small network that works on each word on its own. Attention still moves information between words, so the copying still works. Loss 0.46. Right colour on 100 of 100 stories.",
     "scene": "Ablation 'no MLP' (70,912 params): MLP blocks removed, so the model can still mix tokens but has far less per-token processing and memory. Real validation curve (colored) vs baseline (gray): final 0.457 vs 0.450. Probe top tokens: ' red' 89%, ' purple' 7.4%, ' pink' 2.0%. On 100 generated stories: right colour on top 100/100 (mean p 0.93). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -11058,9 +11058,9 @@
     ]
    },
    {
-    "start": 74.67,
-    "end": 83.53,
-    "text": "No residuals. It only learned which words are common: 4.50, the unigram level. Right colour on 0 of 100 stories.",
+    "start": 112.87,
+    "end": 128.0,
+    "text": "No residuals, the shortcuts that let each layer add to the signal instead of rebuilding it. This one only learned which words are common: loss 4.50, the unigram level. Right colour on 0 of 100 stories.",
     "scene": "Ablation 'no residual' (170,560 params): Residual connections removed, so each layer must rebuild the whole signal instead of adding to it. Real validation curve (colored) vs baseline (gray): final 4.502 vs 0.450. Probe top tokens: '.' 9.0%, ' the' 7.2%, '\\n' 5.1%. On 100 generated stories: right colour on top 0/100 (mean p 0.00). One random sample (temperature 0.8): ' daym a. one the toam the a..ied pink no'.",
     "objects": [
      {
@@ -11096,9 +11096,9 @@
     ]
    },
    {
-    "start": 83.53,
-    "end": 93.27,
-    "text": "No LayerNorm. It learns the language, loss 0.54, but rarely the trick. Right colour on 17 of 100 stories.",
+    "start": 128.0,
+    "end": 142.4,
+    "text": "No LayerNorm, the step that keeps the numbers at a steady size. It learns the language, loss 0.54, but rarely the copying trick. Right colour on only 17 of 100 stories.",
     "scene": "Ablation 'no LayerNorm' (169,664 params): LayerNorm removed, so activation sizes are no longer re-scaled and can drift from layer to layer. Real validation curve (colored) vs baseline (gray): final 0.542 vs 0.450. Probe top tokens: ' orange' 14%, ' blue' 12%, ' black' 12%. On 100 generated stories: right colour on top 17/100 (mean p 0.11). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -11134,9 +11134,9 @@
     ]
    },
    {
-    "start": 93.27,
-    "end": 103.17,
-    "text": "One layer. Loss 0.48, but copying like this typically needs two layers working together. Right colour on 30 of 100 stories.",
+    "start": 142.4,
+    "end": 156.97,
+    "text": "Now the resizes. One layer instead of three. Its loss is 0.48, not far from the full model. But copying like this typically needs two layers working together. Right colour on 30 of 100 stories.",
     "scene": "Ablation '1 layer' (70,592 params): Only one block instead of three: less depth to build multi-step patterns. Real validation curve (colored) vs baseline (gray): final 0.476 vs 0.450. Probe top tokens: ' blue' 16%, ' green' 15%, ' black' 15%. On 100 generated stories: right colour on top 30/100 (mean p 0.26). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -11172,9 +11172,9 @@
     ]
    },
    {
-    "start": 103.17,
-    "end": 115.1,
-    "text": "Six layers. Our one test prompt says it failed. But across all the stories, it often gets it right. One prompt can mislead. Right colour on 58 of 100 stories.",
+    "start": 156.97,
+    "end": 171.73,
+    "text": "Six layers, twice as deep. Our one test prompt says it failed, since red isn't its top pick. But across all the stories, it often gets it right: the right colour on 58 of 100. So one prompt can mislead.",
     "scene": "Ablation '6 layers' (320,512 params): Six blocks instead of three: twice the depth and roughly 1.9× the parameters. Real validation curve (colored) vs baseline (gray): final 0.460 vs 0.450. Probe top tokens: ' black' 22%, ' yellow' 21%, ' purple' 19%. On 100 generated stories: right colour on top 58/100 (mean p 0.60). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -11210,9 +11210,9 @@
     ]
    },
    {
-    "start": 115.1,
-    "end": 128.2,
-    "text": "Line them up. Cutting residuals or attention wrecks it. The rest look alike by loss, yet their copy scores run from 100 down to 17 out of 100. Loss can hide skills. And each is just one run.",
+    "start": 172.17,
+    "end": 193.5,
+    "text": "Now line them all up, from best loss to worst. Cutting residuals or attention wrecks the model. The rest look alike by loss, yet their colour scores run from 100 down to 17 out of 100. So a good loss can hide a missing skill. And remember, each is just one run, and runs vary.",
     "scene": "Leaderboard of real final validation losses (lower = better) with each model's colour-copy score on 100 generated stories: baseline 0.450 (100/100), no positions 0.451 (100/100), no MLP 0.457 (100/100), 6 layers 0.460 (58/100), 1 layer 0.476 (30/100), no LayerNorm 0.542 (17/100), no attention 1.644 (0/100), no residual 4.502 (0/100). One run each; same LR and steps for every variant.",
     "objects": [
      {
@@ -11298,9 +11298,9 @@
     ]
    },
    {
-    "start": 128.2,
-    "end": 140.9,
-    "text": "So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep it trainable, and depth composes. Now go break one yourself.",
+    "start": 193.93,
+    "end": 212.87,
+    "text": "So, in short: attention moves information between words, positions add word order, and MLPs process each word. Residuals and LayerNorm keep it trainable, and depth lets it build patterns step by step. Now go break one yourself in the Architecture lab.",
     "scene": "Roles: attention = moves information between tokens; positions = word order; MLP = per-token processing/memory; residual + LayerNorm = keep it trainable; depth = more steps to compose. CTA: try your own cuts in the Architecture lab.",
     "objects": [
      {
@@ -11371,44 +11371,44 @@
   "id": "scaling",
   "title": "Scaling laws: bigger, predictably",
   "subtitle": "Seven real TinyGPTs from ~10k to ~1.8M parameters, a fitted power law, and what Kaplan & Chinchilla found",
-  "duration": 121.13,
+  "duration": 164.73,
   "track": "design",
   "order": 30,
   "src": "/videos/scaling.mp4",
   "poster": "/videos/scaling.jpg",
   "relates": "scaling",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Bigger is better"
    },
    {
-    "t": 13.1,
+    "t": 18.07,
     "title": "Loss vs size"
    },
    {
-    "t": 39.27,
+    "t": 56.7,
     "title": "Loss vs compute"
    },
    {
-    "t": 55.9,
+    "t": 79.47,
     "title": "What the papers found"
    },
    {
-    "t": 79.57,
+    "t": 109.13,
     "title": "Our runs, in that light"
    },
    {
-    "t": 100.9,
+    "t": 135.27,
     "title": "For your own models"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 13.1,
-    "text": "Seven TinyGPTs, from 8 thousand to 1.8 million parameters. Same data, same 3.1 million tokens each. Bigger models land lower, with smaller gains at the top.",
+    "end": 17.63,
+    "text": "Do bigger models do better? Here are seven TinyGPTs, from 8 thousand to 1.8 million parameters, or learned numbers. All read the same 3.1 million tokens of text. The bigger ones reach a lower loss, or error score, but the gains shrink at the top.",
     "scene": "Real validation curves of 7 model sizes trained on the same 3,072,000 tokens: 8.4k params → 0.888, 22k params → 0.672, 36k params → 0.646, 171k params → 0.488, 478k params → 0.474, 834k params → 0.474, 1.8M params → 0.464.",
     "objects": [
      {
@@ -11494,9 +11494,9 @@
     ]
    },
    {
-    "start": 13.1,
-    "end": 39.27,
-    "text": "Plot final loss against size on a log axis, and the dots fall on a smooth curve: a power law. Every time you multiply the size, the loss above a floor shrinks by a predictable factor. Here it flattens near 0.42, but only for this token budget: the same 171 thousand parameter model trained on four times more tokens reaches 0.45 instead of 0.49.",
+    "start": 18.07,
+    "end": 56.27,
+    "text": "Now plot each model's final loss against its size. The size axis is a log axis, so equal steps along it mean multiplying the size. The dots fall on a smooth curve called a power law. That means every time you multiply the size, the part of the loss above a floor shrinks by a predictable factor. Here it flattens near 0.42, the floor. But that only holds for this token budget, the amount of text we trained on. The same 171 thousand parameter model, trained on four times more tokens, reaches 0.45 instead of 0.49.",
     "scene": "Real final losses vs non-embedding parameters (log x) with the fitted power law L(N) = c + a·N^-α: a = 12.948, α = 0.408, c = 0.417 (R² = 0.989).",
     "objects": [
      {
@@ -11612,9 +11612,9 @@
     ]
    },
    {
-    "start": 39.27,
-    "end": 55.9,
-    "text": "Now plot the same runs against compute. For a tiny budget, small models win. As the budget grows, the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from 8 thousand to 1.8 million parameters.",
+    "start": 56.7,
+    "end": 79.03,
+    "text": "Next, plot the same runs against compute, the total work done during training. With a tiny budget, small models win. As the budget grows, the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from 8 thousand to 1.8 million parameters. That edge marks the best loss you can get at each budget.",
     "scene": "Real validation loss vs training FLOPs (log x; FLOPs = 6 × all params × tokens) for all 7 sizes; the thick gray line is the lower envelope (best loss at each budget, curves interpolated in log FLOPs). Winners along it, small to large budget: 8.4k → 22k → 36k → 171k → 478k → 834k → 1.8M. Caveat: intermediate checkpoints of fixed-length cosine runs.",
     "objects": [
      {
@@ -11700,9 +11700,9 @@
     ]
    },
    {
-    "start": 55.9,
-    "end": 79.57,
-    "text": "Big labs found the same shape at vastly larger scale. Kaplan and colleagues, 2020: loss follows smooth power laws in parameters, data and compute. Then Chinchilla, 2022: for a fixed budget, grow the model and the training data together. Their 70 billion parameter model saw 1.4 trillion tokens, about 20 per parameter.",
+    "start": 79.47,
+    "end": 108.7,
+    "text": "Big AI labs found the same shape at a vastly larger scale. In 2020, Kaplan and colleagues showed that loss follows smooth power laws in parameters, data and compute. Then Chinchilla, a study from 2022, looked at a fixed budget. It found you should grow the model and the training data together. Their 70 billion parameter model saw 1.4 trillion tokens, about 20 tokens for every parameter.",
     "scene": "Two cards. Kaplan et al. 2020: loss falls as a smooth power law in parameters, data and compute over many orders of magnitude. Hoffmann et al. 2022 (Chinchilla): at fixed compute, scale parameters and tokens in roughly equal proportion; Chinchilla = 70B params on 1.4T tokens (≈ 20 tokens per parameter).",
     "objects": [
      {
@@ -11728,9 +11728,9 @@
     ]
    },
    {
-    "start": 79.57,
-    "end": 100.9,
-    "text": "By Chinchilla's rule of thumb, derived for huge web-text runs, our 4 biggest models would want more tokens: the largest saw just 1.7 per parameter. But our data repeats itself, so treat that as a rough guide. And real labs often train far past 20 tokens per parameter, to make models cheaper to run.",
+    "start": 109.13,
+    "end": 134.83,
+    "text": "So how do our runs measure up? Chinchilla's rule of thumb was worked out for huge runs on web text. By that rule, our 4 biggest models would want more tokens: the largest saw just 1.7 tokens per parameter. But our data repeats itself a lot, so treat that as a rough guide. And real labs often train far past 20 tokens per parameter, to get smaller models that are cheaper to run.",
     "scene": "Real tokens-per-parameter of each run (3,072,000 tokens / params): 8.4k: 364.3, 22k: 138.5, 36k: 86.0, 171k: 18.0, 478k: 6.4, 834k: 3.7, 1.8M: 1.7. A yellow dashed line marks Chinchilla's ≈ 20 tokens per parameter (a compute-optimal allocation heuristic for large web-text runs, not a 'trained enough' threshold). Our corpus is highly redundant: the 171k model reached val 0.491 on 256k tokens vs 0.488 on all of them.",
     "objects": [
      {
@@ -11826,9 +11826,9 @@
     ]
    },
    {
-    "start": 100.9,
-    "end": 120.33,
-    "text": "For your own models: train a ladder of small ones first, fit the curve, and predict before you spend. Balance size and data for your budget, and remember where the curve flattens depends on the data. Our fit is seven tiny models, one seed, one learning rate: the shape, not a law.",
+    "start": 135.27,
+    "end": 163.93,
+    "text": "What does this mean for your own models? First, train a ladder of small ones. Then fit the curve through their results, and predict the big one before you spend. Balance size and data for your budget. And remember, where the curve flattens depends on the data. Our fit is seven tiny models with one seed, meaning one random start. And every size used the same learning rate, the step size of training. So take it as the shape, not a law.",
     "scene": "Takeaways: train a ladder of small models first; fit the curve, predict the big one; balance size and data for your budget; where the curve flattens depends on the data. Caveat: our fit uses 7 tiny models, one seed and one learning rate for every size.",
     "objects": [
      {
@@ -11889,56 +11889,56 @@
   "id": "tiny-to-chatgpt",
   "title": "From TinyGPT to ChatGPT",
   "subtitle": "Same engine, very different scale: pretraining, instruction tuning, RLHF, chat tokens, KV cache",
-  "duration": 145.1,
+  "duration": 223.83,
   "track": "design",
   "order": 40,
   "src": "/videos/tiny-to-chatgpt.mp4",
   "poster": "/videos/tiny-to-chatgpt.jpg",
   "relates": "xray",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "Same engine"
    },
    {
-    "t": 14.87,
+    "t": 22.33,
     "title": "Scale"
    },
    {
-    "t": 31.17,
+    "t": 47.77,
     "title": "Pretraining"
    },
    {
-    "t": 48.23,
+    "t": 72.23,
     "title": "Instruction tuning"
    },
    {
-    "t": 61.43,
+    "t": 91.83,
     "title": "Preference tuning"
    },
    {
-    "t": 89.0,
+    "t": 136.7,
     "title": "Chat format"
    },
    {
-    "t": 102.1,
+    "t": 155.67,
     "title": "KV cache"
    },
    {
-    "t": 116.2,
+    "t": 179.27,
     "title": "Sampling"
    },
    {
-    "t": 132.43,
+    "t": 205.7,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 14.37,
-    "text": "GPT-family models, like those behind ChatGPT, run TinyGPT's loop: read the tokens, score every possible next one, pick, append, repeat. And they're built from the same kinds of blocks.",
+    "end": 21.9,
+    "text": "How far is our tiny model from ChatGPT? Here is TinyGPT's loop. It reads the tokens, small chunks of text, and scores every possible next one. Then it picks one, appends it, and repeats. GPT-family models, like those behind ChatGPT, run this same loop. And they're built from the same kinds of blocks.",
     "scene": "TinyGPT's loop as boxes: tokens → embed → [attention → MLP] × 3 layers → probabilities → pick one, with an arrow looping back ('append it & repeat'). GPT-family models (GPT-2, GPT-3, the models behind ChatGPT) use the same loop and block types, often with variations (RoPE, GQA, RMSNorm, SwiGLU, MoE).",
     "objects": [
      {
@@ -12034,9 +12034,9 @@
     ]
    },
    {
-    "start": 14.87,
-    "end": 30.67,
-    "text": "The big difference is scale. GPT-2 ranged from 124 million to 1.5 billion parameters. GPT-3 had 175 billion, 96 layers, and a 2,048-token context instead of 64.",
+    "start": 22.33,
+    "end": 47.33,
+    "text": "The big difference is scale. Each bar counts a model's parameters, the numbers it learns. GPT-2 ranged from 124 million to 1.5 billion parameters. GPT-3 had 175 billion, with 96 layers. Its context, the text it can see at once, was 2,048 tokens instead of TinyGPT's 64.",
     "scene": "Log-scale bar chart of published parameter counts: TinyGPT 170,560 (3 layers, width 64), GPT-2 small 124M (12 layers, width 768), GPT-2 XL 1.5B (48 layers, width 1,600), GPT-3 175B (96 layers, width 12,288, context 2,048). GPT-3 ≈ 1,026,032 × TinyGPT.",
     "objects": [
      {
@@ -12092,9 +12092,9 @@
     ]
    },
    {
-    "start": 31.17,
-    "end": 47.73,
-    "text": "Stage one, pretraining: TinyGPT's game, on a huge pile of web text. GPT-3 trained on about 300 billion tokens; TinyGPT on 12 million. The result is a base model: an autocomplete that may just continue your question.",
+    "start": 47.77,
+    "end": 71.8,
+    "text": "Making a chatbot takes three stages. Stage one is pretraining: TinyGPT's game of guessing the next token, played on a huge pile of web text. GPT-3 trained on about 300 billion tokens, and TinyGPT on 12 million. The result is a base model: an autocomplete that may just continue your question. Here it adds more questions instead of answering.",
     "scene": "Log-scale bars of tokens processed in training: TinyGPT 12,288,000 (7.3 passes over its 1,686,858-token corpus) vs GPT-3 ≈ 300 billion (published). Compute ≈ 6·N·D: 1.26e+13 vs 3.14e23 FLOPs. Illustration: a base model continuing 'Q: What is the capital of France?' with more questions instead of answering.",
     "objects": [
      {
@@ -12140,9 +12140,9 @@
     ]
    },
    {
-    "start": 48.23,
-    "end": 60.93,
-    "text": "Stage two: supervised fine-tuning. Same loss, now on example conversations written by people: a request, and a good response. The model learns to play the assistant.",
+    "start": 72.23,
+    "end": 91.4,
+    "text": "Stage two is supervised fine-tuning, an extra round of training. It uses the same loss, the score for how wrong the guesses are. But now it trains on example conversations written by people: a request, and a good response. The model learns to play the assistant.",
     "scene": "Illustrative training example: PERSON 'Explain photosynthesis to a ten-year-old.' / ASSISTANT 'Plants catch sunlight…'. The reply is underlined: the loss is usually computed on the reply tokens only.",
     "objects": [
      {
@@ -12178,9 +12178,9 @@
     ]
    },
    {
-    "start": 61.43,
-    "end": 76.97,
-    "text": "Stage three, preference tuning. People rank several answers; a reward model learns their taste, then scores the chat model's own answers, and reinforcement learning nudges it toward high reward, without drifting too far. That's RLHF.",
+    "start": 91.83,
+    "end": 120.33,
+    "text": "Stage three is preference tuning. People rank several answers to one prompt. From those rankings, a reward model learns their taste. It then scores the chat model's own answers, and reinforcement learning uses those scores. Learning by trial and reward, it nudges the chat model toward high reward, without drifting too far from its stage two version. That's RLHF: reinforcement learning from human feedback.",
     "scene": "RLHF diagram (illustrative answers): labelers rank several answers per prompt (4–9 in InstructGPT) → a reward model learns the rankings → the chat model writes answers, the reward model scores them, reinforcement learning (PPO) nudges it toward high reward, plus a KL penalty for drifting from the SFT model. Citation: InstructGPT, Ouyang et al. 2022.",
     "objects": [
      {
@@ -12246,9 +12246,9 @@
     ]
    },
    {
-    "start": 76.97,
-    "end": 88.5,
-    "text": "In the InstructGPT paper, labelers preferred answers from a 1.3 billion parameter model tuned this way over the 175 billion GPT-3.",
+    "start": 120.33,
+    "end": 136.27,
+    "text": "How much does this help? In the InstructGPT paper, human labelers compared answers. They preferred a 1.3 billion parameter model tuned this way over the 175 billion GPT-3, which is more than a hundred times bigger.",
     "scene": "InstructGPT result (Ouyang et al. 2022): outputs of the 1.3B InstructGPT were preferred by labelers over the 175B GPT-3, despite over 100× fewer parameters. Footnote: newer methods such as DPO (2023) skip the separate reward model.",
     "objects": [
      {
@@ -12334,9 +12334,9 @@
     ]
    },
    {
-    "start": 89.0,
-    "end": 101.6,
-    "text": "And a chat is still one long document. Special tokens mark who's speaking, and the model keeps predicting next tokens until it predicts the end-of-turn token itself.",
+    "start": 136.7,
+    "end": 155.23,
+    "text": "And under the hood, a chat is still one long document. Special tokens, markers that aren't ordinary text, show who's speaking. And the model keeps predicting next tokens, which form its reply, until it predicts the end-of-turn token itself. That's how it knows when to stop.",
     "scene": "A conversation laid out as one token stream in a ChatML-style template: <|im_start|>system … <|im_end|> <|im_start|>user What color is the sky?<|im_end|> <|im_start|>assistant, then the model's reply (teal) generated until it emits <|im_end|>.",
     "objects": [
      {
@@ -12402,9 +12402,9 @@
     ]
    },
    {
-    "start": 102.1,
-    "end": 115.7,
-    "text": "Generation's speed trick is the KV cache. Old keys and values never change, so keep them, and process only the newest position. For 8 new tokens: 30 positions instead of 212, same result.",
+    "start": 155.67,
+    "end": 178.83,
+    "text": "Generating text has a speed trick: the KV cache. In attention, later tokens look back at each earlier token's key and value, the K and V. Those old keys and values never change, so keep them, and process only the newest position. For 8 new tokens, that's 30 positions instead of 212, with the same result.",
     "scene": "Two grids, one row per generation step (8 new tokens after the 23-token probe prompt). Without cache every step recomputes all positions (212 total); with the KV cache earlier keys/values are reused (blue outlines) and only the new token is computed (30 total). Real check on TinyGPT: logits match to 5.2e-06.",
     "objects": [
      {
@@ -12440,9 +12440,9 @@
     ]
    },
    {
-    "start": 116.2,
-    "end": 131.93,
-    "text": "Then the sampling knobs. Temperature divides the logits: below one sharpens, red to 96 percent; above one flattens, red to 72. Top-p keeps the fewest tokens covering 90 percent: here, red and white.",
+    "start": 179.27,
+    "end": 205.27,
+    "text": "Then there are the sampling knobs, which control how the next token is picked. Temperature divides the logits, the raw scores, before they become probabilities. A temperature below one sharpens the choice: red gets 96 percent. Above one flattens it: red gets only 72 percent. Top-p keeps the fewest tokens that together cover 90 percent: here, red and white.",
     "scene": "Real TinyGPT probabilities after the probe prompt as temperature changes: at T = 0.7 ' red' 96.2%, at T = 1.0 87.1%, at T = 1.3 72.2%. Top-p 0.9 keeps ' red' + ' white' = 93.0%.",
     "objects": [
      {
@@ -12508,9 +12508,9 @@
     ]
    },
    {
-    "start": 132.43,
-    "end": 144.5,
-    "text": "So: the same core loop. GPT-3 was a million times bigger, plus refinements and far more text, then tuned into an assistant. The core ideas, you've seen inside TinyGPT.",
+    "start": 205.7,
+    "end": 223.23,
+    "text": "So, to sum up: models like ChatGPT run the same core loop as TinyGPT. GPT-3 was about a million times bigger, with some refinements and far more text. Then it was tuned into an assistant. The core ideas, you've already seen inside TinyGPT.",
     "scene": "Recap: the same pipeline (tokens → embed → [attention → MLP] × 96 layers for GPT-3 → probabilities → pick one) plus: GPT-3 had ~a million times the weights, web-scale pretraining, instruction & preference tuning, refinements (RoPE, GQA, RMSNorm, SwiGLU, MoE), chat tokens, KV cache and sampling knobs. CTA: open the X-ray.",
     "objects": [
      {
@@ -12551,48 +12551,48 @@
   "id": "research-loop",
   "title": "The research loop: test your own idea",
   "subtitle": "Hypothesis → smallest experiment → baseline → one change → compare → scale. A real TinyGPT experiment",
-  "duration": 131.93,
+  "duration": 192.33,
   "track": "research",
   "order": 10,
   "src": "/videos/research-loop.mp4",
   "poster": "/videos/research-loop.jpg",
   "relates": "invent",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The loop"
    },
    {
-    "t": 17.73,
+    "t": 25.37,
     "title": "Hypothesis"
    },
    {
-    "t": 33.87,
+    "t": 53.03,
     "title": "Experiment"
    },
    {
-    "t": 50.5,
+    "t": 78.2,
     "title": "Compare"
    },
    {
-    "t": 64.23,
+    "t": 99.23,
     "title": "Seeds"
    },
    {
-    "t": 84.07,
+    "t": 123.97,
     "title": "Traps"
    },
    {
-    "t": 108.37,
+    "t": 154.6,
     "title": "Scale up"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 17.23,
-    "text": "Inventing a new model isn't one big idea. It's a loop: a hypothesis, the smallest experiment that could test it, a baseline, one change, an honest comparison, and only then, scale up what wins. Let's run it, for real, on TinyGPT.",
+    "end": 24.93,
+    "text": "How do people invent a better model? It isn't one big idea. It's a loop. You start with a hypothesis, a guess you can test. Then you design the smallest experiment that could test it. You set up a baseline, the unchanged model to compare against. You make one change, and run an honest comparison. And only then do you scale up what wins. Let's run this loop, for real, on TinyGPT.",
     "scene": "The research loop as six pills around a circle: hypothesis → smallest experiment → baseline → change ONE thing → compare across seeds → scale up what wins → back to hypothesis.",
     "objects": [
      {
@@ -12658,9 +12658,9 @@
     ]
    },
    {
-    "start": 17.73,
-    "end": 33.37,
-    "text": "Hypothesis: TinyGPT doesn't need its position embeddings. Attention by itself ignores word order, but the causal mask leaks some: each token sees a different number of tokens before it. So maybe it can work out positions on its own.",
+    "start": 25.37,
+    "end": 52.6,
+    "text": "Here's our hypothesis: TinyGPT doesn't need its position embeddings. Those are the numbers that tell each token, each small chunk of text, where it sits. Attention, where tokens look back at earlier ones, ignores word order by itself. But the causal mask, which hides every later token, leaks some. Each token sees a different number of tokens before it. So maybe the model can work out positions on its own.",
     "scene": "TinyGPT's input = token embedding + position embedding, with the position embedding crossed out: 'what if TinyGPT had no position embeddings?'. A 6×6 causal mask: token k sees k tokens, so some order information leaks in.",
     "objects": [
      {
@@ -12716,9 +12716,9 @@
     ]
    },
    {
-    "start": 33.87,
-    "end": 50.0,
-    "text": "The smallest test: short runs of 600 steps, a few minutes at most on two CPU threads. Same code, same data, same batches, same seed. The baseline is unchanged TinyGPT; the only difference is one line.",
+    "start": 53.03,
+    "end": 77.77,
+    "text": "The smallest test is two short runs of 600 training steps, a few minutes at most on two CPU threads. Both use the same code, the same data and the same seed, the number behind the random start. They even see the same batches, the groups of examples trained on at each step. The baseline is unchanged TinyGPT, and the only difference is one line.",
     "scene": "Experiment setup (real): both runs use 600 steps, batch 64×64, AdamW lr 0.003, cosine schedule, seed 0, identical batches, CPU with 2 threads (30–235 s per run). Baseline: x = tok(idx) + pos(t). Variant: x = tok(idx).",
     "objects": [
      {
@@ -12754,9 +12754,9 @@
     ]
    },
    {
-    "start": 50.5,
-    "end": 63.73,
-    "text": "Then compare, on held-out text, measured on the exact same batches. Baseline: 0.65. No positions: 0.68. Removing them hurt, by about 0.03.",
+    "start": 78.2,
+    "end": 98.8,
+    "text": "Then compare the loss, which scores how wrong the guesses are. It's measured on held-out text, kept apart from training, on the exact same batches. Baseline: 0.65. No positions: 0.68. Lower is better, so removing them hurt, by about 0.03.",
     "scene": "Real validation-loss curves from step 200 to 600 (y axis zoomed to 0.62–0.92): baseline (blue) ends at 0.6524, no-positions (pink) ends at 0.6837; gap +0.0313. Evaluated on the same 24 held-out batches (98,304 tokens).",
     "objects": [
      {
@@ -12802,9 +12802,9 @@
     ]
    },
    {
-    "start": 64.23,
-    "end": 83.57,
-    "text": "But one seed could be luck. So we ran two more seeds per arm, each with its own initial weights and batch order. Both numbers move, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap beats the seed-to-seed spread.",
+    "start": 99.23,
+    "end": 123.53,
+    "text": "But one seed could just be luck. So we ran two more seeds for each arm, meaning each version of the model. Each seed gives its own starting weights and batch order. Both numbers move around, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap is bigger than the spread from seed to seed.",
     "scene": "Number line of val loss at step 600 for seeds 0, 1, 2: baseline 0.6524, 0.6566, 0.6538; no positions 0.6837, 0.6879, 0.6971. Paired gaps +0.0313, +0.0313, +0.0433, mean +0.0353, sd 0.0069. Each seed changes the initial weights and the batch order; eval batches are fixed.",
     "objects": [
      {
@@ -12840,9 +12840,9 @@
     ]
    },
    {
-    "start": 84.07,
-    "end": 107.87,
-    "text": "Three classic traps. Different compute: compare against the released model, trained five times longer, and the gap looks 7 times bigger than it is. Unfair tuning: the learning rate was picked for the baseline, not the variant. And leakage: 55 percent of held-out lines, 39 percent of the text, also appear in training.",
+    "start": 123.97,
+    "end": 154.17,
+    "text": "Now, three classic traps. Different compute means unequal amounts of training. Compare against the released model, which trained five times longer, and the gap looks 7 times bigger than it really is. Unfair tuning: the learning rate, the size of each training step, was picked for the baseline, not for the variant. And leakage: 55 percent of the held-out lines, 39 percent of the text, also appear in the training data. So the model may have seen them before.",
     "scene": "Three trap cards. Different compute: comparing the 600-step no-positions run (0.684) to the released 3,000-step model (0.452, same eval batches) suggests a 0.232 gap, 7.4× the real 0.031. Unfair tuning: lr 0.003 was chosen for the baseline. Data leakage: 1,642 of 3,001 held-out lines (54.7%) appear verbatim in the training split: all 1,579 short templated lines (Q&A, counting, pets, days, facts) but only 8 of 526 trade stories; 38.5% of held-out characters.",
     "objects": [
      {
@@ -12878,9 +12878,9 @@
     ]
    },
    {
-    "start": 108.37,
-    "end": 131.33,
-    "text": "So at 600 steps, positions win. Now scale it up. The app's full 3,000-step ablation finds the gap all but closes: 0.450 versus 0.451. And papers report causal models can learn position without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis.",
+    "start": 154.6,
+    "end": 191.73,
+    "text": "So at 600 steps, keeping positions wins. Now scale it up: more seeds, longer runs, a bigger model, and check whether the gap holds. The app's full 3,000-step ablation, a longer run with positions removed, finds the gap all but closes: 0.450 versus 0.451. And papers report that causal models, which only look backward, can learn position without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis and test it.",
     "scene": "Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? At 600 steps (mean of 3 seeds) baseline 0.6543 vs no positions 0.6896; at 3,000 steps (the app's ablation, 1 seed) 0.4502 vs 0.4511: the gap nearly closes. Haviv et al. 2022: causal LMs without positional encodings still learn position. CTA: Invent lab.",
     "objects": [
      {
@@ -12971,48 +12971,48 @@
   "id": "frontier",
   "title": "The frontier: a map for model inventors",
   "subtitle": "RoPE, efficient attention, state-space models, GQA, MoE, distillation, retrieval, diffusion LMs, test-time compute, better training",
-  "duration": 142.53,
+  "duration": 232.43,
   "track": "research",
   "order": 20,
   "src": "/videos/frontier.mp4",
   "poster": "/videos/frontier.jpg",
   "relates": "invent",
-  "voice": "orion",
+  "voice": "aura:odysseus",
   "chapters": [
    {
     "t": 0.0,
     "title": "The map"
    },
    {
-    "t": 9.73,
+    "t": 16.67,
     "title": "Long sequences & fast inference"
    },
    {
-    "t": 62.13,
+    "t": 99.0,
     "title": "More model per FLOP"
    },
    {
-    "t": 86.77,
+    "t": 140.2,
     "title": "Knowledge outside the weights"
    },
    {
-    "t": 99.7,
+    "t": 159.4,
     "title": "New ways to generate"
    },
    {
-    "t": 122.1,
+    "t": 197.07,
     "title": "Better training"
    },
    {
-    "t": 136.2,
+    "t": 220.93,
     "title": "Your move"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 9.23,
-    "text": "Want to invent a new kind of model? Here's a map of where people are pushing. Each idea changes one part of the engine TinyGPT runs on.",
+    "end": 16.23,
+    "text": "Want to invent a new kind of model? In the middle are TinyGPT's five parts, from tokens to the generation loop. Here's a map of where people are pushing forward. Each idea changes one part of the engine TinyGPT runs on, and the lines show which part.",
     "scene": "A map: TinyGPT's parts in the centre (tokens & positions, attention, MLP, next-token loss, generation loop) with ten research directions around it, grouped into clusters: long sequences & fast inference (RoPE, efficient attention, state-space/Mamba, grouped-query attention), more model per FLOP (mixture of experts, distillation), knowledge outside the weights (retrieval), new ways to generate (diffusion LMs, test-time compute), how it learns (better training). Dashed lines show which part each idea changes.",
     "objects": [
      {
@@ -13168,9 +13168,9 @@
     ]
    },
    {
-    "start": 9.73,
-    "end": 20.4,
-    "text": "RoPE rotates queries and keys by their position, so attention sees relative distance. It helps stretch context, but using very long contexts well is still hard.",
+    "start": 16.67,
+    "end": 35.87,
+    "text": "First, RoPE. In attention, each token compares its query with earlier tokens' keys. RoPE rotates both by their position, so attention sees how far apart tokens are. That helps stretch the context, the text a model sees at once, but using very long contexts well is still hard.",
     "scene": "Positions & long context (RoPE) (replaces the position table in TinyGPT). Idea: rotate each query and key by angles set by its position, so position enters the score as relative distance. Open question: stretching past the training length only partly works; using very long contexts well is still hard. Refs: RoFormer (Su et al. 2021) · Chen et al. 2023 · Lost in the Middle (Liu et al. 2023).",
     "objects": [
      {
@@ -13206,9 +13206,9 @@
     ]
    },
    {
-    "start": 21.0,
-    "end": 35.1,
-    "text": "Efficient attention approximates or restricts attention, like sliding windows, to dodge the quadratic cost, often losing some quality. FlashAttention instead stays exact and just runs faster.",
+    "start": 36.47,
+    "end": 57.37,
+    "text": "Efficient attention goes after cost. Attention compares each token with every earlier one, so twice the text means about four times the work. Efficient versions approximate or restrict it, like sliding windows that only look nearby, often losing some quality. FlashAttention instead stays exact and just runs faster.",
     "scene": "Linear / efficient attention (changes attention in TinyGPT). Idea: approximate or restrict attention (kernel tricks, sparse or sliding windows) so cost grows ~linearly. Open question: approximations often cost quality; FlashAttention instead stays exact and just runs faster. Refs: Katharopoulos et al. 2020 · Longformer (2020) · FlashAttention (Dao et al. 2022).",
     "objects": [
      {
@@ -13244,9 +13244,9 @@
     ]
    },
    {
-    "start": 35.7,
-    "end": 49.8,
-    "text": "State-space models like Mamba replace attention with a recurrence that carries a fixed-size state, so cost grows linearly with length. Open question: how much exact detail that state can hold.",
+    "start": 57.97,
+    "end": 77.9,
+    "text": "State-space models, like Mamba, replace attention with a recurrence: they carry a fixed-size state, a running summary, from token to token. So the cost grows linearly: twice the text, twice the work. The open question is how much exact detail that state can hold.",
     "scene": "State-space models (Mamba) (replaces attention (Mamba: the whole block) in TinyGPT). Idea: a recurrence carries a fixed-size state along the sequence, yet still trains in parallel; Mamba makes its updates depend on the input. Open question: how much exact detail a fixed-size state can recall; hybrids that keep some attention are popular. Refs: S4 (Gu et al. 2021) · Mamba (Gu & Dao 2023).",
     "objects": [
      {
@@ -13282,9 +13282,9 @@
     ]
    },
    {
-    "start": 50.4,
-    "end": 61.03,
-    "text": "Grouped-query attention lets several query heads share one key and value head. That shrinks the KV cache and speeds up generation, usually with little quality loss.",
+    "start": 78.5,
+    "end": 97.97,
+    "text": "Next, grouped-query attention. Attention is split into heads that work in parallel. Here, several query heads share one key and value head. That shrinks the KV cache, the keys and values stored from earlier tokens. So generation speeds up, usually with little quality loss.",
     "scene": "Grouped-query attention (changes attention and the KV cache in TinyGPT). Idea: several query heads share one key/value head, so far less has to be cached per token. Open question: how much sharing before quality drops; one shared K/V head (multi-query) is the extreme. Refs: multi-query attention (Shazeer 2019) · GQA (Ainslie et al. 2023).",
     "objects": [
      {
@@ -13320,9 +13320,9 @@
     ]
    },
    {
-    "start": 62.13,
-    "end": 74.8,
-    "text": "Mixture of experts swaps the MLP for many expert MLPs, with a router picking a few per token: more parameters, without proportionally more compute. Balancing the experts is the hard part.",
+    "start": 99.0,
+    "end": 120.97,
+    "text": "Mixture of experts swaps the MLP, the small network each token passes through, for many expert MLPs. A router picks a few for each token. So the model gets more parameters, or learned numbers, without proportionally more compute: each token only does a few experts' work. Balancing the load across experts is the hard part.",
     "scene": "Mixture of experts (replaces the MLP in TinyGPT). Idea: many expert MLPs; a learned router sends each token to a few: more parameters, not proportionally more compute. Open question: balancing load across experts; the memory to hold them all. Refs: Shazeer et al. 2017 · Switch Transformer (Fedus et al. 2021) · Mixtral (2024).",
     "objects": [
      {
@@ -13358,9 +13358,9 @@
     ]
    },
    {
-    "start": 75.4,
-    "end": 85.67,
-    "text": "Distillation trains a small student on a big teacher's outputs: its full probabilities, or text it generated. How much skill survives the shrink is the open question.",
+    "start": 121.57,
+    "end": 139.17,
+    "text": "Distillation is about making small models. It trains a small student model on a big teacher model's outputs. Those can be the teacher's full probabilities for every possible next token, or text it generated. The open question is how much skill survives the shrink.",
     "scene": "Distillation & small models (changes the training target in TinyGPT). Idea: train a small student on a big teacher's outputs: its full probabilities, or text it generated. Open question: how much capability survives the shrink. Refs: Hinton, Vinyals & Dean 2015 · DistilBERT (Sanh et al. 2019).",
     "objects": [
      {
@@ -13396,9 +13396,9 @@
     ]
    },
    {
-    "start": 86.77,
-    "end": 98.6,
-    "text": "Retrieval-augmented models look things up, putting relevant documents into the context. Knowledge can stay fresh without retraining, if retrieval finds the right text and the model uses it.",
+    "start": 140.2,
+    "end": 158.37,
+    "text": "Retrieval-augmented models look things up. They search an outside store and put relevant documents into the context, the text the model reads. So knowledge can stay fresh without retraining, as long as retrieval finds the right text and the model actually uses it.",
     "scene": "Retrieval-augmented models (adds to the input (what it reads) in TinyGPT). Idea: look up relevant documents in an external store and put them into the context. Open question: finding the right text, and making the model actually use it. Refs: RAG (Lewis et al. 2020) · RETRO (Borgeaud et al. 2021).",
     "objects": [
      {
@@ -13434,9 +13434,9 @@
     ]
    },
    {
-    "start": 99.7,
-    "end": 109.8,
-    "text": "Diffusion language models drop left-to-right: start fully masked, and refine every position over a number of steps. Whether they match autoregressive quality at scale is still open.",
+    "start": 159.4,
+    "end": 178.97,
+    "text": "Diffusion language models drop the left-to-right order. They start with every position masked, or hidden, and refine every position over a number of steps. Do they match the quality of autoregressive models, which write one token at a time like TinyGPT, at large scale? That's still open.",
     "scene": "Diffusion language models (replaces the left-to-right generation loop in TinyGPT). Idea: start from a fully masked sequence and refine every position over a number of steps. Open question: whether they match autoregressive quality and efficiency at scale is still being studied. Refs: D3PM (Austin et al. 2021) · masked diffusion LMs (e.g. Sahoo et al. 2024).",
     "objects": [
      {
@@ -13472,9 +13472,9 @@
     ]
    },
    {
-    "start": 110.4,
-    "end": 121.0,
-    "text": "Test-time compute spends more thinking per question: write out reasoning steps, or sample several answers and vote. Some recent models are trained with reinforcement learning to reason longer.",
+    "start": 179.57,
+    "end": 196.03,
+    "text": "Test-time compute means more thinking per question, at the moment of answering. The model can write out its reasoning steps, or produce several answers and take a vote. Some recent models are trained with reinforcement learning, learning by trial and reward, to reason longer.",
     "scene": "Test-time compute & reasoning (changes how the generation loop is used in TinyGPT). Idea: spend more compute per question: write out steps, or sample several answers and vote. Open question: when extra thinking pays off, what it costs, and whether written steps reflect the real computation. Refs: chain of thought (Wei et al. 2022) · self-consistency (Wang et al. 2022) · DeepSeek-R1 (2025).",
     "objects": [
      {
@@ -13510,9 +13510,9 @@
     ]
    },
    {
-    "start": 122.1,
-    "end": 135.1,
-    "text": "And if you'd rather invent a training framework: optimizers, data quality and curricula, new objectives like predicting several tokens at once, RL after pretraining, and lower-precision math are all active areas.",
+    "start": 197.07,
+    "end": 219.9,
+    "text": "And if you'd rather invent a better way to train, that's active too. People study optimizers, the rules for updating the learned numbers. They study data quality and curricula, the order data is taught in. Others try new objectives, like predicting several tokens at once, reinforcement learning after pretraining, or lower-precision math to save memory.",
     "scene": "Better training (changes how it learns, not what it is in TinyGPT). Idea: the optimizer, the data and its order, the objective, RL after pretraining, the number format. Open question: many reported gains shrink at larger scale or against a well-tuned baseline. Refs: Adam (Kingma & Ba 2015) · Micikevicius et al. 2018 · multi-token: Gloeckle et al. 2024.",
     "objects": [
      {
@@ -13548,9 +13548,9 @@
     ]
    },
    {
-    "start": 136.2,
-    "end": 141.93,
-    "text": "Every one of these changes one box. Pick a box, form a hypothesis, and run the loop.",
+    "start": 220.93,
+    "end": 231.83,
+    "text": "To sum up, every one of these ideas changes one box of TinyGPT. Pick a box, form a hypothesis you can test, and run the research loop in the Invent lab.",
     "scene": "Back to the full map: TinyGPT's five parts with the ten directions around them. CTA: pick a box, form a hypothesis, run the loop (Invent lab).",
     "objects": [
      {
