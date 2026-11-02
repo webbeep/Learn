@@ -1387,7 +1387,7 @@
   "id": "tokens",
   "title": "Tokens: how a model reads",
   "subtitle": "Byte-pair encoding, merge by merge, with TinyGPT's real 256-token vocab",
-  "duration": 224.23,
+  "duration": 222.27,
   "track": "inference",
   "order": 20,
   "src": "/videos/tokens.mp4",
@@ -1408,15 +1408,15 @@
     "title": "Byte-pair encoding"
    },
    {
-    "t": 110.07,
+    "t": 108.67,
     "title": "Encoding a word"
    },
    {
-    "t": 144.43,
+    "t": 143.03,
     "title": "Weird splits"
    },
    {
-    "t": 194.77,
+    "t": 193.37,
     "title": "Scale"
    }
   ],
@@ -1715,7 +1715,7 @@
    },
    {
     "start": 58.5,
-    "end": 82.33,
+    "end": 80.93,
     "text": "Next, count every pair of neighbors inside those words, meaning two symbols side by side. It counts across the first 400 thousand characters of text. The winner is space t, a space followed by the letter t, found 13,558 times. Merge it into a brand new token, and repeat.",
     "scene": "Bars of the most frequent adjacent pairs inside words, in the first 400k characters of the corpus (the part BPE was trained on): '␣+t' 13,558, 'h+e' 11,868, '␣+a' 10,413, 't+h' 10,372. The winner becomes new token #35 '␣t'.",
     "objects": [
@@ -1852,8 +1852,8 @@
     ]
    },
    {
-    "start": 82.33,
-    "end": 95.63,
+    "start": 80.93,
+    "end": 94.23,
     "text": "The first four merges already build the word 'the', with its space, into a single token. Each merge is saved as a rule, and the rules are kept in the order they were learned. That order will matter in a moment.",
     "scene": "Left: the first four merge rules (␣+t→␣t id 35, h+e→he id 36, ␣+a→␣a id 37, ␣t+he→␣the id 38). Right: '␣the' fusing from 4 characters into one token, id 38.",
     "objects": [
@@ -1910,8 +1910,8 @@
     ]
    },
    {
-    "start": 95.63,
-    "end": 109.63,
+    "start": 94.23,
+    "end": 108.23,
     "text": "Repeat that 221 times. You end up with the 35 base symbols plus 221 new tokens. That's a vocabulary of exactly 256 tokens, the full set it knows.",
     "scene": "Big equation: 35 base symbols + 221 merges = 256 vocab size.",
     "objects": [
@@ -1948,8 +1948,8 @@
     ]
    },
    {
-    "start": 110.07,
-    "end": 127.2,
+    "start": 108.67,
+    "end": 125.8,
     "text": "Now let's use the rules to turn new text, like Wednesday, into tokens. Start from single characters, and replay the merges in the order they were learned. Space w merges first, then a y, then e d. The lowest rule number always goes first.",
     "scene": "' wednesday' as 10 character chips; below, a panel shows the merge being applied. Merges fire in learned order: ␣+w → ␣w (rank 9), a+y → ay (rank 10), e+d → ed (rank 13).",
     "objects": [
@@ -2036,8 +2036,8 @@
     ]
    },
    {
-    "start": 127.2,
-    "end": 144.0,
+    "start": 125.8,
+    "end": 142.6,
     "text": "Then e s join together. Then d plus ay makes day, and es plus day makes esday. So ten characters have become just four tokens: space w, ed, n, and esday.",
     "scene": "Remaining merges: e+s → es, d+ay → day, es+day → esday. Final result: ␣w (43) · ed (47) · n (16) · esday (202) — 4 tokens.",
     "objects": [
@@ -2094,8 +2094,8 @@
     ]
    },
    {
-    "start": 144.43,
-    "end": 163.3,
+    "start": 143.03,
+    "end": 161.9,
     "text": "Notice that these splits ignore grammar. The piece 'esday' exists because Tuesday and Wednesday both end with it. Jumping becomes space, j, um, p, ing, not jump plus ing. And the model never sees inside a token, only its ID number.",
     "scene": "Examples: ' tuesday' → ␣t · u · esday (shares 'esday', id 202, with wednesday); ' jumping' → ␣ · j · um · p · ing.",
     "objects": [
@@ -2122,8 +2122,8 @@
     ]
    },
    {
-    "start": 163.3,
-    "end": 174.13,
+    "start": 161.9,
+    "end": 172.73,
     "text": "Words that show up a lot get a token all to themselves. Space red, the word red with its space, is just ID 157, one single chunk.",
     "scene": "' red' → a single token, id 157.",
     "objects": [
@@ -2160,8 +2160,8 @@
     ]
    },
    {
-    "start": 174.13,
-    "end": 194.33,
+    "start": 172.73,
+    "end": 192.93,
     "text": "There's one catch. This model's tiny world of stories is all lowercase, so a capital W becomes the unknown token. Most real tokenizers, the tools that do this chopping, start from the 256 possible bytes instead. All text on a computer is stored as bytes, so nothing is ever unknown.",
     "scene": "'Wednesday' with a capital W encodes as <unk> (id 0) · ed · n · esday: TinyGPT's vocab is lowercase only. Note: most real tokenizers start from the 256 possible bytes, so nothing is ever unknown.",
     "objects": [
@@ -2198,8 +2198,8 @@
     ]
    },
    {
-    "start": 194.77,
-    "end": 210.0,
+    "start": 193.37,
+    "end": 208.03,
     "text": "So how big do vocabularies get? Our vocab has 256 entries. GPT-2 had 50,257. Newer models go past 100 thousand. It's the same algorithm, just with a bigger table.",
     "scene": "Vocab-size bars to scale: TinyGPT 256 (a sliver), GPT-2 50,257, newer LLMs drawn at 100,000 with an arrow for 'and up'. Flash: 'same algorithm, bigger table'.",
     "objects": [
@@ -2236,8 +2236,8 @@
     ]
    },
    {
-    "start": 210.0,
-    "end": 223.73,
+    "start": 208.03,
+    "end": 221.77,
     "text": "A bigger vocab means fewer tokens per sentence. But it means a bigger embedding table, with a row of numbers for each token. It's a knob you'll get to turn when you build your own. So tokens are numbered chunks of text.",
     "scene": "Trade-off: bigger vocab → fewer tokens per sentence but a bigger embedding table (TinyGPT 256×64 = 16,384 numbers; GPT-2 50,257×768 = 38.6 million).",
     "objects": [
@@ -2279,7 +2279,7 @@
   "id": "embeddings",
   "title": "Embeddings: words as directions",
   "subtitle": "The lookup table that turns token ids into 64 numbers, and the meaning hiding in them",
-  "duration": 216.23,
+  "duration": 217.4,
   "track": "inference",
   "order": 30,
   "src": "/videos/embeddings.mp4",
@@ -2296,23 +2296,23 @@
     "title": "The lookup table"
    },
    {
-    "t": 58.83,
+    "t": 60.1,
     "title": "Meaning = direction"
    },
    {
-    "t": 100.9,
+    "t": 102.17,
     "title": "The map"
    },
    {
-    "t": 147.87,
+    "t": 149.13,
     "title": "Position"
    },
    {
-    "t": 186.67,
+    "t": 187.93,
     "title": "Bigger models"
    },
    {
-    "t": 203.47,
+    "t": 204.63,
     "title": "Recap"
    }
   ],
@@ -2375,7 +2375,7 @@
    },
    {
     "start": 35.7,
-    "end": 58.4,
+    "end": 59.67,
     "text": "All 16,384 numbers in this table started as random noise. And the same table is reused at the very end, to score every possible next token. So training, the model's learning process, pulls tokens that fit the same slots toward similar rows. In other words, tokens that fill the same spot in a sentence, like two colors, get similar numbers.",
     "scene": "Same view; captions: 'started random → shaped by training' and 'reused at the end to score every next token (weight tying)'. The table holds 16,384 of the model's 170,560 parameters.",
     "objects": [
@@ -2422,8 +2422,8 @@
     ]
    },
    {
-    "start": 58.83,
-    "end": 77.47,
+    "start": 60.1,
+    "end": 78.73,
     "text": "No single number means red. Think of the whole row as an arrow: what matters is the direction it points. Purple points almost the same way. We compare directions with cosine similarity, which measures how well two arrows line up. One means same way, zero means unrelated.",
     "scene": "Toy 2-D picture: arrows for ' red' and ' purple' point almost the same way, ' tom' points elsewhere. Text: cosine similarity = how aligned two arrows are (+1 same way, 0 unrelated, −1 opposite).",
     "objects": [
@@ -2450,8 +2450,8 @@
     ]
    },
    {
-    "start": 77.47,
-    "end": 100.47,
+    "start": 78.73,
+    "end": 101.73,
     "text": "Now the real thing. Red's nearest neighbours are the tokens whose rows point most nearly the same way. First comes purple, with a score of 0.92, then white and black. Tom's neighbours are other names. Cat's are animals. Park's are places. A random pair of tokens scores only about 0.1, so these really are close.",
     "scene": "Four real nearest-neighbour lists (cosine similarity over all 64 dims): 'red' → purple 0.92, white 0.85, black 0.84, yellow 0.75; 'tom' → max 0.63, finn 0.59, leo 0.58, zoe 0.58; 'cat' → bear 0.59, fish 0.57, dog 0.56, owl 0.54; 'park' → river 0.75, school 0.73, forest 0.71, house 0.71. Average token pair: 0.12.",
     "objects": [
@@ -2508,8 +2508,8 @@
     ]
    },
    {
-    "start": 100.9,
-    "end": 121.27,
+    "start": 102.17,
+    "end": 122.53,
     "text": "Now let's squash all 256 rows from 64 dimensions, one per number, down to two. We use a standard method called PCA, and plot each token as a dot. The names split off into their own island. Colors, animals, objects and places crowd together in one big group.",
     "scene": "Real 2-D PCA of all 256 token embeddings (axes keep 12.6% of the variance). Names (teal) form a separate island at the bottom; colors, animals, objects and places bunch together on the right; other tokens are faint gray dots.",
     "objects": [
@@ -2576,8 +2576,8 @@
     ]
    },
    {
-    "start": 121.27,
-    "end": 147.43,
+    "start": 122.53,
+    "end": 148.7,
     "text": "Let's zoom in. Re-run PCA on just these 48 words. The names sit far away. Colors and places get their own patches. Animals and objects overlap, and that makes sense: they fill the same slot in a sentence. They're nouns that come after 'the', and often after a color, like 'the red ball'. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group.",
     "scene": "Real PCA of only the 48 group words (names, colors, animals, objects, places): names far off, colors and places in their own patches, animals and objects overlapping (both fill the same noun slot: after 'the', often after a color). Verdict: 48/48 words have their nearest cosine neighbour (in 64-D) in their own group.",
     "objects": [
@@ -2654,8 +2654,8 @@
     ]
    },
    {
-    "start": 147.87,
-    "end": 166.67,
+    "start": 149.13,
+    "end": 167.93,
     "text": "But red at position 3 and red at position 20 would look identical. The model couldn't tell where each word sits. So a second table holds one learned vector, another list of numbers, for each position. And it's simply added on. The sum is what the first layer sees.",
     "scene": "Three real 64-cell strips: the ' red' token embedding (length 1.18) + the learned position-3 embedding (length 0.59) = the vector layer 1 actually sees.",
     "objects": [
@@ -2692,8 +2692,8 @@
     ]
    },
    {
-    "start": 166.67,
-    "end": 186.23,
+    "start": 167.93,
+    "end": 187.5,
     "text": "Now compare all 64 position vectors with each other, using cosine similarity again. Bright means similar. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, and some even point the opposite way. So the model has learned a smooth sense of where each token is.",
     "scene": "Real 64×64 cosine-similarity heatmap of the learned position embeddings: a bright diagonal band (neighbours average 0.95) fading to blue far from it (position 0 vs 63: -0.74). Position vectors average length 0.40 vs 1.12 for token vectors.",
     "objects": [
@@ -2750,8 +2750,8 @@
     ]
    },
    {
-    "start": 186.67,
-    "end": 203.03,
+    "start": 187.93,
+    "end": 204.2,
     "text": "Sixty-four numbers per token is tiny. The largest version of GPT-3 uses 12,288 numbers per token, which is 192 times the room. With more directions to point in, the model can keep more distinctions apart at once.",
     "scene": "TinyGPT's 64-number embedding as one row of 64 squares vs GPT-3's (largest) 12,288: 30 visible rows of 64 squares and a note that 162 more rows would be needed (192× more room).",
     "objects": [
@@ -2778,8 +2778,8 @@
     ]
    },
    {
-    "start": 203.47,
-    "end": 215.63,
+    "start": 204.63,
+    "end": 216.8,
     "text": "So, to sum up: an embedding is a learned row of numbers for each token. Its meaning lives in the direction it points. Similar tokens point similar ways. Go find them in the X-ray lab.",
     "scene": "Recap: token id 157 → its 64-number row (+ position) → a direction in space. Card: 'now find them in the X-ray'.",
     "objects": [
@@ -6521,7 +6521,7 @@
   "id": "training",
   "title": "How it learned",
   "subtitle": "Training in under 2 minutes: loss, gradient descent, and real samples from step 0 to step 3000",
-  "duration": 212.73,
+  "duration": 209.53,
   "track": "training",
   "order": 10,
   "src": "/videos/training.mp4",
@@ -6546,15 +6546,15 @@
     "title": "Gradient descent"
    },
    {
-    "t": 124.6,
+    "t": 121.4,
     "title": "The loss curve"
    },
    {
-    "t": 164.33,
+    "t": 161.13,
     "title": "What it wrote"
    },
    {
-    "t": 201.3,
+    "t": 198.1,
     "title": "Recap"
    }
   ],
@@ -6733,7 +6733,7 @@
    },
    {
     "start": 72.97,
-    "end": 103.3,
+    "end": 99.13,
     "text": "So how does the model get better? First, backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss, and by how much. That is the gradient. Then gradient descent takes a small step that way, and repeats. It's like a ball rolling downhill. The real optimizer, the rule TinyGPT actually uses, is AdamW. It's a smarter version of that step.",
     "scene": "A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step shown with a slope arrow, settling near a low point. Note: the real optimizer is AdamW, learning rate 0.003.",
     "objects": [
@@ -6770,9 +6770,9 @@
     ]
    },
    {
-    "start": 103.3,
-    "end": 124.17,
-    "text": "Each step grades 64 random snippets of 64 tokens at once. Each tiny square is one prediction. That's 4,096 predictions per step, for 3000 steps in all. That's about 7.7 passes over the training text. One pass means reading all of it once.",
+    "start": 99.13,
+    "end": 120.97,
+    "text": "Each step grades 64 random snippets at once, and each snippet is 64 tokens long. Each tiny square is one prediction. That's 4,096 predictions per step, for 3000 steps in all. That's about 7.7 passes over the training text. One pass means reading all of it once.",
     "scene": "A 64×64 grid of tiny squares = 4,096 next-token predictions per training step; × 3,000 steps ≈ 12.3 million graded guesses ≈ 7.7 passes over the 1,602,516-token training split.",
     "objects": [
      {
@@ -6808,8 +6808,8 @@
     ]
    },
    {
-    "start": 124.6,
-    "end": 163.9,
+    "start": 121.4,
+    "end": 160.7,
     "text": "Here's the real loss curve, on a log scale, which makes small late gains easier to see. It starts at 5.56, right at chance, which means pure guessing. It crashes below 1 by step 150. Then it keeps grinding down to about 0.46. The dashed line is the loss on held-out text, which the model never trains on. Our tiny world reuses sentence templates, so that text isn't all new. But freshly generated stories score 0.45. So the model learned patterns, not pages. It didn't just memorize the text.",
     "scene": "The real training curve from training.json (121 points every 25 steps), log-scale loss axis: train loss (yellow) and held-out loss (dashed teal; 54.7% of held-out lines also occur verbatim in training, since the tiny world reuses templates) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and keep falling to 0.46 (held-out 0.46) at step 3000. Note: freshly generated stories (new seed) score 0.45.",
     "objects": [
@@ -6886,8 +6886,8 @@
     ]
    },
    {
-    "start": 164.33,
-    "end": 187.13,
+    "start": 161.13,
+    "end": 183.93,
     "text": "And here's what the model wrote along the way, one sample at each stage, all from the same prompt. At step zero, it's word salad, a jumble of words that means nothing. It's made of real words, though, because many tokens are whole words. By step 100, the grammar is still broken. By step 300, it writes actual sentences.",
     "scene": "One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 (loss 0.69) well-formed sentences.",
     "objects": [
@@ -6914,8 +6914,8 @@
     ]
    },
    {
-    "start": 187.13,
-    "end": 200.87,
+    "start": 183.93,
+    "end": 197.67,
     "text": "At step 1000, the model still handed Tom the yellow ball. That's wrong, because Mia gave him the red one. By step 3000, it's the red ball. That's correct, and nobody ever told the model why.",
     "scene": "Step 1000 sample ends 'now tom has the yellow ball' (highlighted pink — wrong, mia gave him the red ball); step 3000 sample ends 'now tom has the red ball' (highlighted teal — correct).",
     "objects": [
@@ -6952,8 +6952,8 @@
     ]
    },
    {
-    "start": 201.3,
-    "end": 212.13,
+    "start": 198.1,
+    "end": 208.93,
     "text": "Nobody wrote a single rule. It all came from one loop: predict, measure the miss, nudge the weights, repeat. Next up, train your own model.",
     "scene": "The training loop as pills: predict → measure the miss → nudge the weights → repeat, with an arrow looping back. Final card: 'next: train your own'.",
     "objects": [
@@ -8151,7 +8151,7 @@
   "id": "backprop",
   "title": "Backprop: blame flows backwards",
   "subtitle": "The chain rule on a toy graph, then TinyGPT's real gradients for one prediction",
-  "duration": 221.73,
+  "duration": 222.03,
   "track": "training",
   "order": 30,
   "src": "/videos/backprop.mp4",
@@ -8164,30 +8164,30 @@
     "title": "Who's to blame?"
    },
    {
-    "t": 22.03,
+    "t": 20.83,
     "title": "The chain rule"
    },
    {
-    "t": 79.6,
+    "t": 78.4,
     "title": "Real gradients"
    },
    {
-    "t": 121.63,
+    "t": 121.93,
     "title": "One step"
    },
    {
-    "t": 186.47,
+    "t": 186.77,
     "title": "The cost"
    },
    {
-    "t": 207.0,
+    "t": 207.3,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 21.6,
+    "end": 20.4,
     "text": "TinyGPT guessed red at 87 percent. That still leaves some loss, our score for how wrong it was. Which of its 170,560 weights, the numbers it learns, deserve the blame? And how much? Backpropagation, or backprop, answers that for all of them, in one sweep backwards.",
     "scene": "The end of the probe prompt '… tom has the' → ' red' at 87.1%, loss 0.138; below, a grid of dots standing for the model's 170,560 weights with the question 'which ones are to blame?'.",
     "objects": [
@@ -8224,8 +8224,8 @@
     ]
    },
    {
-    "start": 22.03,
-    "end": 39.43,
+    "start": 20.83,
+    "end": 38.23,
     "text": "Let's start with a toy version. Here, x is two, and w, the weight, is three. Going forward, two times three is six, plus one is seven. That misses the target, five, by two. Squared, the loss is four.",
     "scene": "Toy computational graph (labelled toy): x = 2 and w = 3 feed a × node giving a = 6; a and b = 1 feed a + node giving z = 7; (z − t)² with target t = 5 gives loss L = 4. Forward values in teal.",
     "objects": [
@@ -8322,8 +8322,8 @@
     ]
    },
    {
-    "start": 39.43,
-    "end": 62.0,
+    "start": 38.23,
+    "end": 60.8,
     "text": "Now we go backwards, passing blame from the loss back to the inputs. The slope at z is how fast the loss changes when z moves. Here it's twice the miss: four. A plus node passes blame straight through. So a and b each get four. A times node scales the blame by the other input. So w gets eight, and x gets twelve.",
     "scene": "Backward pass on the toy graph, arrows reversed, gradients in orange flowing right-to-left: ∂L/∂z = 2(z − 5) = 4; the + node copies it: ∂L/∂a = 4, ∂L/∂b = 4; the × node multiplies by the other input: ∂L/∂w = 4 × 2 = 8, ∂L/∂x = 4 × 3 = 12.",
     "objects": [
@@ -8470,8 +8470,8 @@
     ]
    },
    {
-    "start": 62.0,
-    "end": 79.17,
+    "start": 60.8,
+    "end": 77.97,
     "text": "Let's check that the brute-force way. Nudge w by a hair, a tiny amount, and the loss moves eight times as much. That's just what we predicted. So the rule is simple. Each node just multiplies the blame from above by its own local slope, and passes it on.",
     "scene": "Finite-difference check of the toy gradient: (L(w+ε) − L(w−ε))/2ε with ε = 0.0001 gives 8.0000, matching ∂L/∂w = 8. Rule shown on top: blame in = blame from above × local slope.",
     "objects": [
@@ -8628,8 +8628,8 @@
     ]
    },
    {
-    "start": 79.6,
-    "end": 102.37,
+    "start": 78.4,
+    "end": 101.17,
     "text": "Now the real thing. The model gives each token, each possible next piece of text, a final score called a logit. Each logit's blame is its probability, minus one if it's the right answer. Red: minus 0.13, so push its score up. White and purple: plus, so push theirs down.",
     "scene": "Real gradient of the loss w.r.t. TinyGPT's output logits on the probe prompt (target ' red'): ∂loss/∂logit = p − onehot. ' red' -0.129 (teal, push up), ' white' +0.059, ' purple' +0.051, ' black' +0.0028, ' ava' +0.0015 (orange, push down); the other 251 are each between 0 and +0.0011.",
     "objects": [
@@ -8706,8 +8706,8 @@
     ]
    },
    {
-    "start": 102.37,
-    "end": 121.2,
+    "start": 101.17,
+    "end": 121.5,
     "text": "That blame flows down through all three layers, from the output back to the input. Where paths merge, like the residual stream, blames add up. That stream is the running total that every layer adds to. From this one prediction, 167,744 weights get some blame, nearly all of them.",
     "scene": "Real gradient norms per part of TinyGPT for this one prediction, top (output) to bottom (input): final LayerNorm 0.10, layer 3 MLP 0.84, layer 3 attention 1.06, layer 2 MLP 1.93, layer 2 attention 2.82, layer 1 MLP 3.34, layer 1 attention 5.09, position embedding 2.14, token embedding (tied) 2.84. 167,744 of 170,560 weights have a nonzero gradient; the 192 attention key biases and 2,624 unused position weights get exactly zero.",
     "objects": [
@@ -8824,8 +8824,8 @@
     ]
    },
    {
-    "start": 121.63,
-    "end": 142.57,
+    "start": 121.93,
+    "end": 142.87,
     "text": "Look at one real weight. Its gradient, its share of the blame, is minus 0.07. Negative means: increase me, and the loss drops. A plain step at learning rate 0.003, which sets the step size, adds 0.0002.",
     "scene": "Heat map of the real gradient of layer 3's MLP output matrix (64×256). Highlighted: row 57, column 212, weight 0.0974, gradient -0.0702 (finite-difference check -0.0702). Gradient step at lr 0.003: −lr × grad = +0.00021, new weight 0.0976. Labelled as a toy: plain gradient descent on one prediction.",
     "objects": [
@@ -8872,8 +8872,8 @@
     ]
    },
    {
-    "start": 142.57,
-    "end": 166.1,
+    "start": 142.87,
+    "end": 166.4,
     "text": "But take that step on every weight at once, and it overshoots: red falls to 51 percent. So TinyGPT's training clips the gradient whenever its overall length is more than one, scaling it down to length one. This gradient's length is 7.95, far too long. Clipped, red rises to 87.5, a small gain in the right direction.",
     "scene": "Two real outcomes of one gradient step at lr 0.003 on all 170,560 weights: raw gradient (length 7.95) → p(red) 87.1% → 50.6% (overshoot); gradient clipped to length 1 (train.py clips whenever the length exceeds 1) → 87.1% → 87.5%.",
     "objects": [
@@ -8900,8 +8900,8 @@
     ]
    },
    {
-    "start": 166.1,
-    "end": 186.03,
+    "start": 166.4,
+    "end": 186.33,
     "text": "Real training is different. It averages blame over each batch, a group of 4,096 predictions. It uses 0.003 only as the peak of a cosine schedule, which ramps the rate up, then down. And it lets AdamW, a smarter update rule, set each weight's step.",
     "scene": "Real training differs from the toy step: averages over 4,096 predictions per batch, clips the gradient only when its length exceeds 1, uses lr 0.003 as the peak of a warmup + cosine schedule, and AdamW adapts each weight's step size.",
     "objects": [
@@ -8948,8 +8948,8 @@
     ]
    },
    {
-    "start": 186.47,
-    "end": 206.57,
+    "start": 186.77,
+    "end": 206.87,
     "text": "Why does the backward pass cost about twice the forward pass? The model's main work is matrix multiplies, which combine big grids of numbers. Each forward matrix multiply needs two going back. It must work out blame for its inputs, and for its weights. So a training step costs roughly three forward passes.",
     "scene": "Matrix diagram: forward Y = X·W (one multiply); backward dX = dY·Wᵀ (blame for inputs) and dW = Xᵀ·dY (blame for weights): two multiplies. Tally: forward ≈ 1, backward ≈ 2, training step ≈ 3 units (approximate). Note: activations must be stored for the backward pass.",
     "objects": [
@@ -9006,8 +9006,8 @@
     ]
    },
    {
-    "start": 207.0,
-    "end": 221.13,
+    "start": 207.3,
+    "end": 221.43,
     "text": "Go forward to get the loss. Go backward to share the blame. Then nudge every weight. In PyTorch, a coding library, loss dot backward does the middle step for you. Go watch the gradients flow.",
     "scene": "Recap loop: forward (get the loss) → backward (share the blame) → nudge every weight, looping back, × 3,000 steps. Final card: 'watch the gradients in the Backprop lab'.",
     "objects": [
@@ -9069,7 +9069,7 @@
   "id": "optimizers",
   "title": "Optimizers: learning rate, momentum & Adam",
   "subtitle": "Why the learning rate is the knob that matters most, and why AdamW is the default (real sweeps)",
-  "duration": 212.77,
+  "duration": 214.4,
   "track": "training",
   "order": 40,
   "src": "/videos/optimizers.mp4",
@@ -9090,23 +9090,23 @@
     "title": "Too small, too big"
    },
    {
-    "t": 62.63,
+    "t": 64.27,
     "title": "Momentum"
    },
    {
-    "t": 105.53,
+    "t": 107.17,
     "title": "Adam"
    },
    {
-    "t": 144.1,
+    "t": 145.73,
     "title": "Why AdamW"
    },
    {
-    "t": 174.1,
+    "t": 175.73,
     "title": "Schedule"
    },
    {
-    "t": 196.83,
+    "t": 198.47,
     "title": "Recap"
    }
   ],
@@ -9277,8 +9277,8 @@
    },
    {
     "start": 43.4,
-    "end": 62.2,
-    "text": "The real runs agree. Learning rate one e minus four, which is tiny, is still crawling, at a loss of 1.74. Three e minus three reaches 0.55, the best of these three. At 0.1, the steps are too big: it thrashes around and ends at 3.72.",
+    "end": 63.83,
+    "text": "The real runs agree. Learning rate one e minus four, which is very small, is still crawling, at a loss of 1.74. Three e minus three reaches 0.55, the best of these three. At 0.1, the steps are too big: it thrashes around and ends at 3.72.",
     "scene": "Real AdamW validation curves: lr 1e-4 (too small) ends at 1.74, lr 3e-3 (best) ends at 0.55, lr 0.1 (too big) ends at 3.72.",
     "objects": [
      {
@@ -9314,8 +9314,8 @@
     ]
    },
    {
-    "start": 62.63,
-    "end": 86.37,
+    "start": 64.27,
+    "end": 88.0,
     "text": "Loss landscapes often have long, narrow valleys, like this toy one seen from above. Plain gradient descent, the simple rule from before, zigzags across the walls. It only creeps along the floor. Momentum adds up past gradients, like a heavy ball that keeps rolling. The back-and-forth parts cancel out. The steady downhill part builds speed.",
     "scene": "Toy 2-D elongated valley (illustration, contour ellipses), same learning rate 0.19 for both. Top: plain gradient descent zigzags for all 30 steps and ends 1.41 from the minimum; bottom: with momentum (β=0.5, v = 0.5·v + gradient) the zigzag dies out within ~8 steps and it ends 0.32 from the minimum.",
     "objects": [
@@ -9342,8 +9342,8 @@
     ]
    },
    {
-    "start": 86.37,
-    "end": 105.1,
+    "start": 88.0,
+    "end": 106.73,
     "text": "Now the real model. The best run of plain SGD, the simple rule we just saw, ends at 0.74. With momentum, it reaches 0.57. That's at a lower learning rate, since momentum sums gradients, which makes its steps bigger.",
     "scene": "Real runs, best learning rate of each: SGD (lr 1) → 0.74, SGD + momentum 0.9 (lr 0.3) → 0.57.",
     "objects": [
@@ -9370,8 +9370,8 @@
     ]
    },
    {
-    "start": 105.53,
-    "end": 121.47,
+    "start": 107.17,
+    "end": 123.1,
     "text": "But here's the catch. The weights come in separate groups, called tensors. At step zero, typical gradient sizes differ hugely between these weight tensors. The biggest is 274 times the smallest. So one learning rate can't suit them all.",
     "scene": "Real per-weight gradient size (RMS of the gradient) for 8 of TinyGPT's tensors at initialisation, log scale: from 7.1e-05 (blocks.0.ln1.weight) to 1.9e-02 (blocks.0.attn_out.bias), a 274× spread.",
     "objects": [
@@ -9478,8 +9478,8 @@
     ]
    },
    {
-    "start": 121.47,
-    "end": 143.67,
+    "start": 123.1,
+    "end": 145.3,
     "text": "Adam fixes this. For every weight, it keeps two running averages, updated every step. On top is the average of the gradient. That's the gradient, smoothed out, which is momentum. Below is the average of the gradient squared: that weight's typical gradient size. Dividing one by the square root of the other gives each weight its own step size.",
     "scene": "Adam's update: step = lr × avg(gradient) / √avg(gradient²). Top term = momentum (smoothed direction); bottom = each weight's own typical gradient size, so each weight moves at most about lr per step. PyTorch defaults β1 0.9, β2 0.999, + ε.",
     "objects": [
@@ -9516,8 +9516,8 @@
     ]
    },
    {
-    "start": 144.1,
-    "end": 173.67,
+    "start": 145.73,
+    "end": 175.3,
     "text": "AdamW adds weight decay: a small shrink of every weight at each step, applied directly to the weights. This grid shows every run in this one sweep, and teal boxes came close to the best. For AdamW, the biggest good learning rate is 10 times the smallest. For SGD with momentum, just 3 times. Plain SGD never got close. That forgiveness, not needing a perfect learning rate, is a big reason AdamW is the usual default.",
     "scene": "Grid of every real sweep run (learning rate → final val loss). Teal boxes are within 25% of the best (0.68): AdamW 3/7, SGD+momentum 2/4, SGD 0/4.",
     "objects": [
@@ -9684,8 +9684,8 @@
     ]
    },
    {
-    "start": 174.1,
-    "end": 196.4,
+    "start": 175.73,
+    "end": 198.03,
     "text": "Our real recipe for TinyGPT also changes the learning rate over time. That's called a schedule. First, warm up for 100 steps. The rate rises gradually while Adam's averages are still noisy. Then decay along a cosine curve. The rate falls smoothly toward zero, so the model settles. The sweep kept the rate constant on purpose.",
     "scene": "Real learning-rate schedule of the shipped TinyGPT recipe (train/train.py): linear warm-up over 100 steps to 0.003, then cosine decay to 0 at step 3000; plus gradient clipping at norm 1.0. The sweep in this video used a constant rate instead.",
     "objects": [
@@ -9732,8 +9732,8 @@
     ]
    },
    {
-    "start": 196.83,
-    "end": 212.17,
+    "start": 198.47,
+    "end": 213.8,
     "text": "So here's the recipe. Start with AdamW. Sweep the learning rate in steps of three, trying each value three times bigger than the last. Warm up, then decay. And if the loss suddenly spikes, turn the learning rate down.",
     "scene": "Recap pills: start with AdamW; sweep the learning rate ×3 at a time; warm up, then decay; loss spikes → lower it.",
     "objects": [
@@ -9785,7 +9785,7 @@
   "id": "train-your-own",
   "title": "Train your own: data, batches, epochs & overfitting",
   "subtitle": "The whole training recipe, and what to watch, with real overfitting runs",
-  "duration": 205.93,
+  "duration": 201.97,
   "track": "training",
   "order": 50,
   "src": "/videos/train-your-own.mp4",
@@ -9810,23 +9810,23 @@
     "title": "Batches & steps"
    },
    {
-    "t": 97.83,
+    "t": 93.87,
     "title": "Train vs validation"
    },
    {
-    "t": 123.03,
+    "t": 119.07,
     "title": "Overfitting"
    },
    {
-    "t": 158.83,
+    "t": 154.87,
     "title": "More data closes the gap"
    },
    {
-    "t": 178.27,
+    "t": 174.3,
     "title": "What to watch"
    },
    {
-    "t": 197.17,
+    "t": 193.2,
     "title": "Your turn"
    }
   ],
@@ -10015,7 +10015,7 @@
    },
    {
     "start": 74.13,
-    "end": 97.4,
+    "end": 93.43,
     "text": "How much of the data does training actually see? An epoch is one full pass over the training data. Here, that takes about 782 steps. Our 1,500-step runs see each token about twice, on average. But windows are random. So some tokens get seen more often, and some are never seen at all.",
     "scene": "Equation: 1,602,516 training tokens ÷ 2,048 tokens per step ≈ 782 steps per epoch; 1,500 steps ≈ 1.9 epochs.",
     "objects": [
@@ -10062,8 +10062,8 @@
     ]
    },
    {
-    "start": 97.83,
-    "end": 122.6,
+    "start": 93.87,
+    "end": 118.63,
     "text": "Now watch two numbers. Training loss shows how well the model does on the text it studies. Validation loss shows how it does on held-out text it never trains on. With all the data, the two move together, and the deduplicated set, the stories never seen word for word, lands at 0.51. So here, unseen means new combinations of sentences it already knows.",
     "scene": "Real curves, all 1,602,516 training tokens, 1500 steps, loss axis 0–6: train (yellow), validation (pink) and deduplicated validation (dashed blue) start at 5.56 and end at 0.483 / 0.488 / 0.514.",
     "objects": [
@@ -10110,8 +10110,8 @@
     ]
    },
    {
-    "start": 123.03,
-    "end": 147.23,
+    "start": 119.07,
+    "end": 143.27,
     "text": "Now let's see what goes wrong with too little data. Same model, same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs, so it sees the same text over and over. Training loss dives to 0.07, almost perfect. Validation loss bottoms out around step 200, then climbs back up.",
     "scene": "Real overfitting run (axis zoomed to 0–3): 4,096 training tokens (750 epochs). Train loss (yellow) → 0.067; validation loss (pink) is best (1.156) at step 200 and ends at 1.728 (deduplicated validation: 1.784).",
     "objects": [
@@ -10168,8 +10168,8 @@
     ]
    },
    {
-    "start": 147.23,
-    "end": 158.4,
+    "start": 143.27,
+    "end": 154.43,
     "text": "The model memorized those few thousand tokens instead of learning the language. So it does badly on anything new. That widening gap between the two curves is called overfitting.",
     "scene": "A pink arrow spans the gap between train 0.07 and validation 1.73 at step 1500: overfitting (memorizing, not generalizing).",
     "objects": [
@@ -10226,8 +10226,8 @@
     ]
    },
    {
-    "start": 158.83,
-    "end": 177.83,
+    "start": 154.87,
+    "end": 173.87,
     "text": "Give it more data, and the gap closes. Here are four runs, each with more data. The gap is 1.7 with four thousand tokens, and by 256 thousand it's already gone. Remember, this corpus, our training text, repeats itself a lot.",
     "scene": "Four real runs side by side (4k tokens, 32k tokens, 256k tokens, all 1.6M tokens), each with train (yellow) and validation (pink) curves; final gaps (val − train): 1.662, 0.185, 0.005, 0.005.",
     "objects": [
@@ -10274,8 +10274,8 @@
     ]
    },
    {
-    "start": 178.27,
-    "end": 196.73,
+    "start": 174.3,
+    "end": 192.77,
     "text": "When you train your own, check four things. The first loss should match pure guessing: the log of the vocab size. You want a fast drop, then a slow grind. Look for validation following training. And no spikes, which mean the learning rate is too high.",
     "scene": "Checklist: 1) step-0 loss ≈ ln(256) = 5.55 (ours 5.56); 2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / early stop); 4) no spikes or NaN (else lower the learning rate).",
     "objects": [
@@ -10322,8 +10322,8 @@
     ]
    },
    {
-    "start": 197.17,
-    "end": 205.13,
+    "start": 193.2,
+    "end": 201.17,
     "text": "That's the whole recipe: data, batches, steps, and watching the loss. Now train one in your browser.",
     "scene": "Final card: 'now train one in your browser →'.",
     "objects": [
@@ -12551,7 +12551,7 @@
   "id": "research-loop",
   "title": "The research loop: test your own idea",
   "subtitle": "Hypothesis → smallest experiment → baseline → one change → compare → scale. A real TinyGPT experiment",
-  "duration": 192.33,
+  "duration": 190.13,
   "track": "research",
   "order": 10,
   "src": "/videos/research-loop.mp4",
@@ -12879,7 +12879,7 @@
    },
    {
     "start": 154.6,
-    "end": 191.73,
+    "end": 189.53,
     "text": "So at 600 steps, keeping positions wins. Now scale it up: more seeds, longer runs, a bigger model, and check whether the gap holds. The app's full 3,000-step ablation, a longer run with positions removed, finds the gap all but closes: 0.450 versus 0.451. And papers report that causal models, which only look backward, can learn position without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis and test it.",
     "scene": "Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? At 600 steps (mean of 3 seeds) baseline 0.6543 vs no positions 0.6896; at 3,000 steps (the app's ablation, 1 seed) 0.4502 vs 0.4511: the gap nearly closes. Haviv et al. 2022: causal LMs without positional encodings still learn position. CTA: Invent lab.",
     "objects": [
