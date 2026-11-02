@@ -31,7 +31,7 @@ export function AttentionScene({ m, step, t, view, setView }: SceneProps) {
         <ToggleGroup type="single" variant="outline" size="sm" value={String(view.head)} onValueChange={(v) => v && setView({ head: +v })}>
           {Array.from({ length: H }, (_, h) => <ToggleGroupItem key={h} value={String(h)} className="w-8">{h + 1}</ToggleGroupItem>)}
         </ToggleGroup>
-        <span className="ml-2 text-xs text-muted-foreground">Click a token to look from it</span>
+        
         {view.query !== null && <Button variant="ghost" size="xs" onClick={() => setView({ query: null })}>Reset to last token</Button>}
       </div>
 
@@ -59,7 +59,7 @@ export function AttentionScene({ m, step, t, view, setView }: SceneProps) {
 
       <div className="att-bottom">
         <div>
-          <div className="lane-label">Full attention pattern · L{view.layer + 1} H{view.head + 1} (row = looking from, column = looking at)</div>
+          <div className="lane-label">Layer {view.layer + 1}, head {view.head + 1}</div>
           <svg viewBox={`-70 -70 ${hm + 80} ${hm + 80}`} className="heatmap" style={{ maxWidth: hm + 80 }}>
             {step.ctx.map((id, i) => (
               <g key={i}>
@@ -75,7 +75,7 @@ export function AttentionScene({ m, step, t, view, setView }: SceneProps) {
           </svg>
         </div>
         <div>
-          <div className="lane-label">All {L * H} heads at once — each learned a different habit. Click one.</div>
+          <div className="lane-label">All {L * H} heads</div>
           <div className="heads-grid" style={{ gridTemplateColumns: `repeat(${H}, 1fr)` }}>
             {step.trace.layers.map((lt2, l) => lt2.attn.map((a, h) => {
               const best = a[q].map((p, j) => ({ p, j })).sort((x, y) => y.p - x.p)[0];

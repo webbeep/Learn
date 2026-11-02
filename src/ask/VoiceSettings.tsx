@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
@@ -9,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { learner, setPrefs, useStore, type Prefs } from "../lib/store";
-import { englishVoices, hasBrowserSTT, speakText } from "../lib/voice";
+import { englishVoices, speakText } from "../lib/voice";
 
 const NATURAL = [["luna", "Luna · warm"], ["asteria", "Asteria · clear"], ["thalia", "Thalia · bright"], ["helena", "Helena · calm"],
   ["orion", "Orion · male"], ["arcas", "Arcas · deep male"], ["apollo", "Apollo · casual male"], ["zeus", "Zeus · male"]];
@@ -33,19 +32,19 @@ export function VoiceSettings() {
   useEffect(() => { const f = () => setVoices(englishVoices()); speechSynthesis?.addEventListener?.("voiceschanged", f); return () => speechSynthesis?.removeEventListener?.("voiceschanged", f); }, []);
   return (
     <div className="space-y-5 p-4">
-      <Section title="When I highlight something" hint="Applies to highlighted text and dragged boxes. A plain click always shows the options.">
+      <Section title="When I select something">
         <Seg k="onHighlight" opts={[["manual", "Show options"], ["listen", "Start listening"], ["explain", "Explain now"]]} />
       </Section>
       <Separator />
-      <Section title="Speech recognition" hint={<>{hasBrowserSTT ? "The browser shows your words live as you talk. Whisper runs on Cloudflare and is more accurate." : "This browser can't recognize speech itself, so Whisper on Cloudflare is used."} Press <Kbd>V</Kbd> to talk (it stops when you go quiet), or hold <Kbd>V</Kbd> to talk and release to send.</>}>
+      <Section title="Speech recognition">
         <Seg k="stt" opts={[["auto", "Auto"], ["browser", "Browser"], ["whisper", "Whisper"]]} />
       </Section>
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1"><Label htmlFor="hf">Hands-free conversation</Label><p className="text-xs text-muted-foreground">Listen again after each spoken answer.</p></div>
+        <div className="space-y-1"><Label htmlFor="hf">Hands-free conversation</Label></div>
         <Switch id="hf" checked={p.handsFree} onCheckedChange={(v) => setPrefs({ handsFree: v })} />
       </div>
       <Separator />
-      <Section title="Read answers aloud" hint={<>Press <Kbd>M</Kbd> to mute or unmute, and <Kbd>Esc</Kbd> to stop talking.</>}>
+      <Section title="Talk back">
         <Seg k="speak" opts={[["off", "Off"], ["voice", "When I talk"], ["always", "Always"]]} />
       </Section>
       <Section title="Voice">

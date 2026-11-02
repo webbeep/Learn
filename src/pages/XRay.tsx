@@ -3,7 +3,7 @@ import type { TinyGPT } from "../model/gpt";
 import { generate, neighbours, type GenSettings, type Step } from "../model/generate";
 import { ask, learner, setScreen, useStore } from "../lib/store";
 import { show, tokColor } from "../lib/viz";
-import { Binary, BarChart3, ChevronLeft, ChevronRight, Dices, Eye, Layers, MessageSquare, Pause, Play, Scissors, SkipBack, SkipForward, Sparkles } from "lucide-react";
+import { Binary, BarChart3, ChevronLeft, ChevronRight, Dices, Eye, Layers, MessageSquare, Pause, Play, Scissors, Settings2, SkipBack, SkipForward, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +42,7 @@ export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string })
   const [pos, setPos] = useState(() => Math.max(0, SCENES.findIndex((s) => s.key === initialScene))); // continuous: step*6 + scene + fraction
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
+  const [showSettings, setShowSettings] = useState(false);
   const [view, setViewState] = useState<View>({ layer: 1, head: 3, query: null, mlpLayer: 2 });
   const depth = useStore(learner, (s) => s.depth);
   const extra = useMemo(() => ({ neighbours: neighbours(m) }), [m]);
@@ -108,24 +109,31 @@ export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string })
     <div className="@container space-y-4 pb-6">
       <Card className="gap-3 py-4">
         <CardContent className="space-y-3 px-4">
-          <form className="flex flex-col gap-3 @4xl:flex-row" onSubmit={(e) => { e.preventDefault(); run(prompt, settings); }}>
-            <Textarea value={prompt} rows={2} onChange={(e) => setPrompt(e.target.value)} placeholder="Type a prompt (lowercase tiny-world English)…"
-              className="min-h-16 flex-1 resize-none font-mono text-sm"
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); run(prompt, settings); } }} />
-            <div className="flex flex-wrap items-end gap-2 @4xl:w-[360px] @4xl:content-start">
-              <Select value="" onValueChange={(v) => { setPrompt(v); run(v, settings); }}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Try a preset prompt…" /></SelectTrigger>
-                <SelectContent>{PRESETS.map((p) => <SelectItem key={p} value={p} className="font-mono text-xs">{p.length > 52 ? "…" + p.slice(-50) : p}</SelectItem>)}</SelectContent>
-              </Select>
-              {([["Tokens", "n", 1, 30, 1, "How many tokens to generate"], ["Temp", "temperature", 0, 3, 0.1, "0 = always pick the top token"], ["Top-k", "topK", 1, 50, 1, "Only sample among the k most likely tokens"]] as const).map(([label, key, min, max, step, tip]) => (
-                <div key={key} className="grid w-[72px] gap-1" title={tip}>
-                  <Label className="text-xs text-muted-foreground">{label}</Label>
-                  <Input type="number" min={min} max={max} step={step} value={settings[key]} className="h-8 tabular-nums"
-                    onChange={(e) => setSettings({ ...settings, [key]: Math.max(min, Math.min(max, +e.target.value)) })} />
-                </div>
-              ))}
-              <Button type="submit" className="ml-auto"><Play />Run</Button>
+          <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); run(prompt, settings); }}>
+            <div className="flex gap-2">
+              <Textarea value={prompt} rows={2} onChange={(e) => setPrompt(e.target.value)} placeholder="Type a sentence…"
+                className="min-h-16 flex-1 resize-none font-mono text-sm"
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); run(prompt, settings); } }} />
+              <div className="flex flex-col gap-2">
+                <Button type="submit"><Play />Run</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} aria-expanded={showSettings}><Settings2 />More</Button>
+              </div>
             </div>
+            {showSettings && (
+              <div className="flex flex-wrap items-end gap-2">
+                <Select value="" onValueChange={(v) => { setPrompt(v); run(v, settings); }}>
+                  <SelectTrigger className="w-full @xl:w-72"><SelectValue placeholder="Example sentences" /></SelectTrigger>
+                  <SelectContent>{PRESETS.map((p) => <SelectItem key={p} value={p} className="font-mono text-xs">{p.length > 52 ? "…" + p.slice(-50) : p}</SelectItem>)}</SelectContent>
+                </Select>
+                {([["Words", "n", 1, 30, 1, "How many tokens to generate"], ["Temperature", "temperature", 0, 3, 0.1, "0 = always pick the top token"], ["Top-k", "topK", 1, 50, 1, "Only sample among the k most likely tokens"]] as const).map(([label, key, min, max, step, tip]) => (
+                  <div key={key} className="grid w-[96px] gap-1" title={tip}>
+                    <Label className="text-xs text-muted-foreground">{label}</Label>
+                    <Input type="number" min={min} max={max} step={step} value={settings[key]} className="h-8 tabular-nums"
+                      onChange={(e) => setSettings({ ...settings, [key]: Math.max(min, Math.min(max, +e.target.value)) })} />
+                  </div>
+                ))}
+              </div>
+            )}
           </form>
           <div className="rounded-lg border bg-muted/40 px-3 py-2.5 font-mono text-sm leading-7 whitespace-pre-wrap">
             <span className="text-muted-foreground">{m.tok.decode(steps[0].ctx.slice(0, promptLen))}</span>
@@ -146,7 +154,7 @@ export function XRay({ m, initialScene }: { m: TinyGPT; initialScene?: string })
               className={cn("relative flex snap-start items-center gap-2.5 overflow-hidden rounded-lg border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/60 @3xl:py-2.5",
                 i === sc && "border-foreground/30 bg-muted ring-1 ring-foreground/10", i < sc && "text-muted-foreground")}>
               <span className={cn("hidden size-7 shrink-0 items-center justify-center rounded-md border text-xs @xl:flex", i === sc ? "bg-primary text-primary-foreground" : "bg-background")}><Icon className="size-3.5" /></span>
-              <span className="min-w-0 leading-tight"><span className="block text-[11px] text-muted-foreground">{i + 1} of 6</span><span className="block truncate text-sm font-medium">{s.title}</span></span>
+              <span className="min-w-0 truncate text-sm font-medium">{s.title}</span>
               {i === sc && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-pin" style={{ width: `${t * 100}%` }} />}
             </button>
           );

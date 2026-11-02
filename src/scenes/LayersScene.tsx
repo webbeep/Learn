@@ -23,7 +23,7 @@ export function LayersScene({ m, step, t, view, setView }: SceneProps) {
 
   return (
     <div className="scene layers-scene">
-      <div className="lane-label">The residual stream of the last token {tokName}: each layer <b>adds</b> something to it. Below each step: what the model would predict if it stopped right there ("logit lens").</div>
+      <div className="lane-label">Its guess after each layer</div>
       <div className="stream">
         {stages.map((s, k) => (
           <div key={k} className={`stage-col ${s.kind}`} style={{ opacity: 0.15 + 0.85 * phase(t, k * 0.1, k * 0.1 + 0.15) }}>
@@ -51,10 +51,10 @@ export function LayersScene({ m, step, t, view, setView }: SceneProps) {
               <i key={n} style={{ background: div(a, 1.2) }} data-ask-id={`mlp-L${view.mlpLayer + 1}:n${n}`} data-ask={`layer ${view.mlpLayer + 1} MLP neuron ${n}: activation ${a.toFixed(2)} for ${tokName}`} title={`neuron ${n}: ${a.toFixed(2)}`} />
             ))}
           </div>
-          <div className="small muted">{m.cfg.d_mlp} neurons · orange = firing. Real models have tens of thousands per layer.</div>
+          <div className="small muted">orange = firing</div>
         </div>
         <div className="top-neurons">
-          <div className="lane-label">Strongest neurons right now</div>
+          <div className="lane-label">Strongest neurons</div>
           {topN.map(({ a, n }) => {
             const pr = promotes(view.mlpLayer, n);
             return (

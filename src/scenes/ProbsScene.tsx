@@ -16,7 +16,7 @@ export function ProbsScene({ m, step, si, t, settings, regenerate }: SceneProps)
   const grow = phase(t, 0.1, 0.6), soft = phase(t, 0.4, 0.9);
   return (
     <div className="scene probs-scene">
-      <div className="lane-label">The final vector is compared with every one of the {m.cfg.vocab_size} token vectors → one score ("logit") per token → softmax turns scores into probabilities.</div>
+      <div className="lane-label">Score for every word → probability</div>
       <div className="prob-table">
         <div className="ph"><span>token</span><span>score (logit)</span><span /><span>probability @ temperature {temp.toFixed(2)}</span></div>
         {top.map((p) => {
@@ -36,7 +36,7 @@ export function ProbsScene({ m, step, si, t, settings, regenerate }: SceneProps)
         <label>🌡️ What-if temperature <b>{temp.toFixed(2)}</b>
           <Slider min={0.05} max={3} step={0.05} value={[temp]} onValueChange={([v]) => setTemp(v)} className="my-2" />
         </label>
-        <div className="small muted">Low = confident & repetitive. High = flatter, more surprising (and more wrong). softmax(score / temperature).</div>
+        <div className="small muted">Low = safe. High = surprising.</div>
         {Math.abs(temp - settings.temperature) > 0.01 && <Button size="sm" onClick={() => regenerate({ temperature: temp }, si)}><RefreshCw />Regenerate at {temp.toFixed(2)}</Button>}
       </div>
     </div>

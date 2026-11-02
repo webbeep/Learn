@@ -40,10 +40,10 @@ export function VectorsScene({ m, step, t, extra }: SceneProps) {
             </div>
           );
         })}
-        <div className="legend small muted"><i style={{ background: div(-1) }} /> negative <i style={{ background: div(0) }} /> zero <i style={{ background: div(1) }} /> positive · each square is one of 64 numbers (GPT-3 uses 12,288)</div>
+        <div className="legend small muted"><i style={{ background: div(-1) }} /> negative <i style={{ background: div(0) }} /> zero <i style={{ background: div(1) }} /> positive</div>
       </div>
       <div className="pca">
-        <div className="lane-label">Map of all {m.cfg.vocab_size} token vectors (64-D squashed to 2-D)</div>
+        <div className="lane-label">Similar words sit together</div>
         <svg viewBox="-1.12 -1.12 2.24 2.24" className="pca-svg">
           {m.meta.pca.map(([x0, y0], id) => {
             const x = Math.max(-1.05, Math.min(1.05, x0 * sc)), y = Math.max(-1.05, Math.min(1.05, y0 * sc));
@@ -57,7 +57,7 @@ export function VectorsScene({ m, step, t, extra }: SceneProps) {
             );
           })}
         </svg>
-        <div className="small muted">Tap or hover a dot to see its nearest neighbours. Similar words end up near each other — nobody told the model that; it learned it.</div>
+        <div className="small muted">Tap a dot to see its neighbours.</div>
       </div>
     </div>
   );

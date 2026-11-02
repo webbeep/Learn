@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Captions, Clapperboard, ListVideo, Maximize, MessageSquare, MousePointerClick, Pause, Play, ScrollText, Volume2, VolumeX } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Captions, Check, ChevronDown, Maximize, MessageSquare, MousePointerClick, Pause, Play, ScrollText, SkipForward, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { ask, select, setScreen } from "../lib/store";
+import { ask, select, setProgress, setScreen } from "../lib/store";
 import { FurtherWatching } from "./FurtherWatching";
-import { CHAPTERS } from "../content/curriculum";
-import { setProgress } from "../lib/store";
+import { CHAPTERS, TRACKS } from "../content/curriculum";
 
 export interface VObject { id: string; label: string; box: [number, number, number, number] }
 export interface VSegment { start: number; end: number; text: string; scene: string; objects: VObject[] }
@@ -23,43 +20,103 @@ export function loadVideos() {
   indexPromise ??= fetch("/videos/index.json").then((r) => { if (!r.ok) throw new Error("no index"); return r.json(); });
   return indexPromise;
 }
-const TRACK_TITLES: Record<string, string> = { inference: "How a model thinks", training: "How a model learns", design: "How models are designed", research: "Invent your own" };
 const LAB: Record<string, string> = { xray: "#/xray", training: "#/training", train: "#/train", backprop: "#/backprop", lab: "#/lab", scaling: "#/scaling", invent: "#/invent" };
 const chapterFor = (videoId: string) => CHAPTERS.find((c) => c.video === videoId);
+/** Short, friendly name for a video (the chapter title when there is one). */
+export const videoName = (v: VideoMeta) => chapterFor(v.id)?.title ?? v.title;
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const WATCHED = "topdown-ai-watched-v1";
 const readWatched = (): Record<string, number> => { try { return JSON.parse(localStorage.getItem(WATCHED) || "{}"); } catch { return {}; } };
+const AUTONEXT = "topdown-ai-autonext";
 
-export function Videos() {
+/** Watch: the whole series as one continuous show. */
+export function Watch() {
   const [list, setList] = useState<VideoMeta[] | null>(null);
-  const [failed, setFailed] = useState(false);
   const [curId, setCurId] = useState<string | null>(null);
+  const [autoNext, setAutoNext] = useState(() => { try { return localStorage.getItem(AUTONEXT) !== "0"; } catch { return true; } });
+  const [autoPlay, setAutoPlay] = useState(false);
+  const [watched, setWatched] = useState(readWatched);
   useEffect(() => {
-    loadVideos()
-      .then((l: VideoMeta[]) => { setList(l); setCurId((c) => c ?? (location.hash.split("/")[2] || l[0]?.id)); })
-      .catch(() => setFailed(true));
+    loadVideos().then((l) => {
+      setList(l);
+      const fromHash = location.hash.split("/")[2];
+      const w = readWatched();
+      setCurId((c) => c ?? (l.find((v) => v.id === fromHash) ?? l.find((v) => (w[v.id] ?? 0) < 0.9) ?? l[0])?.id ?? null);
+    }).catch(() => setList([]));
   }, []);
-  const cur = list?.find((v) => v.id === curId) ?? list?.[0];
+  const idx = list?.findIndex((v) => v.id === curId) ?? -1;
+  const cur = list && idx >= 0 ? list[idx] : undefined;
+  const pick = (id: string, play = true) => { setCurId(id); setAutoPlay(play); history.replaceState(null, "", `#/watch/${id}`); };
+  const next = list?.[idx + 1];
+
+  if (!list) return <div className="flex items-center justify-center gap-2 p-16 text-muted-foreground"><Spinner />Loading…</div>;
+  if (!cur) return <p className="p-10 text-center text-muted-foreground">No videos yet.</p>;
+  const total = list.reduce((a, v) => a + v.duration, 0);
+
   return (
-    <div className="space-y-6 pb-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Videos</h1>
-        <p className="mt-1 max-w-3xl text-muted-foreground">Short explainers made from the real TinyGPT in this app. Pause at any moment and click anything in the frame, or press <b>V</b> and ask. The tutor knows exactly what is being said and shown at that second.</p>
+    <div className="@container pb-10">
+      <div className="grid gap-6 @5xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-4">
+          <SeriesPlayer key={cur.id} v={cur} autoPlay={autoPlay}
+            label={`${idx + 1} of ${list.length}`}
+            onProgress={() => setWatched(readWatched())}
+            onEnded={() => { if (autoNext && next) pick(next.id); }} />
+          {next && (
+            <button onClick={() => pick(next.id)} className="flex w-full items-center gap-3 rounded-xl border p-2 text-left transition-colors hover:bg-muted/50 @5xl:hidden">
+              <img src={next.poster} alt="" className="aspect-video w-24 rounded-md object-cover" />
+              <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">Up next</span><span className="block truncate font-medium">{videoName(next)}</span></span>
+              <SkipForward className="size-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+
+        <div className="@5xl:sticky @5xl:top-20 @5xl:max-h-[calc(100svh-6rem)] @5xl:overflow-y-auto">
+          <div className="mb-2 flex items-center justify-between gap-2 px-1">
+            <span className="text-sm font-medium">{list.length} videos · {Math.round(total / 60)} min</span>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">Autoplay
+              <Switch checked={autoNext} onCheckedChange={(v) => { setAutoNext(v); try { localStorage.setItem(AUTONEXT, v ? "1" : "0"); } catch { /* */ } }} />
+            </label>
+          </div>
+          {TRACKS.map((t) => {
+            const vids = list.filter((v) => v.track === t.id);
+            if (!vids.length) return null;
+            return (
+              <div key={t.id} className="mb-3">
+                <div className="px-1 pb-1 text-xs font-medium text-muted-foreground">{t.title}</div>
+                {vids.map((v) => {
+                  const n = list.indexOf(v) + 1, done = (watched[v.id] ?? 0) > 0.9, on = v.id === cur.id;
+                  return (
+                    <button key={v.id} onClick={() => pick(v.id)} className={cn("flex w-full items-center gap-3 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-muted", on && "bg-muted")}>
+                      <div className="relative w-20 shrink-0 overflow-hidden rounded-md">
+                        <img src={v.poster} alt="" loading="lazy" className="aspect-video w-full object-cover" />
+                        {(watched[v.id] ?? 0) > 0.02 && <span className="absolute bottom-0 left-0 h-0.5 bg-red-500" style={{ width: `${Math.min(100, (watched[v.id] ?? 0) * 100)}%` }} />}
+                      </div>
+                      <span className="min-w-0 flex-1 text-sm leading-tight"><span className={cn("line-clamp-2", on && "font-medium")}>{n}. {videoName(v)}</span><span className="text-xs text-muted-foreground tabular-nums">{fmt(v.duration)}</span></span>
+                      {done && <Check className="size-4 shrink-0 text-emerald-500" />}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <Tabs defaultValue="series">
-        <TabsList><TabsTrigger value="series"><Clapperboard />Our series</TabsTrigger><TabsTrigger value="further"><ListVideo />Further watching</TabsTrigger></TabsList>
-        <TabsContent value="series" className="mt-4">
-          {cur && list ? <SeriesPlayer key={cur.id} v={cur} list={list} onPick={(id) => { setCurId(id); history.replaceState(null, "", `#/videos/${id}`); }} />
-            : <Empty className="border border-dashed"><EmptyHeader><EmptyMedia variant="icon"><Clapperboard /></EmptyMedia><EmptyTitle>{failed ? "Videos aren't published yet" : "Loading videos…"}</EmptyTitle><EmptyDescription>{failed ? "The series is still being rendered. In the meantime, try Further watching." : ""}</EmptyDescription></EmptyHeader></Empty>}
-        </TabsContent>
-        <TabsContent value="further" className="mt-4"><FurtherWatching /></TabsContent>
-      </Tabs>
+
+      <Collapsible className="group/fw mt-8 border-t pt-4">
+        <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          More videos by 3Blue1Brown and Andrej Karpathy <ChevronDown className="size-4 transition-transform group-data-[state=open]/fw:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4"><FurtherWatching /></CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
+export const Videos = Watch;
 
-export function SeriesPlayer({ v, list, onPick, embedded }: { v: VideoMeta; list?: VideoMeta[]; onPick?: (id: string) => void; embedded?: boolean }) {
+export function SeriesPlayer({ v, embedded, autoPlay, onEnded, onProgress, label }: {
+  v: VideoMeta; embedded?: boolean; autoPlay?: boolean; onEnded?: () => void; onProgress?: () => void; label?: string;
+}) {
   const video = useRef<HTMLVideoElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [time, setTime] = useState(0);
@@ -68,7 +125,7 @@ export function SeriesPlayer({ v, list, onPick, embedded }: { v: VideoMeta; list
   const [muted, setMuted] = useState(false);
   const [rate, setRate] = useState(1);
   const [showObjs, setShowObjs] = useState(false);
-  const [watched, setWatched] = useState(readWatched);
+  const [showText, setShowText] = useState(false);
   // Download the whole (small) file and play it from memory: seeking then works on any host,
   // even ones that don't honor HTTP range requests.
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -86,9 +143,12 @@ export function SeriesPlayer({ v, list, onPick, embedded }: { v: VideoMeta; list
     })();
     return () => { alive = false; if (url) URL.revokeObjectURL(url); };
   }, [v.src]);
+  useEffect(() => { if (blobUrl && autoPlay) video.current?.play().catch(() => { /* needs a tap first */ }); }, [blobUrl, autoPlay]);
+
   const seg = useMemo(() => v.segments.find((s) => time >= s.start && time < s.end) ?? [...v.segments].reverse().find((s) => s.start <= time) ?? v.segments[0], [v, time]);
   const segIdx = v.segments.indexOf(seg);
   const chapter = [...v.chapters].reverse().find((c) => c.t <= time + 0.01) ?? v.chapters[0];
+  const name = videoName(v);
 
   const seek = (t: number) => { if (video.current) { video.current.currentTime = t; setTime(t); } };
   const toggle = useCallback(() => { const el = video.current; if (!el) return; if (el.paused) el.play(); else el.pause(); }, []);
@@ -96,7 +156,7 @@ export function SeriesPlayer({ v, list, onPick, embedded }: { v: VideoMeta; list
   // Tell the tutor exactly what's being said/shown right now.
   useEffect(() => {
     const prev = v.segments[segIdx - 1];
-    setScreen("Videos", `${v.title} @ ${fmt(time)}`, [
+    setScreen("Watch", `${name} @ ${fmt(time)}`, [
       `Video "${v.title}" (${v.subtitle}), generated from the real TinyGPT in this app. Learner is at ${fmt(time)} of ${fmt(v.duration)}${playing ? " (playing)" : " (paused)"}. Chapter: ${chapter?.title ?? "-"}.`,
       prev ? `Narration just before: "${prev.text}"` : "",
       seg ? `Narration right now: "${seg.text}"` : "",
@@ -120,132 +180,101 @@ export function SeriesPlayer({ v, list, onPick, embedded }: { v: VideoMeta; list
   const onTime = () => {
     const t = video.current!.currentTime; setTime(t);
     if (Math.floor(t) % 5 === 0 || t >= v.duration - 1) {
-      const w = { ...readWatched(), [v.id]: Math.max(readWatched()[v.id] ?? 0, t / v.duration) }; try { localStorage.setItem(WATCHED, JSON.stringify(w)); } catch { /* */ } setWatched(w);
+      const w = { ...readWatched(), [v.id]: Math.max(readWatched()[v.id] ?? 0, t / v.duration) }; try { localStorage.setItem(WATCHED, JSON.stringify(w)); } catch { /* */ }
       const ch = chapterFor(v.id); if (ch) setProgress(ch.id, { watched: t / v.duration });
+      onProgress?.();
     }
   };
   const askMoment = () => {
     video.current?.pause();
-    select([{ id: `video-${v.id}-t${Math.floor(time)}`, label: `"${v.title}" at ${fmt(time)}: narration "${seg?.text ?? ""}"; on screen: ${seg?.scene ?? ""}` }], "", false);
+    select([{ id: `video-${v.id}-t${Math.floor(time)}`, label: `"${name}" at ${fmt(time)}: narration "${seg?.text ?? ""}"; on screen: ${seg?.scene ?? ""}` }], "", false);
     ask.set({ open: true });
   };
   const objs = !playing ? seg?.objects ?? [] : [];
+  const wbtn = "text-white hover:bg-white/15 hover:text-white";
 
   return (
-    <div className="@container"><div className={cn("grid gap-4", !embedded && "@5xl:grid-cols-[minmax(0,1fr)_340px]", embedded && "@4xl:grid-cols-[minmax(0,1fr)_300px]")}>
-      <div className="min-w-0 space-y-3">
-        <div ref={frame} className="group @container/frame relative overflow-hidden rounded-xl border bg-black shadow-sm">
-          <video ref={video} src={blobUrl ?? undefined} poster={v.poster} className="block aspect-video w-full" preload="metadata" playsInline muted={muted}
-            onClick={toggle} onTimeUpdate={onTime} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onRateChange={() => setRate(video.current!.playbackRate)} />
-          {!blobUrl && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-white/10"><div className="h-full bg-red-500 transition-[width]" style={{ width: `${loaded * 100}%` }} /></div>
-          )}
-          {/* clickable objects in the paused frame */}
-          {[...objs].sort((a, b) => b.box[2] * b.box[3] - a.box[2] * a.box[3]).map((o) => (
-            <div key={o.id} data-ask-id={`video-${v.id}-${o.id}`} data-ask={`In the video "${v.title}" at ${fmt(time)}: ${o.label}`}
-              className={cn("absolute rounded-md border-2 border-transparent transition-colors hover:border-pin hover:bg-pin/10", showObjs && "border-dashed border-pin/70")}
-              style={{ left: `${o.box[0] * 100}%`, top: `${o.box[1] * 100}%`, width: `${o.box[2] * 100}%`, height: `${o.box[3] * 100}%` }}
-              title={o.label} />
-          ))}
-          {cc && seg && time > 0 && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-14 flex justify-center px-6 group-hover:bottom-16">
-              <span className="max-w-[80%] rounded bg-black/75 px-[1.2cqw] py-[0.5cqw] text-center text-[clamp(11px,1.9cqw,20px)] leading-snug text-white">{seg.text}</span>
-            </div>
-          )}
-          {!playing && (
-            <div className="pointer-events-none absolute top-3 right-3 flex gap-2">
-              {time > 0 && <Badge variant="secondary" className="hidden bg-black/70 text-white @md/frame:inline-flex"><MousePointerClick />Paused: tap anything in the frame</Badge>}
-            </div>
-          )}
-          {!playing && time === 0 && (
-            <button onClick={toggle} aria-label={`Play (${fmt(v.duration)})`} className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-black/65 text-white shadow-xl ring-1 ring-white/20 backdrop-blur transition-transform hover:scale-105 @md/frame:size-20">
-              <Play className="size-7 translate-x-0.5 fill-current @md/frame:size-9" />
-            </button>
-          )}
-          {/* control bar */}
-          <div className={cn("absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pt-8 pb-2 text-white transition-opacity", playing && "opacity-0 group-hover:opacity-100")}>
-            <div className="relative mb-1.5">
-              <Slider min={0} max={v.duration} step={0.1} value={[time]} onValueChange={([t]) => seek(t)} className="[&_[data-slot=slider-range]]:bg-red-500 [&_[data-slot=slider-thumb]]:border-red-500" />
-              {v.chapters.slice(1).map((c) => <span key={c.t} className="pointer-events-none absolute top-1/2 h-2 w-0.5 -translate-y-1/2 bg-black/70" style={{ left: `${(c.t / v.duration) * 100}%` }} />)}
-            </div>
-            <div className="flex items-center gap-1">
-              <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={toggle}>{playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}</Button>
-              <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
-              <span className="text-xs tabular-nums">{fmt(time)} / {fmt(v.duration)}</span>
-              <span className="mx-2 hidden truncate text-xs text-white/70 @lg/frame:inline">· {chapter?.title}</span>
-              <span className="flex-1" />
-              <Button size="icon-sm" variant="ghost" className={cn("hidden text-white hover:bg-white/15 hover:text-white @md/frame:inline-flex", showObjs && "bg-white/20")} title="Show clickable objects" onClick={() => setShowObjs(!showObjs)}><MousePointerClick /></Button>
-              <Button size="icon-sm" variant="ghost" className={cn("text-white hover:bg-white/15 hover:text-white", cc && "bg-white/20")} title="Captions" onClick={() => setCc(!cc)}><Captions /></Button>
-              <Select value={String(rate)} onValueChange={(r) => { if (video.current) video.current.playbackRate = +r; }}>
-                <SelectTrigger size="sm" className="hidden h-7 w-[64px] border-white/20 bg-transparent text-xs text-white @sm/frame:flex dark:bg-transparent"><SelectValue /></SelectTrigger>
-                <SelectContent>{[0.75, 1, 1.25, 1.5, 2].map((r) => <SelectItem key={r} value={String(r)}>{r}×</SelectItem>)}</SelectContent>
-              </Select>
-              <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => frame.current?.requestFullscreen?.()}><Maximize /></Button>
-            </div>
+    <div className="space-y-3">
+      <div ref={frame} className="group @container/frame relative overflow-hidden rounded-xl bg-black shadow-sm">
+        <video ref={video} src={blobUrl ?? undefined} poster={v.poster} className="block aspect-video w-full" preload="metadata" playsInline muted={muted}
+          onClick={toggle} onTimeUpdate={onTime} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
+          onEnded={() => { setPlaying(false); onEnded?.(); }} onRateChange={() => setRate(video.current!.playbackRate)} />
+        {!blobUrl && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-white/10"><div className="h-full bg-red-500 transition-[width]" style={{ width: `${loaded * 100}%` }} /></div>
+        )}
+        {/* clickable objects in the paused frame */}
+        {[...objs].sort((a, b) => b.box[2] * b.box[3] - a.box[2] * a.box[3]).map((o) => (
+          <div key={o.id} data-ask-id={`video-${v.id}-${o.id}`} data-ask={`In the video "${name}" at ${fmt(time)}: ${o.label}`}
+            className={cn("absolute rounded-md border-2 border-transparent transition-colors hover:border-pin hover:bg-pin/10", showObjs && "border-dashed border-pin/70")}
+            style={{ left: `${o.box[0] * 100}%`, top: `${o.box[1] * 100}%`, width: `${o.box[2] * 100}%`, height: `${o.box[3] * 100}%` }}
+            title={o.label} />
+        ))}
+        {cc && seg && time > 0 && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-14 flex justify-center px-6 group-hover:bottom-16">
+            <span className="max-w-[80%] rounded bg-black/75 px-[1.2cqw] py-[0.5cqw] text-center text-[clamp(11px,1.9cqw,20px)] leading-snug text-white">{seg.text}</span>
           </div>
-        </div>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className={cn("font-semibold tracking-tight", embedded ? "text-base" : "text-xl")}>{v.title}</h2>
-            <p className="text-sm text-muted-foreground">{v.subtitle}</p>
+        )}
+        {!playing && time > 0 && (
+          <div className="pointer-events-none absolute top-3 right-3 hidden rounded-full bg-black/70 px-3 py-1 text-xs text-white @md/frame:block">Tap anything to ask about it</div>
+        )}
+        {!playing && time === 0 && (
+          <button onClick={toggle} aria-label="Play" className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-black/65 text-white shadow-xl ring-1 ring-white/20 backdrop-blur transition-transform hover:scale-105 @md/frame:size-20">
+            <Play className="size-7 translate-x-0.5 fill-current @md/frame:size-9" />
+          </button>
+        )}
+        {/* control bar */}
+        <div className={cn("absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 pt-8 pb-2 text-white transition-opacity", playing && "opacity-0 group-hover:opacity-100")}>
+          <div className="relative mb-1.5">
+            <Slider min={0} max={v.duration} step={0.1} value={[time]} onValueChange={([t]) => seek(t)} className="[&_[data-slot=slider-range]]:bg-red-500 [&_[data-slot=slider-thumb]]:border-red-500" />
+            {v.chapters.slice(1).map((c) => <span key={c.t} className="pointer-events-none absolute top-1/2 h-2 w-0.5 -translate-y-1/2 bg-black/70" style={{ left: `${(c.t / v.duration) * 100}%` }} />)}
           </div>
-          <div className="flex gap-2">
-            <Button onClick={askMoment}><MessageSquare />Ask about {fmt(time)}</Button>
-            {v.relates && LAB[v.relates] && <Button variant="outline" asChild><a href={LAB[v.relates]}>Try it live</a></Button>}
-            {!embedded && chapterFor(v.id) && <Button variant="ghost" asChild><a href={`#/learn/${chapterFor(v.id)!.id}`}>Chapter</a></Button>}
+          <div className="flex items-center gap-1">
+            <Button size="icon-sm" variant="ghost" className={wbtn} onClick={toggle} aria-label={playing ? "Pause" : "Play"}>{playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}</Button>
+            <Button size="icon-sm" variant="ghost" className={wbtn} onClick={() => setMuted(!muted)} aria-label="Mute">{muted ? <VolumeX /> : <Volume2 />}</Button>
+            <span className="text-xs tabular-nums">{fmt(time)} / {fmt(v.duration)}</span>
+            <span className="mx-2 hidden truncate text-xs text-white/70 @lg/frame:inline">{chapter?.title}</span>
+            <span className="flex-1" />
+            <Button size="icon-sm" variant="ghost" className={cn("hidden @md/frame:inline-flex", wbtn, showObjs && "bg-white/20")} title="Show what you can tap" onClick={() => setShowObjs(!showObjs)}><MousePointerClick /></Button>
+            <Button size="icon-sm" variant="ghost" className={cn(wbtn, cc && "bg-white/20")} title="Captions" onClick={() => setCc(!cc)}><Captions /></Button>
+            <Select value={String(rate)} onValueChange={(r) => { if (video.current) video.current.playbackRate = +r; }}>
+              <SelectTrigger size="sm" className="hidden h-7 w-[64px] border-white/20 bg-transparent text-xs text-white @sm/frame:flex dark:bg-transparent"><SelectValue /></SelectTrigger>
+              <SelectContent>{[0.75, 1, 1.25, 1.5, 2].map((r) => <SelectItem key={r} value={String(r)}>{r}×</SelectItem>)}</SelectContent>
+            </Select>
+            <Button size="icon-sm" variant="ghost" className={wbtn} onClick={() => frame.current?.requestFullscreen?.()} aria-label="Full screen"><Maximize /></Button>
           </div>
         </div>
       </div>
 
-      <Card className="min-h-0 gap-0 py-0 @5xl:max-h-[calc(100svh-9rem)]">
-        <Tabs defaultValue="chapters" className="flex min-h-0 flex-1 flex-col gap-0">
-          <div className="border-b p-2"><TabsList className="w-full"><TabsTrigger value="chapters"><ListVideo />Chapters</TabsTrigger><TabsTrigger value="transcript"><ScrollText />Transcript</TabsTrigger></TabsList></div>
-          <TabsContent value="chapters" className="min-h-0 flex-1">
-            <ScrollArea className="h-full">
-              <div className="p-2">
-                {v.chapters.map((c, i) => (
-                  <button key={c.t} onClick={() => seek(c.t + 0.01)} className={cn("flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-muted", chapter === c && "bg-muted font-medium")}>
-                    <span className="w-5 text-xs text-muted-foreground tabular-nums">{i + 1}</span><span className="flex-1">{c.title}</span><span className="text-xs text-muted-foreground tabular-nums">{fmt(c.t)}</span>
-                  </button>
-                ))}
-              </div>
-              {list && onPick && <div className="border-t p-2">
-                {list.map((x, i) => (<div key={x.id}>
-                  {(i === 0 || list[i - 1].track !== x.track) && <div className="px-2 pt-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{TRACK_TITLES[x.track ?? ""] ?? "More"}</div>}
-                  <button key={x.id} onClick={() => onPick(x.id)} className={cn("flex w-full gap-3 rounded-lg p-1.5 text-left hover:bg-muted", x.id === v.id && "bg-muted")}>
-                    <div className="relative w-28 shrink-0 overflow-hidden rounded-md">
-                      <img src={x.poster} alt="" className="aspect-video w-full object-cover" loading="lazy" />
-                      <span className="absolute right-1 bottom-1 rounded bg-black/80 px-1 text-[10px] text-white tabular-nums">{fmt(x.duration)}</span>
-                      {watched[x.id] ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-red-500" style={{ width: `${Math.min(100, watched[x.id] * 100)}%` }} /> : null}
-                    </div>
-                    <span className="min-w-0 text-sm leading-snug"><span className="line-clamp-2 font-medium">{x.title}</span><span className="line-clamp-1 text-xs text-muted-foreground">{x.subtitle}</span></span>
-                  </button>
-                </div>))}
-              </div>}
-            </ScrollArea>
-          </TabsContent>
-          <TabsContent value="transcript" className="min-h-0 flex-1">
-            <Transcript v={v} segIdx={segIdx} seek={seek} />
-          </TabsContent>
-        </Tabs>
-      </Card>
-    </div></div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          {label && <div className="text-xs text-muted-foreground">{label}</div>}
+          {!embedded && <h1 className="text-xl font-semibold tracking-tight">{name}</h1>}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={askMoment}><MessageSquare />Ask</Button>
+          {v.relates && LAB[v.relates] && <Button size="sm" variant="outline" asChild><a href={LAB[v.relates]}>Try it</a></Button>}
+          <Button size="sm" variant="ghost" onClick={() => setShowText(!showText)}><ScrollText />Transcript</Button>
+        </div>
+      </div>
+      {showText && <Transcript v={v} segIdx={segIdx} seek={seek} />}
+    </div>
   );
 }
 
 function Transcript({ v, segIdx, seek }: { v: VideoMeta; segIdx: number; seek: (t: number) => void }) {
-  const cur = useRef<HTMLButtonElement>(null);
-  useEffect(() => { cur.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, [segIdx]);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => { // scroll inside the box only, never the page
+    const el = box.current?.querySelector<HTMLElement>(`[data-i="${segIdx}"]`);
+    if (el && box.current) box.current.scrollTo({ top: el.offsetTop - box.current.clientHeight / 3, behavior: "smooth" });
+  }, [segIdx]);
   return (
-    <ScrollArea className="h-full max-h-[60vh] xl:max-h-[calc(100svh-13rem)]">
-      <div className="space-y-0.5 p-2">
-        {v.segments.map((s, i) => (
-          <button key={i} ref={i === segIdx ? cur : undefined} onClick={() => seek(s.start + 0.01)}
-            className={cn("flex w-full gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted", i === segIdx ? "bg-muted text-foreground" : "text-muted-foreground")}>
-            <span className="w-9 shrink-0 pt-0.5 text-xs tabular-nums">{fmt(s.start)}</span><span>{s.text}</span>
-          </button>
-        ))}
-      </div>
-    </ScrollArea>
+    <div ref={box} className="relative max-h-64 space-y-0.5 overflow-y-auto rounded-xl border p-2">
+      {v.segments.map((s, i) => (
+        <button key={i} data-i={i} onClick={() => seek(s.start + 0.01)}
+          className={cn("flex w-full gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted", i === segIdx ? "bg-muted text-foreground" : "text-muted-foreground")}>
+          <span className="w-9 shrink-0 pt-0.5 text-xs tabular-nums">{fmt(s.start)}</span><span>{s.text}</span>
+        </button>
+      ))}
+    </div>
   );
 }

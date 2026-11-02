@@ -4,24 +4,14 @@ Learn how AI models work **top-down**: start with a real model running in front 
 the fundamentals only when you hit a question. Every visual is clickable, and an AI tutor answers questions about
 exactly what you selected.
 
-**Live:** https://learn-ai-7hs.pages.dev
+**Live:** https://topdownai.pages.dev
 
 ## What's inside
 
-| Section | What you do |
-|---|---|
-| 🎓 **Curriculum** (`#/learn`) | 18 chapters in 4 tracks: *How a model thinks*, *How a model learns*, *How models are designed*, *Invent your own*. Each chapter has a narrated video, a lab to try it in, key ideas, a common misconception, a 3-question check, and collapsible math + runnable PyTorch. Progress is tracked; a first-visit question (beginner / intermediate / advanced) tailors order, depth and the tutor. |
-| 🎬 **Videos** (`#/videos`) | 18 explainers (~37 min) rendered with Manim from the real model and real experiments, narrated with Workers AI. Pause and tap anything in the frame to ask about it; captions, chapters and transcript stay in sync. Plus curated 3Blue1Brown / Karpathy picks. |
-| 🔬 **Inference X-ray** (`#/xray`) | A real 170k-parameter GPT runs in your browser; watch text → tokens → vectors → attention → layers → probabilities → sampling, like a video. |
-| 📉 **Training run** (`#/training`) | The real loss curve and what the model wrote at each checkpoint. |
-| 🏋️ **Train it yourself** (`#/train`) | A from-scratch autograd engine trains a small GPT in a Web Worker: live loss, samples, gradient flow, attention, weights; toggle attention/MLP/positions/residual/LayerNorm, optimizers and learning rates, or train on your own text. |
-| 🔁 **Backprop** (`#/backprop`) | Step gradients backwards through small graphs, nudge weights, fit toy datasets, then see the real model's gradients. |
-| 🧪 **Architecture lab** (`#/lab`) | Real ablation runs (no attention, no MLP, no positions, no residual, no LayerNorm, 1 vs 6 layers) with curves, samples and predictions. |
-| 📈 **Scaling** (`#/scaling`) | A real 7-size scaling sweep with a fitted power law, plus a compute/memory calculator for planning your own runs. |
-| 💡 **Invent your own** (`#/invent`) | The research loop, a map of frontier ideas with references, experiment cards, and a runnable single-file PyTorch script exported with your change applied. |
-| 🧭 **My path** (`#/path`) | How the tutor sees you, a build list of features you wish existed (copy it as a request for Claude Code), and every question you've asked. |
-
-Works on phones (bottom tab bar, tap-to-ask, long-press to highlight) and in light/dark themes.
+- **Watch** (home): 18 short videos, played back to back. Pause and tap anything to ask about it.
+- **Learn**: the same 18 topics as chapters, each with key ideas, a quick check, and optional math + code.
+- **Labs**: X-ray, Train a model, Backprop, Training replay, Remove parts, Scaling, Your experiment.
+- **Ask**: a tutor that sees what you're looking at. Type or talk.
 
 ## How "ask about anything" works
 
@@ -67,13 +57,13 @@ pip install torch numpy && npm run train   # retrain (optional)
 npm install
 echo "DEEPSEEK_API_KEY=sk-..." > .dev.vars    # or ANTHROPIC_API_KEY=... (Claude is used if set)
 npm run build && npx wrangler pages dev dist  # http://localhost:8788
-npm run deploy                                # → Cloudflare Pages project "learn-ai"
+npm run deploy                                # → Cloudflare Pages project "topdownai"
 ```
 
 Production secret (one time; the tutor stays off until this is set):
 
 ```bash
-npx wrangler pages secret put DEEPSEEK_API_KEY --project-name learn-ai
+npx wrangler pages secret put DEEPSEEK_API_KEY --project-name topdownai
 ```
 
 Learner data lives in your browser's localStorage. Use Export/Import on *My path* to move it between devices.

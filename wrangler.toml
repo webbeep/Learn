@@ -1,8 +1,8 @@
-name = "learn-ai"
+name = "topdownai"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-10-01"
 
-# Secrets (set with `wrangler pages secret put <NAME> --project-name learn-ai`):
+# Secrets (set with `wrangler pages secret put <NAME> --project-name topdownai`):
 #   DEEPSEEK_API_KEY   – used by default for the tutor
 #   ANTHROPIC_API_KEY  – optional; if set, the tutor uses Claude instead
 

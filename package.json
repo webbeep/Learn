@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "wrangler pages dev dist",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name learn-ai --branch main",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name topdownai --branch main",
     "train": "python3 train/train.py"
   },
   "dependencies": {

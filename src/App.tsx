@@ -8,7 +8,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppSidebar, NAV, isActive } from "@/components/app/app-sidebar";
 import { SiteHeader } from "@/components/app/site-header";
-import { Onboarding } from "@/components/app/onboarding";
 import { MobileNav } from "@/components/app/mobile-nav";
 import { loadModel, type TinyGPT } from "./model/gpt";
 import { ask, markVisited, useStore } from "./lib/store";
@@ -19,8 +18,8 @@ import { ShortcutHelp, VoiceHUD, useShortcuts } from "./ask/Shortcuts";
 import { trackPointer, trackTextSelection } from "./lib/conversation";
 const XRay = lazy(() => import("./pages/XRay").then((m) => ({ default: m.XRay })));
 const Training = lazy(() => import("./pages/Training").then((m) => ({ default: m.Training })));
-const Videos = lazy(() => import("./pages/Videos").then((m) => ({ default: m.Videos })));
-import { MapPage } from "./pages/MapPage";
+import { Watch } from "./pages/Videos";
+import { LABS, Labs } from "./pages/Labs";
 const Path = lazy(() => import("./pages/Path").then((m) => ({ default: m.Path })));
 const Learn = lazy(() => import("./pages/Learn").then((m) => ({ default: m.Learn })));
 const ChapterPage = lazy(() => import("./pages/Learn").then((m) => ({ default: m.ChapterPage })));
@@ -33,7 +32,7 @@ const Invent = lazy(() => import("./pages/Invent").then((m) => ({ default: m.Inv
 function useHash() {
   const [h, setH] = useState(location.hash || "#/");
   useEffect(() => { const f = () => setH(location.hash || "#/"); window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
-  return h === "#/watch" ? "#/videos" : h;
+  return h.startsWith("#/videos") ? h.replace("#/videos", "#/watch") : h;
 }
 
 export default function App() {
@@ -72,7 +71,7 @@ function Shell() {
     : <div className="flex items-center justify-center gap-2 p-16 text-muted-foreground"><Spinner />Loading TinyGPT (680 KB of weights)…</div>;
   else if (hash.startsWith("#/xray")) page = <XRay key={hash} m={model!} initialScene={hash.split("/")[2]} />;
   else if (route(hash, "#/training")) page = <Training corpus={model!.meta.corpus_sample} />;
-  else if (hash.startsWith("#/videos")) page = <Videos />;
+  else if (route(hash, "#/labs")) page = <Labs />;
   else if (hash.startsWith("#/path")) page = <Path />;
   else if (hash.startsWith("#/learn/")) page = <ChapterPage key={hash} id={hash.split("/")[2]} />;
   else if (hash.startsWith("#/learn")) page = <Learn />;
@@ -81,8 +80,9 @@ function Shell() {
   else if (route(hash, "#/backprop")) page = <Backprop />;
   else if (route(hash, "#/scaling")) page = <Scaling />;
   else if (route(hash, "#/invent")) page = <Invent />;
-  else page = <MapPage />;
-  const title = NAV.find((n) => isActive(n.href, hash))?.label ?? "Home";
+  else page = <Watch />;
+  const lab = LABS.find((x) => route(hash, x.href));
+  const title = lab?.title ?? NAV.find((n) => isActive(n.href, hash))?.label ?? "Watch";
 
   return (
     <SidebarProvider>
@@ -111,7 +111,6 @@ function Shell() {
       <MarkStyles />
       <VoiceHUD />
       <ShortcutHelp open={help} onOpenChange={setHelp} />
-      <Onboarding />
       <MobileNav hash={hash} />
     </SidebarProvider>
   );

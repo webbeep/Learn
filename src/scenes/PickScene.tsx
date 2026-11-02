@@ -13,7 +13,7 @@ export function PickScene({ m, step, steps, si, t, settings, regenerate }: Scene
   const greedy = settings.temperature <= 0.01;
   return (
     <div className="scene pick-scene">
-      <div className="lane-label">{greedy ? "Temperature 0: always take the top token (greedy)." : `Roll a random number between 0 and 1 (here r = ${step.r.toFixed(3)}) and see which token's slice it lands in. Only the top ${settings.topK} tokens are allowed (top-k).`}</div>
+      <div className="lane-label">{greedy ? "Always the top word" : `A weighted dice roll: r = ${step.r.toFixed(2)}`}</div>
       <svg viewBox={`0 -40 ${W} 120`} className="pick-svg">
         {segs.map((s, i) => (
           <g key={s.id} data-ask-id={`pick-seg-${s.id}`} data-ask={`slice for "${show(text[s.id])}" from ${s.x.toFixed(3)} to ${(s.x + s.p).toFixed(3)} (${pct(s.p)})${s.id === step.chosen ? " — the random number landed here, CHOSEN" : ""}`}>
@@ -37,12 +37,10 @@ export function PickScene({ m, step, steps, si, t, settings, regenerate }: Scene
         {m.tok.decode(step.ctx)}<span className="fresh">{text[step.chosen]}</span>
       </div>
       <div className="loop-note" style={{ opacity: phase(t, 0.7, 0.9) }}>
-        ↺ The new token is glued onto the text and <b>the whole pipeline runs again</b> from step 1 to get the next one.
-        That's all "generation" is — {si + 1} of {steps.length} loops done.
-        {chosenIdx > 0 && <span> Note: it did <i>not</i> pick the most likely token — that's sampling randomness.</span>}
+        ↺ Add it to the text and repeat.
         <div className="row" style={{ marginTop: 8 }}>
           <Button variant="outline" size="sm" onClick={() => regenerate({ seed: settings.seed + 1 }, si)}><Dices />Re-roll from here</Button>
-          <Button variant="outline" size="sm" onClick={() => regenerate({ temperature: 0 }, si)}><Target />Always pick the top (temperature 0)</Button>
+          <Button variant="outline" size="sm" onClick={() => regenerate({ temperature: 0 }, si)}><Target />Always pick the top</Button>
         </div>
       </div>
     </div>

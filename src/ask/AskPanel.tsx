@@ -3,13 +3,12 @@ import { ArrowUp, Eye, Mic, RotateCcw, Settings2, Sparkles, Square, SquareDashed
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Kbd } from "@/components/ui/kbd";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
-import { ask, learner, useStore } from "../lib/store";
+import { ask, useStore } from "../lib/store";
 import { compressSelection, parseAnswer, viewportNote, visibleElements } from "../lib/api";
 import { convo, currentPointer, listenAndAsk, newConversation, sendQuestion, stopAll } from "../lib/conversation";
 import { speakText, stopListening, voice } from "../lib/voice";
@@ -31,8 +30,8 @@ export function TutorPanel({ className }: { className?: string }) {
         <div className="flex items-center gap-2 border-b px-3 py-2.5">
           <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground"><Sparkles className="size-3.5" /></div>
           <div className="min-w-0 flex-1 leading-tight">
-            <div className="text-sm font-semibold">Tutor</div>
-            <div className="truncate text-xs text-muted-foreground">{scene || "Looking at your screen"}</div>
+            <div className="text-sm font-semibold">Ask</div>
+            {scene && <div className="truncate text-xs text-muted-foreground">{scene}</div>}
           </div>
           {thread.length > 0 && <Button variant="ghost" size="icon-sm" onClick={newConversation} title="New conversation"><RotateCcw /></Button>}
           <Button variant="ghost" size="icon-sm" onClick={() => ask.set({ open: false })} aria-label="Close"><X /></Button>
@@ -40,7 +39,7 @@ export function TutorPanel({ className }: { className?: string }) {
         <div className="border-b px-3 py-2">
           <TabsList className="w-full">
             <TabsTrigger value="chat"><Sparkles />Chat</TabsTrigger>
-            <TabsTrigger value="sees"><Eye />What it sees</TabsTrigger>
+            <TabsTrigger value="sees"><Eye />Context</TabsTrigger>
             <TabsTrigger value="voice"><Settings2 />Voice</TabsTrigger>
           </TabsList>
         </div>
@@ -91,12 +90,12 @@ function Chat() {
           {selection.length > 5 && <Badge variant="outline">+{selection.length - 5}</Badge>}
         </div>
       ) : (
-        <p className="text-xs leading-relaxed text-muted-foreground">Click anything, highlight text, or drag a box. With nothing selected, I use whatever your mouse is over and everything visible in your window.</p>
+        <p className="text-xs text-muted-foreground">Tap anything on the page to ask about it.</p>
       )}
       {region && <p className="text-xs text-muted-foreground">▭ {region}</p>}
       <div className="flex gap-1.5">
         <Button variant={regionMode ? "secondary" : "outline"} size="xs" onClick={() => ask.set({ regionMode: !regionMode })}>
-          <SquareDashedMousePointer />{regionMode ? "Drag over the visual…" : "Highlight region"}<Kbd>H</Kbd>
+          <SquareDashedMousePointer />{regionMode ? "Drag a box…" : "Select an area"}
         </Button>
         {selection.length > 0 && <Button variant="ghost" size="xs" onClick={() => ask.set({ selection: [], region: "" })}>Clear</Button>}
       </div>
@@ -132,14 +131,14 @@ function Chat() {
         ))}
       </div>
       <form className="rounded-xl border bg-background shadow-xs focus-within:ring-3 focus-within:ring-ring/30" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-        <Textarea ref={inputRef} value={input} rows={2} placeholder="Ask anything, or press V and talk…"
+        <Textarea ref={inputRef} value={input} rows={2} placeholder="Ask anything…"
           className="min-h-0 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent"
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } if (e.key === "Escape") (e.target as HTMLElement).blur(); }} />
         <div className="flex items-center gap-1.5 px-2 pb-2">
           <Button type="button" variant={listening ? "destructive" : "ghost"} size="icon-sm" className={cn(listening && "animate-pulse")} title="Talk (V)"
             onClick={() => (listening ? stopListening() : listenAndAsk())}><Mic /></Button>
-          <span className="flex-1 truncate text-[11px] text-muted-foreground"><span className="hidden [@media(pointer:fine)]:inline"><Kbd>Enter</Kbd> send · <Kbd>V</Kbd> talk · <Kbd>E</Kbd> explain</span><span className="[@media(pointer:fine)]:hidden">Tap the mic to talk</span></span>
+          <span className="flex-1" />
           {busy || speaking
             ? <Button type="button" size="icon-sm" variant="secondary" onClick={stopAll} title="Stop"><Square className="fill-current" /></Button>
             : <Button type="submit" size="icon-sm" disabled={!input.trim()} title="Send"><ArrowUp /></Button>}
@@ -150,14 +149,11 @@ function Chat() {
 }
 
 function Intro() {
-  const p = useStore(learner, (s) => s.profile);
   return (
-    <Card className="gap-2 p-4 text-sm shadow-none">
-      <div className="font-medium">I can see what you see.</div>
-      <p className="text-muted-foreground">Your window, what you've selected or highlighted, what your mouse is over, and the exact numbers inside the model. Type, or press <Kbd>V</Kbd> and just talk. I can answer out loud too.</p>
-      <p className="text-muted-foreground">I point at things with <span className="ptr-chip">◎</span> (hover to light them up) and suggest <span className="try-chip">▶ experiments</span>.</p>
-      {p?.summary && <p className="border-t pt-2 text-xs text-muted-foreground"><span className="font-medium text-foreground">What I know about you: </span>{p.summary}</p>}
-    </Card>
+    <div className="space-y-1 px-1 py-6 text-center text-sm text-muted-foreground">
+      <p className="font-medium text-foreground">Ask about anything you see.</p>
+      <p>Type, or tap the mic and talk.</p>
+    </div>
   );
 }
 
@@ -175,7 +171,6 @@ function WhatItSees() {
   ];
   return (
     <div className="space-y-2 p-3 text-sm">
-      <p className="text-xs text-muted-foreground">This is sent with every question and updates live as you scroll, click and move the mouse.</p>
       {rows.map(([t, d]) => (
         <Item key={t} variant="outline" size="sm"><ItemContent><ItemTitle>{t}</ItemTitle><ItemDescription className="line-clamp-none">{d}</ItemDescription></ItemContent></Item>
       ))}
