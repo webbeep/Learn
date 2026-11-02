@@ -323,7 +323,7 @@ print("params:", sum(p.numel() for p in [*up.parameters(), *down.parameters()]))
     promise: "After this you'll be able to describe the residual stream as a shared workspace and use the logit lens to watch a prediction form layer by layer.",
     keyIdeas: [
       { title: "One vector, edited by addition", body: "Each token's 64-number vector flows from the embedding to the output. Every attention and MLP block reads it and adds a change; nothing overwrites it." },
-      { title: "A shared whiteboard", body: "Because everything is added into the same stream, later layers can read what earlier ones wrote. Layer 2's color-copying head writes “red” information that layer 3 and the readout then use." },
+      { title: "A shared whiteboard", body: "Because everything is added into the same stream, later layers can read what earlier ones wrote. Layer 2 head 4 (which, on stories like this one, fetches the handed-over item's color) writes “red” information that layer 3 and the readout then use." },
       { title: "The logit lens: peek mid-thought", body: "Apply the final readout to the stream after any layer to see what the model would predict if it stopped right there.", tryIt: "In the X-ray, open Layers with the mia/tom preset and watch the guess change at each step." },
       { title: "Watching “ red” emerge", body: "On the last “ the”, the lens reads “ the” (33%) after layer 1, “ white” (12%) after layer 2, and “ red” (87%) after layer 3. The answer is assembled step by step." },
       { title: "A highway for gradients", body: "Addition passes gradients straight through, so even layer 1 gets a clear training signal. This is a big reason deep transformers can be trained at all." },
@@ -790,7 +790,7 @@ for residual in (False, True):
     keyIdeas: [
       { title: "Ablation = remove and measure", body: "To learn what a part does, take it out (or zero it), keep everything else identical, and compare validation loss. The damage tells you what the part was worth.", tryIt: "In the Architecture lab, switch off one component, retrain, and compare with the baseline curve." },
       { title: "Predict before you run", body: "Without attention, each token sees only itself, so the model collapses to guessing from the current token (roughly a bigram model). Without position embeddings, you'd expect word order to be much harder to use. Guess the damage first, then check: TinyGPT's real result may surprise you." },
-      { title: "Not all heads are equal", body: "Studies of trained transformers found many heads can be removed with little loss while a few are critical. TinyGPT's color-copying head (layer 2, head 4) is a good candidate for a critical one." },
+      { title: "Not all heads are equal", body: "Studies of trained transformers found many heads can be removed with little loss while a few are critical. TinyGPT's layer 2 head 4 is a good candidate for a critical one: zeroing it drops p(\u201c red\u201d) on the probe from 87% to about 2%." },
       { title: "One change, several seeds", body: "Random initialization alone moves the final loss a little. Run each variant with a few seeds and only trust differences bigger than that spread." },
     ],
     quiz: [
@@ -1022,7 +1022,7 @@ print("bigger than noise?", abs(st.mean(gain)) > 2 * se)`,
       { title: "Mixture of experts", body: "Replace one MLP with many expert MLPs plus a router that sends each token to only a few of them. You get far more parameters without more compute per token." },
       { title: "Better ways to encode position", body: "TinyGPT learns one vector per position, up to 64. Many modern models use rotary embeddings (RoPE), which build relative distance directly into the attention dot product." },
       { title: "Thinking longer at test time", body: "Models that write out intermediate reasoning before answering can solve harder problems, trading extra inference compute for accuracy." },
-      { title: "Understanding what's inside", body: "Interpretability hunts for circuits (like TinyGPT's color-copying head) and features (directions in the residual stream). Sparse autoencoders try to split polysemantic neurons into cleaner features.", tryIt: "On the Invent page, pick one of these ideas and test it against the TinyGPT baseline." },
+      { title: "Understanding what's inside", body: "Interpretability hunts for circuits (like TinyGPT's layer 2 head 4, which fetches the item's color on stories like the probe) and features (directions in the residual stream). Sparse autoencoders try to split polysemantic neurons into cleaner features.", tryIt: "On the Invent page, pick one of these ideas and test it against the TinyGPT baseline." },
     ],
     quiz: [
       {
