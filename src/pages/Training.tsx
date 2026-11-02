@@ -62,7 +62,7 @@ export function Training({ corpus }: { corpus: string }) {
             </svg>
             <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-viz-a" />training loss</span>
-              <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-viz-b" />validation loss (text it never trained on)</span>
+              <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-viz-b" />validation loss (held-out text; short template lines repeat, so some look familiar)</span>
             </div>
           </CardContent>
         </Card>

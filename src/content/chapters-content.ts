@@ -482,7 +482,7 @@ for step in range(201):
 print("uniform guess = ln V =", round(math.log(V), 3))   # step 0 starts exactly here`,
       codeCaption: "The same four-step loop on a toy next-character model: the loss starts exactly at ln V (uniform guessing) and falls as the weights learn which character follows which.",
     },
-    pitfall: { myth: "Training copies the training text into the model.", truth: "Training adjusts parameters so likely continuations get high probability. TinyGPT's loss on held-out text it never trained on (about 0.46) matches its training loss, so it learned patterns that generalize rather than a copy. Big models can memorize some passages, but mostly they learn patterns." },
+    pitfall: { myth: "Training copies the training text into the model.", truth: "Training adjusts parameters so likely continuations get high probability. TinyGPT's loss on held-out text (about 0.46) matches its training loss, and freshly generated stories it has never seen score about 0.5, so it learned patterns that generalize rather than a copy. Big models can memorize some passages, but mostly they learn patterns." },
     further: [
       { title: "3Blue1Brown: But what is a neural network?", url: "https://www.youtube.com/watch?v=aircAruvnKk", note: "What a neural network is, from the ground up." },
       { title: "3Blue1Brown: Gradient descent, how neural networks learn", url: "https://www.youtube.com/watch?v=IHZwWFHWa-w", note: "How the nudging works: gradient descent." },
@@ -495,7 +495,7 @@ print("uniform guess = ln V =", round(math.log(V), 3))   # step 0 starts exactly
       { title: "Loss = surprise", body: "For each position, loss = −ln(probability given to the true next token). 87.1% on “ red” costs 0.14; 5.9% would cost 2.83; 100% costs 0." },
       { title: "The starting line: ln 256", body: "Uniform guessing over 256 tokens scores ln 256 ≈ 5.55. TinyGPT's step-0 loss was 5.56, so a fresh model really knows nothing." },
       { title: "An average over thousands of guesses", body: "Each step averages the loss over 64 × 64 = 4,096 predictions. TinyGPT ended near 0.46: about as unsure as choosing between 1.6 equally likely options (e^0.46 ≈ 1.58, the “perplexity”)." },
-      { title: "Two curves, one story", body: "Training loss is measured on text the model learns from; validation loss on held-out text (TinyGPT keeps 5% aside). TinyGPT ended at about 0.46 on both: it generalizes.", tryIt: "On the Training page, compare the solid (training) and dashed (validation) curves." },
+      { title: "Two curves, one story", body: "Training loss is measured on text the model learns from; validation loss on held-out text (TinyGPT keeps 5% aside). Both ended near 0.46. Short template lines like \u201cthe sky is blue.\u201d repeat in the tiny world, so not every held-out line is new, but freshly generated stories also score about 0.5: it generalizes.", tryIt: "On the Training page, compare the solid (training) and dashed (validation) curves." },
       { title: "Zero isn't the goal", body: "Real text is partly unpredictable (which name starts the next story?), so even a perfect model has a loss floor above 0." },
     ],
     quiz: [
@@ -667,7 +667,7 @@ print(torch.allclose(p.detach(), q, atol=1e-6))      # True: identical to torch.
     keyIdeas: [
       { title: "Data is the curriculum", body: "A model can only learn patterns that are in its data. TinyGPT's 5.2M characters of tiny-world stories are why it knows cats say meow, and why it has never met an elephant." },
       { title: "Batches: many windows at once", body: "Each step picks 64 random windows of 64 tokens. The targets are the same windows shifted by one token, so every position is a training example: 4,096 predictions per step." },
-      { title: "Hold some data back", body: "TinyGPT keeps the last 5% of its tokens for validation. It never trains on them, so validation loss shows how it handles text it hasn't seen." },
+      { title: "Hold some data back", body: "TinyGPT keeps the last 5% of its tokens for validation and never trains on them. Watch for leakage: in the tiny world, short template sentences repeat, so some held-out lines also appear in the training text. Real projects deduplicate before splitting." },
       { title: "Underfitting vs overfitting", body: "Both losses high and still falling: underfitting, so train longer or go bigger. Training loss falling while validation rises: overfitting, so add data, shrink the model, or stop earlier.", tryIt: "Train a model in the Train lab and watch the gap between the training and validation curves." },
       { title: "Start small, check everything", body: "Before a long run: check the step-0 loss is about ln(vocab size), make sure the model can overfit one small batch, and read samples regularly. Most bugs show up in those three checks." },
     ],

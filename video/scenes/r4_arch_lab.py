@@ -185,11 +185,11 @@ class ArchLab(VScene):
         for k, r in enumerate(order):
             col = COL[r["id"]]
             name = self.T(r["label"], 26, col, BOLD)
-            w = 7.0 * r["final_val"] / top
+            w = 5.5 * r["final_val"] / top
             b = Rectangle(width=w, height=0.42, stroke_width=0, fill_color=col, fill_opacity=0.8)
             v = self.M(f"{r['final_val']:.2f}", 24, FG)
             pr = p_of(r, " red")
-            rd = self.M(f"red {pct(pr)}" if pr else "red: not in top 5", 22, TEAL if top1(r)["token"] == " red" else MUTED)
+            rd = self.M(f"red {pct(pr)}" if pr else "red not in top 5", 22, TEAL if top1(r)["token"] == " red" else MUTED)
             bars.add(VGroup(name, b, v, rd))
         y0 = 2.35
         for k, row in enumerate(bars):

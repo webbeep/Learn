@@ -25,17 +25,19 @@ def sci(v):
 class ResidualsLayerNorm(VScene):
     VIDEO_ID = "residuals-layernorm"
 
-    def code_line(self, with_res=True, size=34):
-        parts = [("x", FG), (" = ", MUTED)]
-        if with_res:
-            parts += [("x + ", YELLOW)]
-        parts += [("attn", BLUE), ("(", MUTED), ("LN", TEAL), ("(x))", MUTED)]
-        return VGroup(*[self.M(t, size, c) for t, c in parts]).arrange(RIGHT, buff=0.06)
+    def code_line(self, size=36):
+        """'x = x + attn(LN(x))' as one Text; returns (text, the 'x +' glyphs)."""
+        t = Text("x = x + attn(LN(x))", font=MONO, font_size=size, color=FG,
+                 t2c={"x + ": YELLOW, "attn": BLUE, "LN": TEAL})
+        # glyphs (spaces are not glyphs): x = x + a t t n ( L N ( x ) )
+        return t, VGroup(t[2], t[3])
 
     def construct(self):
         # ------------------------------------------------------------ hook
-        c1 = self.code_line(True).move_to(UP * 2.6)
-        pl = Plot([0, AB_STEPS], [0, 6], width=9.5, height=3.9, xticks=[0, 500, 1000, 1500], yticks=[0, 2, 4, 6],
+        c1, xplus = self.code_line()
+        c1.move_to(UP * 2.6)
+        pl = Plot([0, AB_STEPS], [0, 6], width=9.5, height=3.9, xticks=[0, AB_STEPS // 3, 2 * AB_STEPS // 3, AB_STEPS],
+                  yticks=[0, 2, 4, 6],
                   xlabel="training step", ylabel="validation loss").move_to(DOWN * 0.75 + LEFT * 0.4)
         cb = pl.line(BASE["curve"]["step"], BASE["curve"]["val"], TEAL, 4)
         cn = pl.line(NORES["curve"]["step"], NORES["curve"]["val"], PINK, 4)
@@ -43,7 +45,7 @@ class ResidualsLayerNorm(VScene):
             .align_to(pl.p(AB_STEPS, 0), RIGHT)
         ln_ = self.M(f"without → {NORES['final_val']:.2f}", 24, PINK).next_to(pl.p(AB_STEPS, NORES["final_val"]), UP, buff=0.18) \
             .align_to(pl.p(AB_STEPS, 0), RIGHT)
-        strike = Line(c1[2].get_left(), c1[2].get_right(), color=PINK, stroke_width=5)
+        strike = Line(xplus.get_left() + LEFT * 0.05, xplus.get_right() + RIGHT * 0.05, color=PINK, stroke_width=5)
         with self.say(f"Delete two characters from TinyGPT: the x plus in each block. Same data, same {AB_STEPS:,} steps. "
                       f"The normal model reaches {BASE['final_val']:.2f}. The edited one gets stuck at "
                       f"{NORES['final_val']:.2f}.",
@@ -52,7 +54,7 @@ class ResidualsLayerNorm(VScene):
                             f"at {NORES['final_val']:.3f}.", chapter="Two characters"):
             self.play(FadeIn(c1, shift=DOWN * 0.2), run_time=0.5)
             self.mark("code", c1, "a transformer block line: x = x + attn(LN(x)) (residual + LayerNorm)")
-            self.play(Create(strike), c1[2].animate.set_opacity(0.35), run_time=0.5)
+            self.play(Create(strike), xplus.animate.set_opacity(0.35), run_time=0.5)
             self.play(FadeIn(pl), run_time=0.5)
             self.sync("The normal", 0.1)
             self.play(Create(cb), run_time=1.0, rate_func=linear)
@@ -118,9 +120,9 @@ class ResidualsLayerNorm(VScene):
         lgb = pg.line(list(range(L + 1)), gb, TEAL, 4)
         lgn = pg.line(list(range(L + 1)), [max(v, ylo) for v in gn], PINK, 4)
         ratio = gn[-1] / max(gn[0], 1e-300)
-        lab_b = self.T("with residuals", 26, TEAL, BOLD).next_to(pg.p(L, gb[-1]), UP, buff=0.2).align_to(pg.p(L, 0), RIGHT)
-        lab_n = self.T("without", 26, PINK, BOLD).next_to(pg.p(2, max(gn[2], ylo)), UP, buff=0.25)
-        drop = self.M(f"{sci(gn[-1])} → {sci(gn[0])}", 26, PINK).next_to(lab_n, RIGHT, buff=0.4)
+        lab_b = self.T("with residuals: nearly flat", 26, TEAL, BOLD).next_to(pg.p(1, gb[1]), DOWN, buff=0.18, aligned_edge=LEFT)
+        lab_n = self.T("without residuals", 26, PINK, BOLD).move_to(pg.p(L * 0.55, ylo * 1e3), aligned_edge=LEFT)
+        drop = self.M(f"{sci(gn[-1])} → {sci(gn[0])}", 26, PINK).next_to(lab_n, DOWN, buff=0.15, aligned_edge=LEFT)
         with self.say(f"Here's the real thing: a freshly built {L}-layer TinyGPT, measuring how much gradient reaches each "
                       f"layer. Without residuals, by the first layer it has shrunk by a factor of 10 to the "
                       f"{round(math.log10(ratio))}. Those layers can't learn. With residuals, it's nearly flat.",
@@ -230,18 +232,19 @@ class ResidualsLayerNorm(VScene):
         la = pa.line(list(range(Ld + 1)), ab, TEAL, 4)
         lna = pa.line(list(range(Ld + 1)), an, ORANGE, 4)
         steps_d = DP["steps"]
-        pc = Plot([0, steps_d], [0, 3], width=5.6, height=3.6, xticks=[0, steps_d // 2, steps_d], yticks=[0, 1, 2, 3],
+        pc = Plot([0, steps_d], [0, 5], width=5.6, height=3.6, xticks=[0, steps_d // 2, steps_d], yticks=[0, 1, 2, 3, 4, 5],
                   xlabel="training step", ylabel="validation loss").move_to(RIGHT * 3.4 + DOWN * 0.5)
         runs = [("baseline", TEAL, "residual + LN"), ("no-layernorm", ORANGE, "no LN"), ("no-residual", PINK, "no residual")]
         lc = VGroup(*[pc.line(DRUN[i]["curve"]["step"], DRUN[i]["curve"]["val"], c, 3.5) for i, c, _ in runs])
         lgc = VGroup(*[self.M(f"{n}: {DRUN[i]['final_val']:.2f}" if DRUN[i]["final_val"] is not None else f"{n}: diverged",
                               22, c) for i, c, n in runs]).arrange(DOWN, aligned_edge=RIGHT, buff=0.08)
-        lgc.next_to(pc.ax.get_corner(UR), DL, buff=0.15)
+        lgc.move_to(pc.p(steps_d, 3.3), aligned_edge=RIGHT)
         ttl = self.T(f"real {Ld}-layer runs, {steps_d:,} steps", 26, FG, BOLD).move_to(UP * 2.75)
-        lga = legend([("with LN", TEAL, False), ("no LN", ORANGE, False)], size=22).next_to(pa.ax, UP, buff=0.12).align_to(pa.ax, RIGHT)
-        with self.say(f"In a real {Ld}-layer model after training, without LayerNorm the signal grows to "
-                      f"{an[-1] / ab[-1]:.0f} times the size by the top layer"
-                      f", and validation loss ends at {DRUN['no-layernorm']['final_val']:.2f} instead of "
+        lga = legend([("with LN", TEAL, False), ("no LN", ORANGE, False)], size=22, direction=DOWN, buff=0.12)
+        lga.move_to(pa.p(0.4, top * 1.05), aligned_edge=UL)
+        with self.say(f"In real {Ld}-layer models after training, the signal without LayerNorm ends up "
+                      f"{an[-1] / ab[-1]:.0f} times bigger at the top layer, and validation loss ends at "
+                      f"{DRUN['no-layernorm']['final_val']:.2f} instead of "
                       f"{DRUN['baseline']['final_val']:.2f}. Remove the residuals instead, and it's "
                       f"{DRUN['no-residual']['final_val']:.2f}.",
                       scene=f"Left: real RMS of the hidden state at each layer of trained {Ld}-layer models: with LayerNorm "

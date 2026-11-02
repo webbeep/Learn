@@ -9,7 +9,7 @@ from lib_concepts import toy_graph, backprop_data, TOY
 
 VIDEO = dict(id="backprop", cls="Backprop", title="Backprop: blame flows backwards",
              subtitle="The chain rule on a toy graph, then TinyGPT's real gradients for one prediction",
-             relates="backprop", track="training", order=30, poster=("The chain rule", 1, 0.92))
+             relates="backprop", track="training", order=30, poster=("The chain rule", 2, 0.95))
 
 FWD, BWD = TEAL, ORANGE
 COL = {" red": PINK, " white": "#e8e8e8", " purple": "#b48cff", " black": "#7d8597", " ava": TEAL, ",": ORANGE}

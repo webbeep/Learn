@@ -279,7 +279,7 @@ function LossCard({ s, smooth }: { s: TrainState; smooth: number[] }) {
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>Loss, live</CardTitle>
-        <CardDescription>How surprised the model is by the real next token. Validation is measured every 25 steps on text it never trains on.</CardDescription>
+        <CardDescription>How surprised the model is by the real next token. Validation is measured every 25 steps on a held-out slice it never trains on (short template sentences repeat in the tiny world, so not all of it is new).</CardDescription>
       </CardHeader>
       <CardContent>
         <LineChart askId="train-loss" ask={ask} xMax={xMax} yMax={yMax} height={250}
