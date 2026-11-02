@@ -10767,7 +10767,7 @@
   "id": "arch-lab",
   "title": "Architecture lab: break it to understand it",
   "subtitle": "Remove attention, MLPs, positions, residuals or LayerNorm, retrain, and watch what breaks (real runs)",
-  "duration": 148.47,
+  "duration": 141.7,
   "track": "design",
   "order": 20,
   "src": "/videos/arch-lab.mp4",
@@ -10784,15 +10784,15 @@
     "title": "The control"
    },
    {
-    "t": 33.2,
+    "t": 33.23,
     "title": "Seven variants"
    },
    {
-    "t": 115.0,
+    "t": 115.1,
     "title": "Leaderboard"
    },
    {
-    "t": 128.07,
+    "t": 128.2,
     "title": "What each part does"
    }
   ],
@@ -10877,7 +10877,7 @@
    },
    {
     "start": 12.33,
-    "end": 33.2,
+    "end": 33.23,
     "text": "First the control: the full model. Loss 0.45. On our test prompt, Mia gives Tom the red ball, it says red, 98%. The shipped model says 87: same recipe, different batch order. Runs vary. So we also score 100 fresh stories like it: 100 of 100 right.",
     "scene": "Baseline (full TinyGPT, 170,560 params, 3000 steps): validation loss 0.450; on the probe prompt its top next tokens are ' red' 98%, ' black' 1.0%, ' purple' 0.4%. The shipped model (same recipe, different batch order) gives ' red' 87.1%. On 100 generated trade stories the baseline puts the right colour on top 100/100 (mean p 0.99).",
     "objects": [
@@ -10895,8 +10895,8 @@
       "id": "base-probe",
       "label": "baseline next-token probabilities: ' red' 0.982, ' black' 0.010, ' purple' 0.004, ' end' 0.000, ' dog' 0.000",
       "box": [
-       0.5323,
-       0.3655,
+       0.5422,
+       0.3464,
        0.3995,
        0.249
       ]
@@ -10915,8 +10915,8 @@
       "id": "shipped",
       "label": "the shipped TinyGPT (same recipe, different batch order): p(' red') = 0.871",
       "box": [
-       0.5323,
-       0.8129,
+       0.5422,
+       0.832,
        0.4363,
        0.0398
       ]
@@ -10924,8 +10924,8 @@
     ]
    },
    {
-    "start": 33.2,
-    "end": 45.6,
+    "start": 33.23,
+    "end": 45.67,
     "text": "No attention. Every token is alone. It's exactly a bigram model: loss 1.64, bigram baseline 1.65. Right colour on 0 of 100 stories.",
     "scene": "Ablation 'no attention' (120,256 params): Attention removed, so each token only sees itself and cannot copy information from earlier words. Real validation curve (colored) vs baseline (gray): final 1.644 vs 0.450. Probe top tokens: ' end' 10%, ' box' 3.1%, ' house' 3.0%. On 100 generated stories: right colour on top 0/100 (mean p 0.01). One random sample (temperature 0.8): ' kite is saturday.\\nnesday woofinn has a:'.",
     "objects": [
@@ -10953,17 +10953,17 @@
       "id": "no-attention-probe",
       "label": "no attention on the probe: ' end' 0.097, ' box' 0.031, ' house' 0.030, ' river' 0.029, ' hill' 0.029; right colour on 0/100 stories; one random sample: ' kite is saturday.\\nnesday woofinn has a:'",
       "box": [
-       0.4939,
-       0.2996,
-       0.4904,
-       0.4757
+       0.5422,
+       0.2889,
+       0.374,
+       0.5223
       ]
      }
     ]
    },
    {
-    "start": 45.6,
-    "end": 62.67,
+    "start": 45.67,
+    "end": 62.73,
     "text": "No positions. Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, already leaks word order. Loss 0.45. Right colour on 100 of 100 stories.",
     "scene": "Ablation 'no positions' (166,464 params): Positional embeddings removed, so the model knows which words came before but not in what order. Real validation curve (colored) vs baseline (gray): final 0.451 vs 0.450. Probe top tokens: ' red' 97%, ' black' 1.1%, ' purple' 0.9%. On 100 generated stories: right colour on top 100/100 (mean p 0.97). One random sample (temperature 0.8): ' red ball.\\nonce upon a time, there was a'.",
     "objects": [
@@ -10991,17 +10991,17 @@
       "id": "no-positions-probe",
       "label": "no positions on the probe: ' red' 0.970, ' black' 0.011, ' purple' 0.009, ' pink' 0.008, ' school' 0.000; right colour on 100/100 stories; one random sample: ' red ball.\\nonce upon a time, there was a'",
       "box": [
-       0.5323,
-       0.2996,
+       0.5422,
+       0.293,
        0.4135,
-       0.4757
+       0.514
       ]
      }
     ]
    },
    {
-    "start": 62.67,
-    "end": 74.6,
+    "start": 62.73,
+    "end": 74.67,
     "text": "No MLP. Attention still moves information, so copying survives. Loss 0.46. Right colour on 100 of 100 stories.",
     "scene": "Ablation 'no MLP' (70,912 params): MLP blocks removed, so the model can still mix tokens but has far less per-token processing and memory. Real validation curve (colored) vs baseline (gray): final 0.457 vs 0.450. Probe top tokens: ' red' 89%, ' purple' 7.4%, ' pink' 2.0%. On 100 generated stories: right colour on top 100/100 (mean p 0.93). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
@@ -11029,17 +11029,17 @@
       "id": "no-mlp-probe",
       "label": "no MLP on the probe: ' red' 0.890, ' purple' 0.074, ' pink' 0.020, ' green' 0.009, ' blue' 0.005; right colour on 100/100 stories; one random sample: ' purple ball.\\nonce upon a time, there wa'",
       "box": [
-       0.5231,
-       0.2996,
-       0.4319,
-       0.4757
+       0.5422,
+       0.2898,
+       0.4135,
+       0.5204
       ]
      }
     ]
    },
    {
-    "start": 74.6,
-    "end": 83.47,
+    "start": 74.67,
+    "end": 83.53,
     "text": "No residuals. It only learned which words are common: 4.50, the unigram level. Right colour on 0 of 100 stories.",
     "scene": "Ablation 'no residual' (170,560 params): Residual connections removed, so each layer must rebuild the whole signal instead of adding to it. Real validation curve (colored) vs baseline (gray): final 4.502 vs 0.450. Probe top tokens: '.' 9.0%, ' the' 7.2%, '\\n' 5.1%. On 100 generated stories: right colour on top 0/100 (mean p 0.00). One random sample (temperature 0.8): ' daym a. one the toam the a..ied pink no'.",
     "objects": [
@@ -11067,17 +11067,17 @@
       "id": "no-residual-probe",
       "label": "no residual on the probe: '.' 0.090, ' the' 0.072, '\\n' 0.051, ' a' 0.049, ' has' 0.022; right colour on 0/100 stories; one random sample: ' daym a. one the toam the a..ied pink no'",
       "box": [
-       0.4217,
-       0.2996,
-       0.5783,
-       0.4757
+       0.5422,
+       0.2898,
+       0.374,
+       0.5204
       ]
      }
     ]
    },
    {
-    "start": 83.47,
-    "end": 93.2,
+    "start": 83.53,
+    "end": 93.27,
     "text": "No LayerNorm. It learns the language, loss 0.54, but rarely the trick. Right colour on 17 of 100 stories.",
     "scene": "Ablation 'no LayerNorm' (169,664 params): LayerNorm removed, so activation sizes are no longer re-scaled and can drift from layer to layer. Real validation curve (colored) vs baseline (gray): final 0.542 vs 0.450. Probe top tokens: ' orange' 14%, ' blue' 12%, ' black' 12%. On 100 generated stories: right colour on top 17/100 (mean p 0.11). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
@@ -11105,17 +11105,17 @@
       "id": "no-layernorm-probe",
       "label": "no LayerNorm on the probe: ' orange' 0.136, ' blue' 0.125, ' black' 0.120, ' green' 0.114, ' white' 0.110; right colour on 17/100 stories; one random sample: ' purple ball.\\nonce upon a time, there wa'",
       "box": [
-       0.5231,
-       0.2996,
-       0.4319,
-       0.4757
+       0.5422,
+       0.2898,
+       0.3936,
+       0.5204
       ]
      }
     ]
    },
    {
-    "start": 93.2,
-    "end": 103.07,
+    "start": 93.27,
+    "end": 103.17,
     "text": "One layer. Loss 0.48, but copying like this typically needs two layers working together. Right colour on 30 of 100 stories.",
     "scene": "Ablation '1 layer' (70,592 params): Only one block instead of three: less depth to build multi-step patterns. Real validation curve (colored) vs baseline (gray): final 0.476 vs 0.450. Probe top tokens: ' blue' 16%, ' green' 15%, ' black' 15%. On 100 generated stories: right colour on top 30/100 (mean p 0.26). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
@@ -11143,17 +11143,17 @@
       "id": "1-layer-probe",
       "label": "1 layer on the probe: ' blue' 0.164, ' green' 0.152, ' black' 0.146, ' purple' 0.129, ' red' 0.122; right colour on 30/100 stories; one random sample: ' purple ball.\\nonce upon a time, there wa'",
       "box": [
-       0.5231,
-       0.2996,
-       0.4319,
-       0.4757
+       0.5422,
+       0.2898,
+       0.3943,
+       0.5204
       ]
      }
     ]
    },
    {
-    "start": 103.07,
-    "end": 115.0,
+    "start": 103.17,
+    "end": 115.1,
     "text": "Six layers. Our one test prompt says it failed. But across all the stories, it often gets it right. One prompt can mislead. Right colour on 58 of 100 stories.",
     "scene": "Ablation '6 layers' (320,512 params): Six blocks instead of three: twice the depth and roughly 1.9× the parameters. Real validation curve (colored) vs baseline (gray): final 0.460 vs 0.450. Probe top tokens: ' black' 22%, ' yellow' 21%, ' purple' 19%. On 100 generated stories: right colour on top 58/100 (mean p 0.60). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
@@ -11181,17 +11181,17 @@
       "id": "6-layer-probe",
       "label": "6 layers on the probe: ' black' 0.215, ' yellow' 0.211, ' purple' 0.191, ' pink' 0.190, ' red' 0.184; right colour on 58/100 stories; one random sample: ' purple ball.\\nonce upon a time, there wa'",
       "box": [
-       0.5231,
-       0.2996,
-       0.4319,
-       0.4757
+       0.5422,
+       0.2898,
+       0.3941,
+       0.5204
       ]
      }
     ]
    },
    {
-    "start": 115.0,
-    "end": 128.07,
+    "start": 115.1,
+    "end": 128.2,
     "text": "Line them up. Cutting residuals or attention wrecks it. The rest look alike by loss, yet their copy scores run from 100 down to 17 out of 100. Loss can hide skills. And each is just one run.",
     "scene": "Leaderboard of real final validation losses (lower = better) with each model's colour-copy score on 100 generated stories: baseline 0.450 (100/100), no positions 0.451 (100/100), no MLP 0.457 (100/100), 6 layers 0.460 (58/100), 1 layer 0.476 (30/100), no LayerNorm 0.542 (17/100), no attention 1.644 (0/100), no residual 4.502 (0/100). One run each; same LR and steps for every variant.",
     "objects": [
@@ -11278,8 +11278,8 @@
     ]
    },
    {
-    "start": 128.07,
-    "end": 140.73,
+    "start": 128.2,
+    "end": 140.9,
     "text": "So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep it trainable, and depth composes. Now go break one yourself.",
     "scene": "Roles: attention = moves information between tokens; positions = word order; MLP = per-token processing/memory; residual + LayerNorm = keep it trainable; depth = more steps to compose. CTA: try your own cuts in the Architecture lab.",
     "objects": [
