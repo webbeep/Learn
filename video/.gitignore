@@ -3,3 +3,4 @@ media/
 build/
 frames/
 __pycache__/
+*.lock
