@@ -7,7 +7,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemTitle }
 import { Progress } from "@/components/ui/progress";
 import { CHAPTERS, TRACKS } from "../content/curriculum";
 import { learner, setScreen, useStore } from "../lib/store";
-import { LEVEL_LABEL, LevelSelect, nextChapter } from "./Learn";
+import { LEVEL_LABEL, LevelSelect, nextChapter } from "@/components/app/level";
 
 export const LABS = [
   { href: "#/xray", icon: ScanEye, title: "Inference X-ray", blurb: "Watch a real GPT predict the next word, step by step." },

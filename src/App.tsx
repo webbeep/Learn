@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -17,17 +17,18 @@ import { AskPopover, TutorPanel } from "./ask/AskPanel";
 import { MarkStyles, RegionLayer, useClickToAsk } from "./ask/Interact";
 import { ShortcutHelp, VoiceHUD, useShortcuts } from "./ask/Shortcuts";
 import { trackPointer, trackTextSelection } from "./lib/conversation";
-import { XRay } from "./pages/XRay";
-import { Training } from "./pages/Training";
-import { Videos } from "./pages/Videos";
+const XRay = lazy(() => import("./pages/XRay").then((m) => ({ default: m.XRay })));
+const Training = lazy(() => import("./pages/Training").then((m) => ({ default: m.Training })));
+const Videos = lazy(() => import("./pages/Videos").then((m) => ({ default: m.Videos })));
 import { MapPage } from "./pages/MapPage";
-import { Path } from "./pages/Path";
-import { Learn, ChapterPage } from "./pages/Learn";
-import { TrainLab } from "./pages/TrainLab";
-import { ArchLab } from "./pages/ArchLab";
-import { Backprop } from "./pages/Backprop";
-import { Scaling } from "./pages/Scaling";
-import { Invent } from "./pages/Invent";
+const Path = lazy(() => import("./pages/Path").then((m) => ({ default: m.Path })));
+const Learn = lazy(() => import("./pages/Learn").then((m) => ({ default: m.Learn })));
+const ChapterPage = lazy(() => import("./pages/Learn").then((m) => ({ default: m.ChapterPage })));
+const TrainLab = lazy(() => import("./pages/TrainLab").then((m) => ({ default: m.TrainLab })));
+const ArchLab = lazy(() => import("./pages/ArchLab").then((m) => ({ default: m.ArchLab })));
+const Backprop = lazy(() => import("./pages/Backprop").then((m) => ({ default: m.Backprop })));
+const Scaling = lazy(() => import("./pages/Scaling").then((m) => ({ default: m.Scaling })));
+const Invent = lazy(() => import("./pages/Invent").then((m) => ({ default: m.Invent })));
 
 function useHash() {
   const [h, setH] = useState(location.hash || "#/");
@@ -90,7 +91,7 @@ function Shell() {
         <SiteHeader title={title} />
         <div className="flex min-h-0 flex-1">
           <div ref={main as React.RefObject<HTMLDivElement>} key={resolvedTheme} className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-4 md:px-6 md:pt-5 md:pb-5 lg:px-8">
-            <div className="mx-auto w-full max-w-6xl">{page}</div>
+            <div className="mx-auto w-full max-w-6xl"><Suspense fallback={<div className="flex items-center justify-center gap-2 p-16 text-muted-foreground"><Spinner />Loading…</div>}>{page}</Suspense></div>
           </div>
           {panelOpen && !isMobile && (
             <aside className="sticky top-14 h-[calc(100svh-3.5rem)] w-[380px] shrink-0 border-l xl:w-[420px]"><TutorPanel /></aside>

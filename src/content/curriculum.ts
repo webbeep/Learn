@@ -1,6 +1,5 @@
 // The curriculum: tracks → chapters. Structure lives here; per-chapter teaching content
 // (key ideas, quiz, deeper math & code) lives in ./chapters-content.ts.
-import { CONTENT, type ChapterContent } from "./chapters-content";
 
 export type Level = "beginner" | "intermediate" | "advanced";
 export interface Track { id: "inference" | "training" | "design" | "research"; title: string; blurb: string }
@@ -41,5 +40,4 @@ export const CHAPTERS: Chapter[] = [
   { id: "frontier", track: "research", title: "The frontier: ideas to build on", level: "advanced", minutes: 9, video: "frontier", lab: { href: "#/invent", label: "Pick an idea to try" } },
 ];
 
-export const chapterContent = (id: string): ChapterContent | undefined => CONTENT[id];
 export const chapterById = (id: string) => CHAPTERS.find((c) => c.id === id);

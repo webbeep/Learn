@@ -8,14 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { CHAPTERS, TRACKS, chapterById, chapterContent, type Chapter, type Level } from "../content/curriculum";
-import { learner, setProgress, setScreen, useStore, type Learner } from "../lib/store";
+import { CHAPTERS, TRACKS, chapterById, type Chapter, type Level } from "../content/curriculum";
+import { CONTENT } from "../content/chapters-content";
+import { LEVEL_LABEL, LevelSelect, nextChapter } from "@/components/app/level";
+import { learner, setProgress, setScreen, useStore } from "../lib/store";
 import { SeriesPlayer, loadVideos, type VideoMeta } from "./Videos";
 
-export const LEVEL_LABEL: Record<Level, string> = { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
-const LEVEL_RANK: Record<Level, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 const levelBadge = (l: Level) => (
   <Badge variant="outline" className={cn("font-normal",
     l === "beginner" && "border-emerald-500/40 text-emerald-700 dark:text-emerald-400",
@@ -29,30 +28,11 @@ function useVideoIndex() {
   return vids;
 }
 
-/** The next chapter to do, honoring the learner's level (advanced folks can skip beginner chapters). */
-export function nextChapter(l: Pick<Learner, "level" | "progress">): Chapter {
-  const rank = LEVEL_RANK[l.level ?? "beginner"];
-  return CHAPTERS.find((c) => !l.progress[c.id]?.done && (rank < 2 || LEVEL_RANK[c.level] > 0)) ?? CHAPTERS.find((c) => !l.progress[c.id]?.done) ?? CHAPTERS[0];
-}
-
 function StatusIcon({ id }: { id: string }) {
   const p = useStore(learner, (s) => s.progress[id]);
   if (p?.done) return <CheckCircle2 className="size-5 text-emerald-500" />;
   if (p && ((p.watched ?? 0) > 0.05 || p.quiz !== undefined)) return <CircleDot className="size-5 text-pin" />;
   return <Circle className="size-5 text-muted-foreground/50" />;
-}
-
-export function LevelSelect({ className }: { className?: string }) {
-  const level = useStore(learner, (s) => s.level);
-  return (
-    <Select value={level ?? "beginner"} onValueChange={(v) => setLevel(v as Level)}>
-      <SelectTrigger size="sm" className={cn("w-[150px]", className)}><GraduationCap /><SelectValue /></SelectTrigger>
-      <SelectContent>{(Object.keys(LEVEL_LABEL) as Level[]).map((k) => <SelectItem key={k} value={k}>{LEVEL_LABEL[k]}</SelectItem>)}</SelectContent>
-    </Select>
-  );
-}
-export function setLevel(level: Level) {
-  learner.set({ level, depth: level === "beginner" ? "intuition" : level === "advanced" ? "math" : "balanced" });
 }
 
 export function Learn() {
@@ -136,7 +116,7 @@ export function Learn() {
 
 export function ChapterPage({ id }: { id: string }) {
   const ch = chapterById(id);
-  const content = chapterContent(id);
+  const content = CONTENT[id];
   const vids = useVideoIndex();
   const level = useStore(learner, (s) => s.level);
   const video = vids.find((v) => v.id === ch?.video);

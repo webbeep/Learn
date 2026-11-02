@@ -3,7 +3,7 @@ import { ask, select, useStore, type AskItem } from "../lib/store";
 import { afterHighlight } from "../lib/conversation";
 
 /** Click-to-select + drag-to-highlight layer for everything inside <main>. */
-export function useClickToAsk(main: React.RefObject<HTMLElement>) {
+export function useClickToAsk(main: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = main.current; if (!el) return;
     const onClick = (e: MouseEvent) => {
@@ -21,7 +21,7 @@ export function useClickToAsk(main: React.RefObject<HTMLElement>) {
   }, [main]);
 }
 
-export function RegionLayer({ main }: { main: React.RefObject<HTMLElement> }) {
+export function RegionLayer({ main }: { main: React.RefObject<HTMLElement | null> }) {
   const on = useStore(ask, (s) => s.regionMode);
   const [rect, setRect] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);

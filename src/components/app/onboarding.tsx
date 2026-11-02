@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { learner, useStore } from "@/lib/store";
-import { setLevel } from "@/pages/Learn";
+import { setLevel } from "@/components/app/level";
 import type { Level } from "@/content/curriculum";
 
 const OPTIONS: { id: Level; icon: typeof Baby; title: string; body: string }[] = [

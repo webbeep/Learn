@@ -16,7 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { addWish, ask, learner, setScreen, useStore } from "../lib/store";
 import { refreshProfile } from "../lib/api";
 import { Markdown } from "../ask/Markdown";
-import { LevelSelect } from "./Learn";
+import { LevelSelect } from "@/components/app/level";
 
 export function Path() {
   const l = useStore(learner, (s) => s);
