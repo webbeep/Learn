@@ -11,6 +11,8 @@ VIDEO = dict(id="research-loop", cls="ResearchLoop", title="The research loop: t
 HERE = os.path.dirname(os.path.abspath(__file__))
 R = json.load(open(os.path.join(HERE, "..", "data", "research_nopos.json")))   # written by video/exp_research.py
 BASE, NOPOS, REL, LEAK = R["baseline"], R["nopos"], R["released"], R["leak"]
+SHORT, TRADE = LEAK["by_kind"]["short"], LEAK["by_kind"]["trade"]
+assert SHORT["in_train"] == SHORT["n"]   # the narration says "all" of the short templated lines
 STEPS_ = ["hypothesis", "smallest experiment", "baseline", "change ONE thing", "compare across seeds", "scale up what wins"]
 SCOL = [YELLOW, TEAL, BLUE, PINK, ORANGE, "#b48cff"]
 
@@ -113,12 +115,12 @@ class ResearchLoop(CScene):
                         ).arrange(DOWN, aligned_edge=LEFT, buff=0.22)
         sh_t = self.T("identical in both runs", 26, MUTED, BOLD)
         shg = VGroup(sh_t, shared).arrange(DOWN, aligned_edge=LEFT, buff=0.25)
-        self.fitw(shg, 8.2).move_to([-6.6, 0.55, 0], aligned_edge=LEFT)
-        c1 = VGroup(self.T("baseline", 30, BLUE, BOLD), self.M("x = tok(idx) + pos(t)", 26, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
-        c2 = VGroup(self.T("no positions", 30, PINK, BOLD), self.M("x = tok(idx)", 26, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+        self.fitw(shg, 7.6).move_to([-6.6, 0.55, 0], aligned_edge=LEFT)
+        c1 = VGroup(self.T("baseline", 30, BLUE, BOLD), self.M("x = tok(idx) + pos(t)", 24, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+        c2 = VGroup(self.T("no positions", 30, PINK, BOLD), self.M("x = tok(idx)", 24, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
         cards = VGroup()
         for c, col in ((c1, BLUE), (c2, PINK)):
-            b = RoundedRectangle(corner_radius=0.15, width=4.2, height=c.height + 0.45, stroke_color=col, stroke_width=2.5,
+            b = RoundedRectangle(corner_radius=0.15, width=max(4.2, c.width + 0.6), height=c.height + 0.45, stroke_color=col, stroke_width=2.5,
                                  fill_color=col, fill_opacity=0.08)
             cards.add(VGroup(b, c.move_to(b).align_to(b, LEFT).shift(RIGHT * 0.25)))
         cards.arrange(DOWN, buff=0.35).move_to([6.7, 0.55, 0], aligned_edge=RIGHT)
@@ -232,25 +234,27 @@ class ResearchLoop(CScene):
             ("different compute", ["vs the released model", f"(3,000 steps, {REL['val']:.3f}):", f"the gap looks {fake:.2f},",
                                    f"{fake / gap:.0f}× the real {gap:.3f}"], ORANGE),
             ("one seed", ["one lucky run", "can fake a win:", "look at the spread"], YELLOW),
-            ("data leakage", [f"{LEAK['frac'] * 100:.0f}% of held-out stories", f"({LEAK['in_train']:,} of {LEAK['val_docs']:,}) also",
-                              "appear in training:", "val loss partly", "measures memory"], PINK)]
+            ("data leakage", [f"{LEAK['frac'] * 100:.0f}% of held-out lines", f"({LEAK['in_train']:,} of {LEAK['val_docs']:,}) appear in",
+                              f"training: all {SHORT['in_train']:,} short", "templated ones, but only",
+                              f"{100 * TRADE['in_train'] / TRADE['n']:.1f}% of trade stories"], PINK)]
         for title, lines, col in specs:
             t = VGroup(self.T(title, 30, col, BOLD), *[self.T(l, 26, FG) for l in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.14)
-            b = RoundedRectangle(corner_radius=0.16, width=4.25, height=3.6, stroke_color=col, stroke_width=2.5,
+            b = RoundedRectangle(corner_radius=0.16, width=4.25, height=3.8, stroke_color=col, stroke_width=2.5,
                                  fill_color=col, fill_opacity=0.07)
             self.fitw(t, 3.85)
-            t.move_to(b).align_to(b, UP).shift(DOWN * 0.3)
+            t.move_to(b).align_to(b, UP).align_to(b, LEFT).shift(DOWN * 0.3 + RIGHT * 0.22)
             cards.add(VGroup(b, t))
         cards.arrange(RIGHT, buff=0.3).move_to(DOWN * 0.1)
         with self.say(f"Three classic traps. Different compute: compare against the released model, trained five times "
                       f"longer, and the gap looks {fake / gap:.0f} times bigger than it is. One seed: luck can fake a win. "
-                      f"And leakage: in TinyGPT's tiny world, {LEAK['frac'] * 100:.0f} percent of held-out stories also "
-                      f"appear in training, so its validation loss partly measures memory.",
+                      f"And leakage: {LEAK['frac'] * 100:.0f} percent of TinyGPT's held-out lines also appear in training, "
+                      f"mostly short templated ones. So part of its validation loss measures memory.",
                       scene=f"Three trap cards. Different compute: comparing the 600-step no-positions run ({NOPOS['val'][-1]:.3f}) "
                             f"to the released 3,000-step model ({REL['val']:.3f}, same eval batches) suggests a {fake:.3f} gap, "
                             f"{fake / gap:.1f}× the real {gap:.3f}. One seed: luck can fake a win. Data leakage: "
-                            f"{LEAK['in_train']:,} of {LEAK['val_docs']:,} held-out stories ({LEAK['frac'] * 100:.1f}%) appear "
-                            f"verbatim in the training split.", chapter="Traps"):
+                            f"{LEAK['in_train']:,} of {LEAK['val_docs']:,} held-out lines ({LEAK['frac'] * 100:.1f}%) appear "
+                            f"verbatim in the training split: all {SHORT['n']:,} short templated lines (Q&A, counting, pets, "
+                            f"days, facts) but only {TRADE['in_train']} of {TRADE['n']} trade stories.", chapter="Traps"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(nl, nlab, nt, db, dn, lb, ln, gl, note)), ReplacementTransform(hdr4, hdr5),
                       run_time=0.5)
@@ -260,8 +264,8 @@ class ResearchLoop(CScene):
             self.mark("trap-compute", cards[0], f"unequal compute: released model val {REL['val']:.4f} (3,000 steps) vs "
                                                 f"no-pos {NOPOS['val'][-1]:.4f} (600 steps) → misleading gap {fake:.3f}")
             self.mark("trap-seed", cards[1], "single-seed comparisons can be noise")
-            self.mark("trap-leak", cards[2], f"{LEAK['in_train']:,}/{LEAK['val_docs']:,} validation documents also occur in "
-                                             f"the training split (templated synthetic corpus)")
+            self.mark("trap-leak", cards[2], f"{LEAK['in_train']:,}/{LEAK['val_docs']:,} validation lines also occur in the "
+                                             f"training split; trade stories: {TRADE['in_train']}/{TRADE['n']}")
 
         # ============================================================ scale up
         hdr6 = self.header("Scale up only what wins", "#b48cff")

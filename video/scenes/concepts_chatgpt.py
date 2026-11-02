@@ -201,7 +201,7 @@ class TinyToChatGPT(CScene):
         a1 = Arrow(ab.get_right(), rm.get_left(), buff=0.15, color=MUTED, stroke_width=3)
         a2 = Arrow(rm.get_right(), pol.get_left(), buff=0.15, color=MUTED, stroke_width=3)
         a2l = VGroup(self.T("reinforcement", 22, MUTED), self.T("learning", 22, MUTED)).arrange(DOWN, buff=0.06)
-        a2l.next_to(a2, UP, buff=0.12)
+        a2l.next_to(a2, UP, buff=0.22)
         leash = VGroup(self.T("+ a penalty for drifting", 24, PINK), self.T("far from the SFT model", 24, PINK)
                        ).arrange(DOWN, aligned_edge=LEFT, buff=0.06).next_to(pol, DOWN, buff=0.3).align_to(pol, LEFT)
         cite = self.T("RLHF recipe as in InstructGPT (Ouyang et al., 2022)", 22, MUTED).to_edge(DOWN, buff=1.25)

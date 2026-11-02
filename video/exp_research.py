@@ -6,6 +6,7 @@ Writes video/data/research_nopos.json, which the scene reads at render time.
 
     python3 video/exp_research.py              # the two runs (~4 min each on 2 threads)
     python3 video/exp_research.py --released   # + the published model on the same eval batches
+    python3 video/exp_research.py --leak       # recompute the train/val overlap check only
 """
 import json, math, os, sys, time
 import numpy as np
@@ -82,11 +83,24 @@ def leakage():
     val_docs = val_text.split("\n")[1:-1]          # drop the partial first line and the trailing empty one
     train_docs = set(train_text.split("\n"))
     dup = sum(d in train_docs for d in val_docs)
+
+    def kind(d):  # the corpus generators (train/corpus.py) leave clear fingerprints
+        return "trade" if " gives the " in d else ("story" if d.startswith("once upon") else
+                                                    ("trip" if " went to the " in d else "short"))
+    by = {}
+    for d in val_docs:
+        k = kind(d); n, m = by.get(k, (0, 0)); by[k] = (n + 1, m + (d in train_docs))
     return dict(val_docs=len(val_docs), in_train=dup, frac=dup / len(val_docs), train_docs=len(train_docs),
-                example=next(d for d in val_docs if d in train_docs))
+                example=next(d for d in val_docs if d in train_docs),
+                by_kind={k: {"n": n, "in_train": m} for k, (n, m) in by.items()})
 
 
-if __name__ == "__main__" and "--released" in sys.argv:
+if __name__ == "__main__" and "--leak" in sys.argv:
+    path = os.path.join(DATA, "research_nopos.json")
+    out = json.load(open(path)); out["leak"] = leakage()
+    json.dump(out, open(path, "w"), indent=1)
+    print(out["leak"])
+elif __name__ == "__main__" and "--released" in sys.argv:
     # evaluate the published 3000-step model on the SAME fixed held-out batches (no training)
     from lib_concepts import load_tiny
     path = os.path.join(DATA, "research_nopos.json")

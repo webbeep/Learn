@@ -226,7 +226,7 @@ class Optimizers(VScene):
         cs3 = VGroup(*[pl3.line(r["curve"]["step"], r["curve"]["val"], c, 4) for r, c, _ in pair])
         lg3 = VGroup(*[VGroup(self.T(n, 24, c, BOLD), self.M(f"best lr {fmt_lr(r['lr'])} → {fv(r)}", 22, c))
                        .arrange(RIGHT, buff=0.2) for r, c, n in pair]).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
-        lg3.next_to(pl3.ax, UP, buff=0.12).align_to(pl3.ax, RIGHT)
+        lg3.move_to(pl3.p(STEPS, 5.5), aligned_edge=RIGHT)
         with self.say(f"On the real model, the best plain SGD run ends at {fv(S_BEST)}. With momentum, {fv(M_BEST)}.",
                       scene=f"Real runs, best learning rate of each: SGD (lr {fmt_lr(S_BEST['lr'])}) → {fv(S_BEST)}, "
                             f"SGD + momentum 0.9 (lr {fmt_lr(M_BEST['lr'])}) → {fv(M_BEST)}."):
@@ -259,6 +259,7 @@ class Optimizers(VScene):
             names.add(self.M(n.replace("blocks.", "b").replace(".weight", ".w").replace(".bias", ".b"), 22, FG)
                       .next_to(bp.p(1e-5, y), LEFT, buff=0.2))
         sp = self.T(f"{spread:.0f}× spread", 34, YELLOW, BOLD).next_to(bp.ax, UP, buff=0.5).align_to(bp.ax, RIGHT)
+        src = self.T("real gradients · fresh TinyGPT at step 0 · one batch", 22, MUTED).next_to(sp, LEFT, buff=0.6).align_to(sp, DOWN)
         with self.say(f"Here's the catch. In the real model at step zero, typical gradient sizes differ by "
                       f"{spread:.0f} times between weight tensors. One learning rate is too big for some and too small "
                       f"for others.",
@@ -267,7 +268,7 @@ class Optimizers(VScene):
                             f"{spread:.0f}× spread.", chapter="Adam"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(pl3, cs3, lg3)), ReplacementTransform(hdr3, hdr4), run_time=0.4)
-            self.play(FadeIn(bp), FadeIn(names), LaggedStart(*[GrowFromEdge(b, LEFT) for b in bars], lag_ratio=0.1),
+            self.play(FadeIn(bp), FadeIn(names), FadeIn(src), LaggedStart(*[GrowFromEdge(b, LEFT) for b in bars], lag_ratio=0.1),
                       run_time=1.4)
             for n, b, nm, v in zip(pick, bars, names, vals):
                 self.mark("g-" + n, VGroup(b, nm), f"{n}: gradient RMS {v:.2e} per weight at step 0")
@@ -288,7 +289,7 @@ class Optimizers(VScene):
                       scene="Adam's update: step = lr × avg(gradient) / √avg(gradient²). Top term = momentum (smoothed "
                             "direction); bottom = each weight's own typical gradient size, so every weight moves about lr per step."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(bp, bars, names, sp)), run_time=0.4)
+            self.play(FadeOut(VGroup(bp, bars, names, sp, src)), run_time=0.4)
             self.play(FadeIn(form, shift=UP * 0.2), run_time=0.6)
             self.mark("adam-rule", form, "Adam: step = lr × avg(g) / sqrt(avg(g²)) (+ small ε), per weight")
             self.sync("the gradient,", 0.1)

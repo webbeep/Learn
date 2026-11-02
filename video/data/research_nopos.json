@@ -175,7 +175,25 @@
   "in_train": 1642,
   "frac": 0.5471509496834388,
   "train_docs": 28815,
-  "example": "tom has a red fox. the fox says yip. he loves the fox. the fox is red."
+  "example": "tom has a red fox. the fox says yip. he loves the fox. the fox is red.",
+  "by_kind": {
+   "short": {
+    "n": 1579,
+    "in_train": 1579
+   },
+   "story": {
+    "n": 537,
+    "in_train": 5
+   },
+   "trade": {
+    "n": 526,
+    "in_train": 8
+   },
+   "trip": {
+    "n": 359,
+    "in_train": 50
+   }
+  }
  },
  "released": {
   "steps": 3000,

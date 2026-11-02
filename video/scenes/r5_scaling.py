@@ -18,6 +18,10 @@ def law(n):
     return FIT["c"] + FIT["a"] * n ** (-FIT["alpha"])
 
 
+def spk_n(n):
+    return f"{n / 1e6:.1f} million" if n >= 1e6 else f"{round(n / 1e3)} thousand"
+
+
 def pow10(v):
     return f"1e{int(round(math.log10(v)))}"
 
@@ -39,7 +43,7 @@ class Scaling(VScene):
                             self.M(f"{r['final_val']:.2f}", 22, FG)).arrange(RIGHT, buff=0.2))
         labs.arrange(DOWN, aligned_edge=LEFT, buff=0.2).next_to(pl.ax, RIGHT, buff=0.5)
         lh = self.T("params · final loss", 22, MUTED).next_to(labs, UP, buff=0.25).align_to(labs, LEFT)
-        with self.say(f"Seven TinyGPTs, from {fmt_n(small['params'])} to {fmt_n(big['params'])} parameters. Same data, same "
+        with self.say(f"Seven TinyGPTs, from {spk_n(small['params'])} to {spk_n(big['params'])} parameters. Same data, same "
                       f"{TOK / 1e6:.1f} million tokens each. Bigger models land lower, with smaller gains at the top.",
                       scene=f"Real validation curves of 7 model sizes trained on the same {TOK:,} tokens: "
                             + ", ".join(f"{fmt_n(r['params'])} params → {r['final_val']:.3f}" for r in RUNS) + ".",
@@ -62,7 +66,7 @@ class Scaling(VScene):
         ps = Plot([xlo, xhi], [ylo, yhi], width=8.0, height=4.6, xlog=True,
                   xticks=[10 ** e for e in range(int(math.log10(xlo)), int(math.log10(xhi)) + 1)], yticks=yt,
                   xlabel="non-embedding parameters (log scale)", ylabel="final validation loss",
-                  xfmt=lambda v: fmt_n(v)).move_to(DOWN * 0.4 + LEFT * 2.0)
+                  xfmt=lambda v: fmt_n(v)).move_to(DOWN * 0.4 + LEFT * 2.3)
         dots = VGroup(*[Dot(ps.p(n, l), radius=0.1, color=c) for n, l, c in zip(N, L, COLS)])
         x_fit0 = max(math.log10(xlo), math.log10(((yhi - FIT["c"]) / FIT["a"]) ** (-1 / FIT["alpha"])) + 0.02)
         fit = ps.ax.plot(lambda lx: law(10 ** lx), x_range=[x_fit0, math.log10(xhi), 0.02], color=FG,
@@ -72,10 +76,10 @@ class Scaling(VScene):
         form = VGroup(self.M("L(N) = c + a · N", 30, FG), self.M("-α", 22, FG)).arrange(RIGHT, buff=0.04, aligned_edge=UP)
         nums = VGroup(self.M(f"a = {FIT['a']:.2f}", 26, MUTED), self.M(f"α = {FIT['alpha']:.2f}", 26, YELLOW),
                       self.M(f"c = {FIT['c']:.2f}", 26, MUTED), self.M(f"R² = {FIT['r2']:.3f}", 22, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
-        box = VGroup(form, nums).arrange(DOWN, aligned_edge=LEFT, buff=0.25).next_to(ps.ax, RIGHT, buff=0.5).shift(UP * 0.9)
+        box = VGroup(form, nums).arrange(DOWN, aligned_edge=LEFT, buff=0.25).next_to(ps.ax, RIGHT, buff=0.45).shift(UP * 0.9)
         with self.say(f"Plot final loss against size on a log axis, and the dots fall on a smooth curve: a power law. "
-                      f"Loss drops by a predictable factor every time you multiply the size, flattening toward a floor of "
-                      f"{FIT['c']:.2f}.",
+                      f"Every time you multiply the size, the loss above a floor shrinks by a predictable factor. Here the "
+                      f"floor is {FIT['c']:.2f}.",
                       scene=f"Real final losses vs non-embedding parameters (log x) with the fitted power law L(N) = c + a·N^-α: "
                             f"a = {FIT['a']:.3f}, α = {FIT['alpha']:.3f}, c = {FIT['c']:.3f} (R² = {FIT['r2']:.3f}).",
                       chapter="Loss vs size"):
@@ -89,7 +93,7 @@ class Scaling(VScene):
             self.play(Create(fit), FadeIn(box, shift=LEFT * 0.2), run_time=1.0)
             self.mark("fit", fit, f"fitted power law: L = {FIT['c']:.3f} + {FIT['a']:.3f}·N^-{FIT['alpha']:.3f}")
             self.mark("formula", box, f"fit parameters a = {FIT['a']:.3f}, alpha = {FIT['alpha']:.3f}, c = {FIT['c']:.3f}")
-            self.sync("toward a floor", 0.1)
+            self.sync("Here the", 0.1)
             self.play(Create(floor), FadeIn(fl), run_time=0.6)
             self.mark("floor", VGroup(floor, fl), f"irreducible loss of this data (fit): c = {FIT['c']:.3f}")
 
@@ -130,7 +134,7 @@ class Scaling(VScene):
         lf_sw.next_to(labs2, DOWN, buff=0.35).align_to(labs2, LEFT)
         with self.say(f"Now plot the same runs against compute. For a tiny budget, small models win. As the budget grows, "
                       f"the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from "
-                      f"{fmt_n(RUNS[winners[0][1]]['params'])} to {fmt_n(RUNS[winners[-1][1]]['params'])} parameters.",
+                      f"{spk_n(RUNS[winners[0][1]]['params'])} to {spk_n(RUNS[winners[-1][1]]['params'])} parameters.",
                       scene=f"Real validation loss vs training FLOPs (log x) for all 7 sizes; the faint white envelope is the "
                             f"best loss reachable at each budget. Winners along it, small to large budget: {win_txt}.",
                       chapter="Loss vs compute"):
@@ -192,8 +196,8 @@ class Scaling(VScene):
         chl = self.T("≈ 20 (Chinchilla)", 24, YELLOW).next_to(pb.p(20, len(RUNS)), UP, buff=0.12)
         under = [r for r, t in zip(RUNS, tpp) if t < 20]
         with self.say(f"By that yardstick, our {TOK / 1e6:.1f} million tokens are plenty for the small models, but our "
-                      f"{len(under)} biggest are undertrained. The largest saw just {tpp[-1]:.1f} tokens per parameter, so "
-                      f"its loss would keep falling with more data.",
+                      f"{len(under)} biggest are undertrained. The largest saw just {tpp[-1]:.1f} tokens per parameter: "
+                      f"by Chinchilla's yardstick, it's starved for data.",
                       scene=f"Real tokens-per-parameter of each run ({TOK:,} tokens / params): "
                             + ", ".join(f"{fmt_n(r['params'])}: {t:.1f}" for r, t in zip(RUNS, tpp))
                             + ". A yellow dashed line marks Chinchilla's ≈ 20 tokens per parameter.",

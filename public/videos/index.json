@@ -2030,6 +2030,528 @@
   ]
  },
  {
+  "id": "embeddings",
+  "title": "Embeddings: words as directions",
+  "subtitle": "The lookup table that turns token ids into 64 numbers, and the meaning hiding in them",
+  "duration": 143.47,
+  "track": "inference",
+  "order": 30,
+  "src": "/videos/embeddings.mp4",
+  "poster": "/videos/embeddings.jpg",
+  "relates": "xray",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "Just a number"
+   },
+   {
+    "t": 8.13,
+    "title": "The lookup table"
+   },
+   {
+    "t": 31.1,
+    "title": "Meaning = direction"
+   },
+   {
+    "t": 60.67,
+    "title": "The map"
+   },
+   {
+    "t": 94.7,
+    "title": "Position"
+   },
+   {
+    "t": 120.5,
+    "title": "Bigger models"
+   },
+   {
+    "t": 135.2,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 8.13,
+    "text": "To this model, the word red is token 157. Just a row number. So how does a number come to mean anything?",
+    "scene": "A big token chip '␣red' with its id 157 underneath and the question 'what does 157 mean?'.",
+    "objects": [
+     {
+      "id": "chip",
+      "label": "token \" red\" has id 157 in the 256-token vocabulary",
+      "box": [
+       0.437,
+       0.369,
+       0.126,
+       0.162
+      ]
+     }
+    ]
+   },
+   {
+    "start": 8.13,
+    "end": 20.87,
+    "text": "The very first step is a lookup table. 256 rows, one per token, 64 numbers in each row. Token 157 just grabs row 157. That row is its embedding.",
+    "scene": "The real 256×64 embedding table as a heatmap (orange positive, blue negative). Row 157 is outlined and slides out as a strip of 64 cells; its first values are -0.17, -0.14, -0.18, +0.07 … -0.19.",
+    "objects": [
+     {
+      "id": "chip",
+      "label": "token \" red\" has id 157 in the 256-token vocabulary",
+      "box": [
+       0.7013,
+       0.1264,
+       0.0756,
+       0.0972
+      ]
+     },
+     {
+      "id": "table",
+      "label": "the real token-embedding table: 256 rows × 64 columns = 16,384 learned numbers",
+      "box": [
+       0.1119,
+       0.1662,
+       0.3262,
+       0.755
+      ]
+     },
+     {
+      "id": "row-red",
+      "label": "embedding of \" red\" (row 157): 64 numbers from -0.28 to +0.28, length 1.18",
+      "box": [
+       0.5253,
+       0.3152,
+       0.4275,
+       0.216
+      ]
+     }
+    ]
+   },
+   {
+    "start": 20.87,
+    "end": 31.1,
+    "text": "All 16,384 of these numbers started as random noise. Training nudged them, until tokens used the same way got similar rows.",
+    "scene": "Same view; caption: 'started random → shaped by training'. The table holds 16,384 of the model's 170,560 parameters.",
+    "objects": [
+     {
+      "id": "chip",
+      "label": "token \" red\" has id 157 in the 256-token vocabulary",
+      "box": [
+       0.7013,
+       0.1264,
+       0.0756,
+       0.0972
+      ]
+     },
+     {
+      "id": "table",
+      "label": "the real token-embedding table: 256 rows × 64 columns = 16,384 learned numbers",
+      "box": [
+       0.1119,
+       0.1662,
+       0.3262,
+       0.755
+      ]
+     },
+     {
+      "id": "row-red",
+      "label": "embedding of \" red\" (row 157): 64 numbers from -0.28 to +0.28, length 1.18",
+      "box": [
+       0.5253,
+       0.3152,
+       0.4275,
+       0.216
+      ]
+     }
+    ]
+   },
+   {
+    "start": 31.1,
+    "end": 44.2,
+    "text": "No single number means red. What matters is the direction the whole row points. We compare directions with cosine similarity: one means same way, zero means unrelated.",
+    "scene": "Toy 2-D picture: arrows for ' red' and ' purple' point almost the same way, ' tom' points elsewhere. Text: cosine similarity = how aligned two arrows are (+1 same way, 0 unrelated, −1 opposite).",
+    "objects": [
+     {
+      "id": "toy",
+      "label": "toy 2-D illustration of embedding directions (not real values)",
+      "box": [
+       0.0674,
+       0.195,
+       0.3799,
+       0.6425
+      ]
+     },
+     {
+      "id": "cos",
+      "label": "cosine similarity: +1 same direction, 0 unrelated, −1 opposite",
+      "box": [
+       0.5078,
+       0.3517,
+       0.3782,
+       0.3716
+      ]
+     }
+    ]
+   },
+   {
+    "start": 44.2,
+    "end": 60.67,
+    "text": "Now the real thing. Red's nearest neighbours: purple at 0.92, white, black. Tom's neighbours are names. Cat's are animals. Park's are places. A random pair of tokens scores about 0.1.",
+    "scene": "Four real nearest-neighbour lists (cosine similarity over all 64 dims): 'red' → purple 0.92, white 0.85, black 0.84, yellow 0.75; 'tom' → max 0.63, finn 0.59, leo 0.58, zoe 0.58; 'cat' → bear 0.59, fish 0.57, dog 0.56, owl 0.54; 'park' → river 0.75, school 0.73, forest 0.71, house 0.71. Average token pair: 0.12.",
+    "objects": [
+     {
+      "id": "nn-red",
+      "label": "nearest neighbours of \" red\": \" purple\" 0.920, \" white\" 0.853, \" black\" 0.836, \" yellow\" 0.750",
+      "box": [
+       0.0869,
+       0.3338,
+       0.1827,
+       0.3698
+      ]
+     },
+     {
+      "id": "nn-tom",
+      "label": "nearest neighbours of \" tom\": \" max\" 0.632, \" finn\" 0.594, \" leo\" 0.584, \" zoe\" 0.576",
+      "box": [
+       0.3224,
+       0.3338,
+       0.1513,
+       0.3556
+      ]
+     },
+     {
+      "id": "nn-cat",
+      "label": "nearest neighbours of \" cat\": \" bear\" 0.594, \" fish\" 0.573, \" dog\" 0.565, \" owl\" 0.544",
+      "box": [
+       0.5264,
+       0.3338,
+       0.1518,
+       0.3698
+      ]
+     },
+     {
+      "id": "nn-park",
+      "label": "nearest neighbours of \" park\": \" river\" 0.749, \" school\" 0.728, \" forest\" 0.714, \" house\" 0.714",
+      "box": [
+       0.731,
+       0.3338,
+       0.1821,
+       0.3698
+      ]
+     },
+     {
+      "id": "avg",
+      "label": "mean cosine similarity over all pairs of the 256 tokens = 0.117",
+      "box": [
+       0.3369,
+       0.7724,
+       0.3262,
+       0.0441
+      ]
+     }
+    ]
+   },
+   {
+    "start": 60.67,
+    "end": 74.2,
+    "text": "Squash all 256 rows from 64 dimensions down to two, with PCA, and plot them. The names split off into their own island. Colors, animals, objects and places crowd together.",
+    "scene": "Real 2-D PCA of all 256 token embeddings (axes keep 12.6% of the variance). Names (teal) form a separate island at the bottom; colors, animals, objects and places bunch together on the right; other tokens are faint gray dots.",
+    "objects": [
+     {
+      "id": "pca",
+      "label": "2-D PCA of the 256 real token embeddings (12.6% of variance)",
+      "box": [
+       0.391,
+       0.1688,
+       0.5133,
+       0.775
+      ]
+     },
+     {
+      "id": "pca-names",
+      "label": "the 12 name tokens (tom, mia, zoe, …) form their own island",
+      "box": [
+       0.6977,
+       0.7605,
+       0.0971,
+       0.1558
+      ]
+     },
+     {
+      "id": "pca-colors",
+      "label": "9 colors tokens in the 2-D PCA map",
+      "box": [
+       0.7034,
+       0.4381,
+       0.1006,
+       0.1058
+      ]
+     },
+     {
+      "id": "pca-animals",
+      "label": "10 animals tokens in the 2-D PCA map",
+      "box": [
+       0.7281,
+       0.4338,
+       0.1107,
+       0.1526
+      ]
+     },
+     {
+      "id": "pca-objects",
+      "label": "10 objects tokens in the 2-D PCA map",
+      "box": [
+       0.7852,
+       0.4757,
+       0.0703,
+       0.1307
+      ]
+     },
+     {
+      "id": "pca-places",
+      "label": "7 places tokens in the 2-D PCA map",
+      "box": [
+       0.7647,
+       0.3696,
+       0.0569,
+       0.1288
+      ]
+     }
+    ]
+   },
+   {
+    "start": 74.2,
+    "end": 94.7,
+    "text": "Zoom in and re-run PCA on just those 48 words. Names sit far away. Colors and places get their own patches. Animals and objects overlap: in these stories, both come right after a color, like 'a red ball'. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group.",
+    "scene": "Real PCA of only the 48 group words (names, colors, animals, objects, places): names far off, colors and places in their own patches, animals and objects overlapping (both follow 'has a <color>' in the stories). Verdict: 48/48 words have their nearest cosine neighbour (in 64-D) in their own group.",
+    "objects": [
+     {
+      "id": "pca",
+      "label": "2-D PCA of the 256 real token embeddings (12.6% of variance)",
+      "box": [
+       0.391,
+       0.1688,
+       0.5133,
+       0.775
+      ]
+     },
+     {
+      "id": "zoom-names",
+      "label": "names: mia, tom, lily, sam, ben, zoe, max, ava, leo, ruby, finn, nora",
+      "box": [
+       0.7397,
+       0.4645,
+       0.0868,
+       0.2025
+      ]
+     },
+     {
+      "id": "zoom-colors",
+      "label": "colors: red, blue, green, yellow, pink, black, white, orange, purple",
+      "box": [
+       0.4633,
+       0.2635,
+       0.0814,
+       0.1269
+      ]
+     },
+     {
+      "id": "zoom-animals",
+      "label": "animals: cat, dog, fox, bird, frog, bear, owl, fish, duck, rabbit",
+      "box": [
+       0.4758,
+       0.5895,
+       0.1023,
+       0.1893
+      ]
+     },
+     {
+      "id": "zoom-objects",
+      "label": "objects: ball, kite, hat, book, cup, box, drum, shoe, boat, key",
+      "box": [
+       0.479,
+       0.6912,
+       0.0968,
+       0.1693
+      ]
+     },
+     {
+      "id": "zoom-places",
+      "label": "places: park, forest, river, school, garden, house, hill",
+      "box": [
+       0.5071,
+       0.384,
+       0.0855,
+       0.1331
+      ]
+     },
+     {
+      "id": "verdict",
+      "label": "leave-one-out: 48 of 48 words have their nearest cosine neighbour in the same group",
+      "box": [
+       0.0562,
+       0.7472,
+       0.1973,
+       0.2069
+      ]
+     }
+    ]
+   },
+   {
+    "start": 94.7,
+    "end": 106.4,
+    "text": "One problem: red at position 3 and red at position 20 would look identical. So a second table stores one learned vector per position, and it's simply added on.",
+    "scene": "Three real 64-cell strips: the ' red' token embedding (length 1.18) + the learned position-3 embedding (length 0.59) = the vector layer 1 actually sees.",
+    "objects": [
+     {
+      "id": "pos-tok",
+      "label": "token embedding of \" red\" (length 1.178)",
+      "box": [
+       0.0261,
+       0.1944,
+       0.8353,
+       0.0563
+      ]
+     },
+     {
+      "id": "pos-vec",
+      "label": "learned position embedding for slot 3 (length 0.593)",
+      "box": [
+       0.0266,
+       0.3031,
+       0.8348,
+       0.0563
+      ]
+     },
+     {
+      "id": "pos-sum",
+      "label": "input to layer 1 for \" red\" at position 3 = token + position",
+      "box": [
+       0.0371,
+       0.4119,
+       0.8243,
+       0.0563
+      ]
+     }
+    ]
+   },
+   {
+    "start": 106.4,
+    "end": 120.5,
+    "text": "Compare all 64 position vectors with each other. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, even opposite. A smooth, learned sense of where.",
+    "scene": "Real 64×64 cosine-similarity heatmap of the learned position embeddings: a bright diagonal band (neighbours average 0.95) fading to blue far from it (position 0 vs 63: -0.74). Position vectors average length 0.40 vs 1.12 for token vectors.",
+    "objects": [
+     {
+      "id": "pos-tok",
+      "label": "token embedding of \" red\" (length 1.178)",
+      "box": [
+       0.0261,
+       0.1506,
+       0.8353,
+       0.0563
+      ]
+     },
+     {
+      "id": "pos-vec",
+      "label": "learned position embedding for slot 3 (length 0.593)",
+      "box": [
+       0.0266,
+       0.2594,
+       0.8348,
+       0.0563
+      ]
+     },
+     {
+      "id": "pos-sum",
+      "label": "input to layer 1 for \" red\" at position 3 = token + position",
+      "box": [
+       0.0371,
+       0.3681,
+       0.8243,
+       0.0563
+      ]
+     },
+     {
+      "id": "pos-heat",
+      "label": "cosine similarity between the 64 learned position embeddings; neighbours ≈ 0.95",
+      "box": [
+       0.1189,
+       0.4912,
+       0.2559,
+       0.455
+      ]
+     },
+     {
+      "id": "pos-facts",
+      "label": "neighbouring positions 0.955; position 0 vs 63 = -0.737; mean |position vector| 0.403 vs |token vector| 1.115",
+      "box": [
+       0.4227,
+       0.6185,
+       0.5404,
+       0.2256
+      ]
+     }
+    ]
+   },
+   {
+    "start": 120.5,
+    "end": 135.2,
+    "text": "Sixty-four numbers is tiny. GPT-3's largest version uses 12,288 per token, 192 times the room. More directions means more distinctions it can keep apart at once.",
+    "scene": "TinyGPT's 64-number embedding as one row of 64 squares vs GPT-3's (largest) 12,288: 30 visible rows of 64 squares and a note that 162 more rows would be needed (192× more room).",
+    "objects": [
+     {
+      "id": "tiny",
+      "label": "TinyGPT: d_model = 64 numbers per token",
+      "box": [
+       0.2082,
+       0.1558,
+       0.5836,
+       0.0895
+      ]
+     },
+     {
+      "id": "gpt3",
+      "label": "GPT-3 (175B version): 12,288 numbers per token = 192 × 64",
+      "box": [
+       0.2082,
+       0.3078,
+       0.5836,
+       0.612
+      ]
+     }
+    ]
+   },
+   {
+    "start": 135.2,
+    "end": 142.87,
+    "text": "So an embedding is a learned row of numbers, and its meaning lives in the direction it points. Go find them in the X-ray.",
+    "scene": "Recap: token id 157 → its 64-number row (+ position) → a direction in space. Card: 'now find them in the X-ray'.",
+    "objects": [
+     {
+      "id": "recap",
+      "label": "token id → embedding row (64 numbers) + position vector → a direction in 64-D space",
+      "box": [
+       0.0482,
+       0.3852,
+       0.9037,
+       0.1296
+      ]
+     },
+     {
+      "id": "cta",
+      "label": "open the X-ray view to inspect embeddings live",
+      "box": [
+       0.1873,
+       0.7485,
+       0.6254,
+       0.0779
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
   "id": "attention",
   "title": "Attention, visually",
   "subtitle": "Queries, keys, values, softmax — and a real head that copies colors",
@@ -4647,6 +5169,630 @@
        0.7702,
        0.5257,
        0.0847
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "optimizers",
+  "title": "Optimizers: learning rate, momentum & Adam",
+  "subtitle": "Why the learning rate is the knob that matters most, and why AdamW is the default (real sweeps)",
+  "duration": 133.67,
+  "track": "training",
+  "order": 40,
+  "src": "/videos/optimizers.mp4",
+  "poster": "/videos/optimizers.jpg",
+  "relates": "train",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "One knob"
+   },
+   {
+    "t": 9.13,
+    "title": "Downhill"
+   },
+   {
+    "t": 19.8,
+    "title": "Too small, too big"
+   },
+   {
+    "t": 46.8,
+    "title": "Momentum"
+   },
+   {
+    "t": 69.93,
+    "title": "Adam"
+   },
+   {
+    "t": 97.13,
+    "title": "Why AdamW"
+   },
+   {
+    "t": 122.7,
+    "title": "Recap"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 9.13,
+    "text": "Same model, same data, same 1,000 steps. The only thing that changed is one number: the learning rate. And it decides everything.",
+    "scene": "Real validation-loss curves of TinyGPT trained 1000 steps with AdamW at 7 learning rates (1e-4 … 0.1): lr 1e-4 → 1.74, lr 3e-4 → 0.81, lr 1e-3 → 0.66, lr 3e-3 → 0.55, lr 0.01 → 0.55, lr 0.03 → 1.13, lr 0.1 → 3.72.",
+    "objects": [
+     {
+      "id": "adam-1e-4",
+      "label": "AdamW lr 1e-4: final val loss 1.74",
+      "box": [
+       0.7019,
+       0.344,
+       0.2008,
+       0.0282
+      ]
+     },
+     {
+      "id": "adam-3e-4",
+      "label": "AdamW lr 3e-4: final val loss 0.81",
+      "box": [
+       0.7019,
+       0.3972,
+       0.2021,
+       0.0286
+      ]
+     },
+     {
+      "id": "adam-1e-3",
+      "label": "AdamW lr 1e-3: final val loss 0.66",
+      "box": [
+       0.7019,
+       0.4508,
+       0.2024,
+       0.0286
+      ]
+     },
+     {
+      "id": "adam-3e-3",
+      "label": "AdamW lr 3e-3: final val loss 0.55",
+      "box": [
+       0.7019,
+       0.5044,
+       0.2019,
+       0.0286
+      ]
+     },
+     {
+      "id": "adam-0.01",
+      "label": "AdamW lr 0.01: final val loss 0.55",
+      "box": [
+       0.7019,
+       0.5581,
+       0.2026,
+       0.0286
+      ]
+     },
+     {
+      "id": "adam-0.03",
+      "label": "AdamW lr 0.03: final val loss 1.13",
+      "box": [
+       0.7019,
+       0.6117,
+       0.2016,
+       0.0286
+      ]
+     },
+     {
+      "id": "adam-0.1",
+      "label": "AdamW lr 0.1: final val loss 3.72",
+      "box": [
+       0.7019,
+       0.6653,
+       0.2031,
+       0.0286
+      ]
+     },
+     {
+      "id": "fan",
+      "label": "7 real AdamW runs, 1000 steps each, differing only in learning rate",
+      "box": [
+       0.0621,
+       0.2737,
+       0.6047,
+       0.4803
+      ]
+     }
+    ]
+   },
+   {
+    "start": 9.13,
+    "end": 19.8,
+    "text": "Picture the loss as a landscape and the weights as a ball. The gradient is the slope under the ball. Step downhill by the learning rate times the slope. Repeat.",
+    "scene": "Toy 1-D loss landscape (illustration) with a yellow ball, an orange tangent showing the slope, and the update rule w ← w − lr × slope; the ball takes 8 steps downhill.",
+    "objects": [
+     {
+      "id": "landscape",
+      "label": "toy loss landscape (illustration, one weight)",
+      "box": [
+       0.1484,
+       0.3182,
+       0.7031,
+       0.3896
+      ]
+     },
+     {
+      "id": "rule",
+      "label": "gradient descent update: w ← w − lr × slope",
+      "box": [
+       0.3308,
+       0.1559,
+       0.3384,
+       0.0632
+      ]
+     }
+    ]
+   },
+   {
+    "start": 19.8,
+    "end": 29.63,
+    "text": "Too small, and you crawl. Just right, and you settle in a few steps. Too big, and every step overshoots the valley, bouncing higher and higher.",
+    "scene": "Three toy bowls (illustration): too small (creeps), just right (settles), too big (overshoots, bouncing out of the valley).",
+    "objects": [
+     {
+      "id": "toy-0",
+      "label": "toy illustration: learning rate too small",
+      "box": [
+       0.0495,
+       0.279,
+       0.2681,
+       0.4671
+      ]
+     },
+     {
+      "id": "toy-1",
+      "label": "toy illustration: learning rate just right",
+      "box": [
+       0.3739,
+       0.2726,
+       0.2602,
+       0.4798
+      ]
+     },
+     {
+      "id": "toy-2",
+      "label": "toy illustration: learning rate too big",
+      "box": [
+       0.6903,
+       0.2726,
+       0.2602,
+       0.4798
+      ]
+     }
+    ]
+   },
+   {
+    "start": 29.63,
+    "end": 46.8,
+    "text": "The real runs agree. Learning rate 0.0001 is still crawling at 1.74. 0.003 reaches 0.55. At 0.1, it thrashes around and ends at 3.72.",
+    "scene": "Real AdamW validation curves: lr 1e-4 (too small) ends at 1.74, lr 3e-3 (best) ends at 0.55, lr 0.1 (too big) ends at 3.72.",
+    "objects": [
+     {
+      "id": "real-0",
+      "label": "real AdamW run, lr 1e-4: final val 1.74, best 1.743",
+      "box": [
+       0.0551,
+       0.2737,
+       0.8299,
+       0.3657
+      ]
+     },
+     {
+      "id": "real-1",
+      "label": "real AdamW run, lr 3e-3: final val 0.55, best 0.546",
+      "box": [
+       0.0551,
+       0.2737,
+       0.8305,
+       0.4803
+      ]
+     },
+     {
+      "id": "real-2",
+      "label": "real AdamW run, lr 0.1: final val 3.72, best 3.374",
+      "box": [
+       0.0551,
+       0.2737,
+       0.8167,
+       0.4055
+      ]
+     }
+    ]
+   },
+   {
+    "start": 46.8,
+    "end": 61.4,
+    "text": "Real loss landscapes have long, narrow valleys. Plain gradient descent zigzags across the walls and barely moves along the floor. Momentum keeps a running average of past steps, so the zigzags cancel and it picks up speed.",
+    "scene": "Toy 2-D elongated valley (illustration, contour ellipses). Top: plain gradient descent zigzags and covers little ground in 30 steps; bottom: momentum (β=0.8) builds speed along the floor.",
+    "objects": [
+     {
+      "id": "gd-path",
+      "label": "toy: plain gradient descent zigzags across the valley",
+      "box": [
+       0.0359,
+       0.1778,
+       0.4153,
+       0.2485
+      ]
+     },
+     {
+      "id": "mom-path",
+      "label": "toy: momentum averages steps and speeds along the floor",
+      "box": [
+       0.0359,
+       0.5717,
+       0.5366,
+       0.2583
+      ]
+     }
+    ]
+   },
+   {
+    "start": 61.4,
+    "end": 69.93,
+    "text": "On the real model, the best plain SGD run ends at 0.74. With momentum, 0.57.",
+    "scene": "Real runs, best learning rate of each: SGD (lr 1) → 0.74, SGD + momentum 0.9 (lr 0.3) → 0.57.",
+    "objects": [
+     {
+      "id": "sgd",
+      "label": "real: best plain SGD (lr 1) final val 0.74",
+      "box": [
+       0.1289,
+       0.1352,
+       0.7383,
+       0.6002
+      ]
+     },
+     {
+      "id": "mom",
+      "label": "real: best SGD+momentum (lr 0.3) final val 0.57",
+      "box": [
+       0.1289,
+       0.1852,
+       0.7383,
+       0.5667
+      ]
+     }
+    ]
+   },
+   {
+    "start": 69.93,
+    "end": 83.03,
+    "text": "Here's the catch. In the real model at step zero, typical gradient sizes differ by 274 times between weight tensors. One learning rate is too big for some and too small for others.",
+    "scene": "Real per-weight gradient size (RMS of the gradient) for 8 of TinyGPT's tensors at initialisation, log scale: from 7.1e-05 (blocks.0.ln1.weight) to 1.9e-02 (blocks.0.attn_out.bias), a 274× spread.",
+    "objects": [
+     {
+      "id": "g-blocks.0.ln1.weight",
+      "label": "blocks.0.ln1.weight: gradient RMS 7.11e-05 per weight at step 0",
+      "box": [
+       0.3151,
+       0.2445,
+       0.2133,
+       0.045
+      ]
+     },
+     {
+      "id": "g-blocks.0.attn_qkv.weight",
+      "label": "blocks.0.attn_qkv.weight: gradient RMS 2.91e-04 per weight at step 0",
+      "box": [
+       0.2506,
+       0.3132,
+       0.3488,
+       0.045
+      ]
+     },
+     {
+      "id": "g-pos.weight",
+      "label": "pos.weight: gradient RMS 6.67e-04 per weight at step 0",
+      "box": [
+       0.3537,
+       0.382,
+       0.2875,
+       0.045
+      ]
+     },
+     {
+      "id": "g-blocks.1.mlp_in.weight",
+      "label": "blocks.1.mlp_in.weight: gradient RMS 1.30e-03 per weight at step 0",
+      "box": [
+       0.2764,
+       0.4507,
+       0.3986,
+       0.045
+      ]
+     },
+     {
+      "id": "g-ln_f.weight",
+      "label": "ln_f.weight: gradient RMS 3.14e-03 per weight at step 0",
+      "box": [
+       0.3395,
+       0.5195,
+       0.3798,
+       0.045
+      ]
+     },
+     {
+      "id": "g-tok.weight",
+      "label": "tok.weight: gradient RMS 9.14e-03 per weight at step 0",
+      "box": [
+       0.3527,
+       0.5882,
+       0.4203,
+       0.045
+      ]
+     },
+     {
+      "id": "g-blocks.1.attn_out.bias",
+      "label": "blocks.1.attn_out.bias: gradient RMS 1.73e-02 per weight at step 0",
+      "box": [
+       0.2518,
+       0.657,
+       0.5536,
+       0.045
+      ]
+     },
+     {
+      "id": "g-blocks.0.attn_out.bias",
+      "label": "blocks.0.attn_out.bias: gradient RMS 1.95e-02 per weight at step 0",
+      "box": [
+       0.2518,
+       0.7257,
+       0.5594,
+       0.045
+      ]
+     },
+     {
+      "id": "spread",
+      "label": "largest / smallest gradient size = 274×",
+      "box": [
+       0.6938,
+       0.1146,
+       0.1998,
+       0.0555
+      ]
+     }
+    ]
+   },
+   {
+    "start": 83.03,
+    "end": 97.13,
+    "text": "Adam fixes that. It keeps two running averages for every single weight: the gradient, which is momentum, and the gradient squared. Dividing one by the square root of the other gives every weight its own step size.",
+    "scene": "Adam's update: step = lr × avg(gradient) / √avg(gradient²). Top term = momentum (smoothed direction); bottom = each weight's own typical gradient size, so every weight moves about lr per step.",
+    "objects": [
+     {
+      "id": "adam-rule",
+      "label": "Adam: step = lr × avg(g) / sqrt(avg(g²)) (+ small ε), per weight",
+      "box": [
+       0.2546,
+       0.3284,
+       0.4907,
+       0.1433
+      ]
+     },
+     {
+      "id": "adam-result",
+      "label": "Adam normalises step sizes per weight",
+      "box": [
+       0.0336,
+       0.7623,
+       0.9327,
+       0.0504
+      ]
+     }
+    ]
+   },
+   {
+    "start": 97.13,
+    "end": 122.7,
+    "text": "AdamW is Adam plus weight decay applied straight to the weights. In our sweep, 3 of its learning rates landed near the best, across a 10-fold range. Momentum SGD, 2. Plain SGD, none. Tuned momentum gets close on a model this small, but AdamW forgives a rough guess. That's why it's the default for training transformers.",
+    "scene": "Grid of every real sweep run (learning rate → final val loss). Teal boxes are within 25% of the best (0.68): AdamW 3/7, SGD+momentum 2/4, SGD 0/4.",
+    "objects": [
+     {
+      "id": "cell-AdamW-1e-4",
+      "label": "AdamW lr 1e-4: final val 1.74",
+      "box": [
+       0.2715,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-AdamW-3e-4",
+      "label": "AdamW lr 3e-4: final val 0.81",
+      "box": [
+       0.365,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-AdamW-1e-3",
+      "label": "AdamW lr 1e-3: final val 0.66",
+      "box": [
+       0.4585,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-AdamW-3e-3",
+      "label": "AdamW lr 3e-3: final val 0.55",
+      "box": [
+       0.552,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-AdamW-0.01",
+      "label": "AdamW lr 0.01: final val 0.55",
+      "box": [
+       0.6455,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-AdamW-0.03",
+      "label": "AdamW lr 0.03: final val 1.13",
+      "box": [
+       0.7391,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-AdamW-0.1",
+      "label": "AdamW lr 0.1: final val 3.72",
+      "box": [
+       0.8326,
+       0.2906,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-SGD + momentum-0.03",
+      "label": "SGD + momentum lr 0.03: final val 0.69",
+      "box": [
+       0.2715,
+       0.4531,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-SGD + momentum-0.1",
+      "label": "SGD + momentum lr 0.1: final val 0.60",
+      "box": [
+       0.365,
+       0.4531,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-SGD + momentum-0.3",
+      "label": "SGD + momentum lr 0.3: final val 0.57",
+      "box": [
+       0.4585,
+       0.4531,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-SGD + momentum-1",
+      "label": "SGD + momentum lr 1: final val NaN (diverged)",
+      "box": [
+       0.552,
+       0.4531,
+       0.083,
+       0.1187
+      ]
+     },
+     {
+      "id": "cell-SGD-0.1",
+      "label": "SGD lr 0.1: final val 0.96",
+      "box": [
+       0.2715,
+       0.6156,
+       0.083,
+       0.1188
+      ]
+     },
+     {
+      "id": "cell-SGD-0.3",
+      "label": "SGD lr 0.3: final val 0.76",
+      "box": [
+       0.365,
+       0.6156,
+       0.083,
+       0.1188
+      ]
+     },
+     {
+      "id": "cell-SGD-1",
+      "label": "SGD lr 1: final val 0.74",
+      "box": [
+       0.4585,
+       0.6156,
+       0.083,
+       0.1188
+      ]
+     },
+     {
+      "id": "cell-SGD-3",
+      "label": "SGD lr 3: final val NaN (diverged)",
+      "box": [
+       0.552,
+       0.6156,
+       0.083,
+       0.1188
+      ]
+     }
+    ]
+   },
+   {
+    "start": 122.7,
+    "end": 132.87,
+    "text": "So: start with AdamW, sweep the learning rate in steps of three, warm up then decay, and if the loss spikes, turn it down.",
+    "scene": "Recap pills: start with AdamW; sweep the learning rate ×3 at a time; warm up, then decay; loss spikes → lower it.",
+    "objects": [
+     {
+      "id": "tip-0",
+      "label": "startwithAdamW",
+      "box": [
+       0.2377,
+       0.2725,
+       0.2721,
+       0.0798
+      ]
+     },
+     {
+      "id": "tip-1",
+      "label": "sweepthelearningrate×3atatime",
+      "box": [
+       0.2377,
+       0.3961,
+       0.5246,
+       0.0904
+      ]
+     },
+     {
+      "id": "tip-2",
+      "label": "warmup,thendecay",
+      "box": [
+       0.2377,
+       0.5302,
+       0.3195,
+       0.0887
+      ]
+     },
+     {
+      "id": "tip-3",
+      "label": "lossspikes?lowerit",
+      "box": [
+       0.2377,
+       0.6627,
+       0.3028,
+       0.0898
       ]
      }
     ]
