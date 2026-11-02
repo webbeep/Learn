@@ -184,14 +184,27 @@ NATURAL_PATH = os.path.join(HERE, "narration_natural.json")
 _natural: dict | None = None
 
 
-def _sync_phrases() -> list[str]:
+def _sync_phrases(scene_file: str | None = None) -> list[str]:
+    """Literal phrases passed to self.sync()/t_of() — in one scene file if given, else everywhere."""
     out = set()
-    for root in (os.path.join(HERE, "scenes"), HERE):
-        for f in os.listdir(root):
-            if f.endswith(".py"):
-                src = open(os.path.join(root, f)).read()
-                out.update(m for m in re.findall(r"(?:self\.sync|t_of)\(\s*[\"']([^\"'{}]+)[\"']", src))
+    files = [os.path.join(HERE, "scenes", scene_file)] if scene_file else \
+        [os.path.join(r, f) for r in (os.path.join(HERE, "scenes"), HERE) for f in os.listdir(r) if f.endswith(".py")]
+    for path in files:
+        out.update(re.findall(r"(?:self\.sync|t_of)\(\s*[\"']([^\"'{}]+)[\"']", open(path).read()))
     return sorted(out, key=len, reverse=True)
+
+
+def scene_file(video_id: str) -> str | None:
+    """Which scenes/*.py renders a video (BUILTIN list or a VIDEO dict in the file)."""
+    import ast
+    src = open(os.path.join(HERE, "build.py")).read()
+    for m in re.finditer(r'id="([^"]+)", file="([^"]+)"', src):
+        if m.group(1) == video_id:
+            return m.group(2)
+    for f in os.listdir(os.path.join(HERE, "scenes")):
+        if f.endswith(".py") and re.search(rf'VIDEO\s*=\s*dict\([^)]*id\s*=\s*"{re.escape(video_id)}"', open(os.path.join(HERE, "scenes", f)).read(), re.S):
+            return f
+    return None
 
 
 _NUM = re.compile(r"\d+(?:[.,]\d+)*")
@@ -226,7 +239,7 @@ def natural(text: str) -> str:
     key = os.environ.get("DEEPSEEK_API_KEY")
     if not key:
         return text
-    keep = [p for p in _sync_phrases() if p.lower() in text.lower()]
+    keep = [p for p in _sync_phrases() if re.search(rf"(?<!\w){re.escape(p.lower())}(?!\w)", text.lower())]
     best = text
     for attempt in range(4):
         body = json.dumps({"model": "deepseek-chat", "temperature": 0.4 + 0.15 * attempt, "max_tokens": 600, "messages": [
