@@ -326,9 +326,14 @@ export function scriptName(card: ExperimentCard) {
   return `train_${slug}.py`;
 }
 
-/** Deep link into the in-browser Train lab with this card's settings. */
+/** Changes the in-browser Train lab (#/train) can reproduce, as its query parameters. */
+const BROWSER: Partial<Record<ChangeId, Record<string, string>>> = {
+  baseline: {}, "no-pos": { pos: "0" }, "no-mlp": { mlp: "0" }, deeper: { layers: "4" }, shallower: { layers: "1" },
+};
+export const browserSupports = (c: ChangeId) => c in BROWSER;
+
+/** Deep link into the in-browser Train lab with this card's change (the baseline if the lab can't do that change). */
 export function browserLink(card: ExperimentCard) {
-  const ch = CHANGES.find((c) => c.id === card.change)!;
-  const q = new URLSearchParams({ exp: card.id, change: card.change, n_layer: String(ch.layers ?? 3), seeds: String(card.seeds), steps: String(Math.min(card.steps, 500)) });
+  const q = new URLSearchParams({ preset: "small", seed: "1", ...(BROWSER[card.change] ?? {}) });
   return `#/train?${q.toString()}`;
 }

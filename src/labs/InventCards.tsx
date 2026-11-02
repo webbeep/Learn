@@ -15,7 +15,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { uid } from "../lib/store";
 import { IDEAS, type Idea } from "./ideas";
-import { CHANGES, browserLink, makeScript, scriptName, type ChangeId, type ExperimentCard } from "./pyscript";
+import { CHANGES, browserLink, browserSupports, makeScript, scriptName, type ChangeId, type ExperimentCard } from "./pyscript";
 
 const KEY = "topdown-ai-experiments-v1";
 const METRICS = ["validation loss (lower is better)", "training loss", "speed (ms per step)", "color-copy probe: p(\" red\")", "sample quality (read the samples)"];
@@ -136,7 +136,7 @@ export function CardBuilder({ seed, onSummary }: { seed: { idea: Idea; n: number
           <CardFooter className="flex-col items-stretch gap-2">
             <Button className="h-9" disabled={!valid} onClick={save}><Save />{editing ? "Update card" : "Save card"}</Button>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="h-9" asChild><a href={browserLink(draft)}><Play />Run in browser</a></Button>
+              <Button variant="outline" className="h-9" asChild><a href={browserLink(draft)} title={browserSupports(draft.change) ? "Open this change in the in-browser trainer" : "The browser trainer can't do this change yet: opens the baseline"}><Play />{browserSupports(draft.change) ? "Run in browser" : "Baseline in browser"}</a></Button>
               <Button variant="outline" className="h-9" onClick={() => download({ ...draft, title: draft.title || ch.label })}><Download />Export .py</Button>
             </div>
           </CardFooter>
@@ -182,9 +182,10 @@ function SavedCard({ card, onChange, onEdit, onDelete }: { card: ExperimentCard;
         <p className="text-pretty"><span className="text-muted-foreground">Hypothesis: </span>{card.hypothesis}</p>
         {card.change === "custom" && <p className="text-pretty"><span className="text-muted-foreground">Change: </span>{card.custom}</p>}
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" className="h-9" asChild><a href={browserLink(card)}><Play />Run a quick version in the browser</a></Button>
+          <Button size="sm" className="h-9" asChild><a href={browserLink(card)}><Play />{browserSupports(card.change) ? "Run a quick version in the browser" : "Run the baseline in the browser"}</a></Button>
           <Button size="sm" variant="outline" className="h-9" onClick={() => download(card)}><Download />Export a PyTorch script</Button>
         </div>
+        {!browserSupports(card.change) && <p className="text-xs text-muted-foreground">The in-browser trainer can switch positions, the MLP and depth. For this change, export the script and run it with PyTorch.</p>}
         <Collapsible className="group/res rounded-lg border">
           <CollapsibleTrigger className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium">
             Log results {res.length > 0 && <Badge variant="outline" className="font-mono">Δ {md >= 0 ? "+" : ""}{md.toFixed(3)}{Number.isFinite(sd) && ` ± ${sd.toFixed(3)}`}</Badge>}
