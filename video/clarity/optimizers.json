@@ -28,7 +28,7 @@
    "orig": "The real runs agree. Learning rate one e minus four is still crawling at 1.74. three e minus three reaches 0.55. At 0.1, it thrashes around and ends at 3.72.",
    "visuals": "Real AdamW validation curves: lr 1e-4 (too small) ends at 1.74, lr 3e-3 (best) ends at 0.55, lr 0.1 (too big) ends at 3.72.",
    "keep": [],
-   "new": "The real runs agree. Learning rate one e minus four, which is tiny, is still crawling, at a loss of 1.74. Three e minus three reaches 0.55, the best of these three. At 0.1, the steps are too big: it thrashes around and ends at 3.72."
+   "new": "The real runs agree. Learning rate one e minus four, which is very small, is still crawling, at a loss of 1.74. Three e minus three reaches 0.55, the best of these three. At 0.1, the steps are too big: it thrashes around and ends at 3.72."
   },
   {
    "orig": "Loss landscapes often have long, narrow valleys. Plain gradient descent zigzags across the walls and creeps along the floor. Momentum adds up past gradients: the back-and-forth parts cancel, and the steady downhill part builds speed.",

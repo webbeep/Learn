@@ -58,6 +58,10 @@ def spoken(text: str) -> str:
     for pat, rep in _SAY:
         s = re.sub(pat, rep, s)
     s = re.sub(r"(\d),(\d{3})", r"\1\2", s)          # 4,096 -> 4096 (engines read plain numbers well)
+    # 5-6 digit numbers come out digit by digit ("one seven zero five six zero"): say 170560 as "170 thousand 560"
+    s = re.sub(r"(?<![\d.])(\d{2,3})(\d{3})(?!\d|\.\d)",
+               lambda m: f"{int(m[1])} thousand" + (f" {int(m[2])}" if int(m[2]) else ""), s)
+    s = re.sub(r"(\d{4})-(?=[A-Za-z])", r"\1 ", s)  # "3000-step" was read as "3-0-0-0 step"
     s = re.sub(r"\s+", " ", s).strip()
     return s
 

@@ -50,7 +50,7 @@
     "for 3000",
     "passes"
    ],
-   "new": "Each step grades 64 random snippets of 64 tokens at once. Each tiny square is one prediction. That's 4,096 predictions per step, for 3000 steps in all. That's about 7.7 passes over the training text. One pass means reading all of it once."
+   "new": "Each step grades 64 random snippets at once, and each snippet is 64 tokens long. Each tiny square is one prediction. That's 4,096 predictions per step, for 3000 steps in all. That's about 7.7 passes over the training text. One pass means reading all of it once."
   },
   {
    "orig": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is held-out text it doesn't train on. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45, so it learned patterns, not pages.",
