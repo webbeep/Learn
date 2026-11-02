@@ -99,9 +99,9 @@ class MLP(VScene):
         gn.next_to(ax, DOWN, buff=0.25)
         plus = VGroup(self.T("+ add the result back", 28, FG), self.T("to the token's vector", 28, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
         plus.next_to(gn, DOWN, buff=0.6).align_to(gn, LEFT)
-        with self.say("Inside, it's three steps. Expand the token's 64 numbers into 256 neurons. Pass each one through GELU, "
-                      "which lets positive signals through and squashes negative ones to nearly zero. "
-                      "Then project back down to 64, and add the result to the token's vector.",
+        with self.say("Inside, three steps. Expand the 64 numbers into 256 neurons. Pass each through GELU, "
+                      "which lets positive signals through and squashes negatives to nearly zero. "
+                      "Then project back to 64, and add the result to the token's vector.",
                       scene="Network diagram: 64 inputs (blue) fan out to 256 hidden neurons (yellow; drawn 2 per dot) then back "
                             "to 64 outputs (teal). Inset: the real GELU curve (negative in → ~0, positive in → passes). "
                             "The output is added back to the token's vector.", chapter="Anatomy"):
@@ -276,7 +276,7 @@ class MLP(VScene):
                     self.T("pushes (roughly) toward", 24, MUTED).move_to([0.6, 2.45, 0], aligned_edge=LEFT))
         n0, v0, p0 = tops[0]
         n1, v1, p1 = tops[1]
-        with self.say(f"Now the five neurons that fire hardest in layer 3, on the final 'the'. "
+        with self.say(f"The five neurons firing hardest in layer 3, on the final 'the': "
                       f"Number {n0} pushes toward {p0[0][0].strip()}, {p0[1][0].strip()} and {p0[3][0].strip()}. "
                       f"Number {n1}, toward {p1[0][0].strip()} and word fragments. Most of them look mixed, with unrelated tokens at the top. "
                       f"That's often called polysemantic.",
@@ -298,7 +298,7 @@ class MLP(VScene):
             for k, (n, v, ps) in enumerate(tops):
                 self.mark(f"push-{n}", n_rows[k][3], f"#{n} pushes roughly toward " + ", ".join(f'"{t}" {s:+.2f}' for t, s in ps))
             self.sync("polysemantic", 0.3)
-            self.flash("polysemantic", YELLOW, 44, hold=0.7, pos=DOWN * 3.2)
+            self.flash("polysemantic", YELLOW, 44, hold=0.7, pos=DOWN * 2.95)
 
         # before / after the layer-3 MLP
         st = dict(R["stages"])
@@ -381,10 +381,10 @@ class MLP(VScene):
         m_row = VGroup(m_in, Arrow(ORIGIN, RIGHT * 0.7, color=MUTED, buff=0), VGroup(m_box, m_lab),
                        Arrow(ORIGIN, RIGHT * 0.7, color=MUTED, buff=0), m_out).arrange(RIGHT, buff=0.15)
         card_m = VGroup(self.T("MLP", 36, TEAL, BOLD), self.T("transforms it, inside each token", 26, FG), m_row).arrange(DOWN, buff=0.35)
-        cards = VGroup(card_a, card_m).arrange(RIGHT, buff=1.4).move_to(UP * 0.5)
+        cards = VGroup(card_a, card_m).arrange(RIGHT, buff=0.9).move_to(UP * 0.5)
         cta = self.T("now poke the neurons in the X-ray →", 44, YELLOW, BOLD).move_to(DOWN * 2.5)
-        with self.say("So: attention moves information between tokens. The MLP transforms it, inside each token. "
-                      "Stack both three times, and the vector at 'the' ends up reading as red. Go poke the neurons yourself in the X-ray.",
+        with self.say("Attention moves information between tokens. The MLP transforms it, inside each token. "
+                      "Stack both three times, and the vector at 'the' reads as red. Go poke the neurons in the X-ray.",
                       scene="Recap cards: attention (blue) moves information between tokens (an arc from ' red' to ' the'); the "
                             "MLP (teal) transforms each token on its own (the vector at ' the' → MLP → now reads as ' red'). CTA: poke the neurons in the X-ray.",
                       chapter="Recap"):

@@ -14,6 +14,8 @@ TR_TOK, VA_TOK, CHARS = OV["train_tokens"], OV["val_tokens"], OV["corpus_chars"]
 B, T, STEPS = OV["batch"], 64, OV["steps"]
 PER_STEP = B * T
 EPOCH_STEPS = TR_TOK / PER_STEP
+DD = OV["val_dedup"]
+LEAK = DD["val_lines_in_train"] / DD["val_lines"]
 
 
 class TrainYourOwn(VScene):
@@ -26,8 +28,8 @@ class TrainYourOwn(VScene):
         arrows = VGroup(*[Arrow(pills[i].get_right(), pills[i + 1].get_left(), buff=0.1, color=MUTED, stroke_width=3)
                           for i in range(3)])
         title = self.T("training your own model", 52, FG, BOLD).move_to(UP * 2.4)
-        with self.say("Training your own model sounds hard. The whole recipe fits on one screen: data, batches, steps, "
-                      "and two numbers to watch.",
+        with self.say("Here's the whole recipe for training your own model: data, batches, steps, and two numbers to "
+                      "watch.",
                       scene="Title 'training your own model' and four pills joined by arrows: data → batches → steps → "
                             "watch the loss.", chapter="The recipe"):
             self.play(FadeIn(title, shift=DOWN * 0.2), run_time=0.5)
@@ -53,10 +55,10 @@ class TrainYourOwn(VScene):
             .arrange(DOWN, buff=0.1).next_to(bar_tr, DOWN, buff=0.35)
         lva = VGroup(self.T("validation", 30, TEAL, BOLD), self.M(f"{VA_TOK:,} (5%)", 26, TEAL)) \
             .arrange(DOWN, buff=0.1, aligned_edge=RIGHT).next_to(bar_va, DOWN, buff=0.35).align_to(bar, RIGHT)
-        never = self.T("never trained on: the honest exam", 28, TEAL).next_to(lva, DOWN, buff=0.35).align_to(bar, RIGHT)
+        never = self.T("held-out documents: never trained on", 28, TEAL).next_to(lva, DOWN, buff=0.35).align_to(bar, RIGHT)
         with self.say(f"Start with text. Ours is {CHARS / 1e6:.1f} million characters, which the tokenizer turns into "
-                      f"{total / 1e6:.2f} million tokens. Lock away the last five percent. The model never trains on it. "
-                      f"That's your validation set.",
+                      f"{total / 1e6:.2f} million tokens. Hold back the last five percent of documents. The model never "
+                      f"trains on them. That's your validation set.",
                       scene=f"A long bar of {total:,} tokens split into train ({TR_TOK:,}, blue, 95%) and validation "
                             f"({VA_TOK:,}, teal, 5%) from {CHARS:,} characters of corpus.", chapter="Data"):
             self.unmark(*list(self._marks))
@@ -66,12 +68,50 @@ class TrainYourOwn(VScene):
             self.sync("tokenizer", 0.1)
             self.play(GrowFromEdge(bar, LEFT), FadeIn(toks), run_time=0.8)
             self.mark("tokens", toks, f"{total:,} BPE tokens after tokenizing")
-            self.sync("Lock away", 0.1)
+            self.sync("Hold back", 0.1)
             self.play(bar_va.animate.shift(RIGHT * 0.25), FadeIn(ltr), FadeIn(lva), run_time=0.6)
             self.mark("train-split", VGroup(bar_tr, ltr), f"training split: {TR_TOK:,} tokens")
-            self.mark("val-split", VGroup(bar_va, lva), f"validation split: {VA_TOK:,} tokens, never trained on")
+            self.mark("val-split", VGroup(bar_va, lva), f"validation split: {VA_TOK:,} tokens of held-out documents")
             self.sync("validation set", 0.1)
             self.play(FadeIn(never, shift=UP * 0.1), run_time=0.4)
+
+        # ------------------------------------------------------------ the catch: leakage
+        hdrL = self.header("A catch: leakage")
+        nl, nin, nded = DD["val_lines"], DD["val_lines_in_train"], DD["val_dedup_lines"]
+        grid_ = VGroup(*[Square(0.34, stroke_width=0, fill_color=PINK if k < round(100 * LEAK) else TEAL,
+                                fill_opacity=0.85) for k in range(100)]).arrange_in_grid(rows=5, cols=20, buff=0.08)
+        grid_.move_to(UP * 1.2)
+        gl1 = VGroup(Square(0.22, stroke_width=0, fill_color=PINK, fill_opacity=0.85),
+                     self.T(f"{LEAK * 100:.0f}% of validation stories ({nin:,} of {nl:,}) appear word for word in training", 24, PINK)) \
+            .arrange(RIGHT, buff=0.2)
+        gl2 = VGroup(Square(0.22, stroke_width=0, fill_color=TEAL, fill_opacity=0.85),
+                     self.T(f"{nded:,} are new: our deduplicated validation set ({DD['val_dedup_tokens']:,} tokens)", 24, TEAL)) \
+            .arrange(RIGHT, buff=0.2)
+        gls = VGroup(gl1, gl2).arrange(DOWN, aligned_edge=LEFT, buff=0.22).next_to(grid_, DOWN, buff=0.5)
+        note = VGroup(self.T("and every sentence pattern still occurs in training:", 24, MUTED),
+                      self.T("'new' here means new combinations, not new kinds of sentences", 24, MUTED)) \
+            .arrange(DOWN, buff=0.08).to_edge(DOWN, buff=0.4)
+        with self.say(f"One catch. Our tiny world reuses the same sentence templates, so {LEAK * 100:.0f} percent of the "
+                      f"validation stories also appear word for word in training. Real projects deduplicate before "
+                      f"splitting. So we also test on the {nded:,} stories that are new combinations.",
+                      scene=f"Leakage check: {nin:,} of {nl:,} validation lines ({LEAK * 100:.1f}%) appear verbatim in the "
+                            f"training text (pink squares); the {nded:,} that do not ({DD['val_dedup_tokens']:,} tokens, teal) "
+                            f"form a deduplicated validation set. Every validation sentence pattern still occurs in training.",
+                      chapter="A catch: leakage"):
+            self.unmark(*list(self._marks))
+            self.play(FadeOut(VGroup(chars, toks, ltr, lva, never, bar)), ReplacementTransform(hdr, hdrL), run_time=0.4)
+            self.play(LaggedStart(*[FadeIn(q) for q in grid_], lag_ratio=0.01), run_time=0.9)
+            self.mark("leak-grid", grid_, f"each square = 1% of validation lines; pink = appears verbatim in training "
+                                          f"({LEAK * 100:.1f}%)")
+            self.play(FadeIn(gl1, shift=UP * 0.1), run_time=0.4)
+            self.mark("leak", gl1, f"{nin:,} of {nl:,} validation lines appear verbatim in training")
+            self.sync("Real projects", 0.1)
+            self.play(FadeIn(note), run_time=0.4)
+            self.mark("leak-note", note, "every validation sentence pattern also occurs in training (finite grammar)")
+            self.sync("So we also", 0.1)
+            self.play(FadeIn(gl2, shift=UP * 0.1), run_time=0.4)
+            self.mark("dedup", gl2, f"deduplicated validation set: {nded:,} lines, {DD['val_dedup_tokens']:,} tokens")
+        hdr = hdrL
 
         # ------------------------------------------------------------ batches
         hdr2 = self.header("Batches & steps")
@@ -97,10 +137,10 @@ class TrainYourOwn(VScene):
                             f"({PER_STEP:,} predictions); then average loss → gradient → nudge every weight = one step.",
                       chapter="Batches & steps"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(chars, toks, ltr, lva, never)), ReplacementTransform(hdr, hdr2),
-                      VGroup(bar).animate.move_to(UP * 2.0), run_time=0.5)
-            wins.shift(UP * 1.6)
-            self.play(LaggedStart(*[FadeIn(w) for w in wins], lag_ratio=0.03), run_time=0.8)
+            bar.shift(UP * 1.6); wins.shift(UP * 1.6)
+            nts = self.T("windows drawn wider than scale", 20, MUTED).next_to(bar, DOWN, buff=0.12).align_to(bar, RIGHT)
+            self.play(FadeOut(VGroup(grid_, gls, note)), ReplacementTransform(hdr, hdr2), FadeIn(bar), run_time=0.5)
+            self.play(LaggedStart(*[FadeIn(w) for w in wins], lag_ratio=0.03), FadeIn(nts), run_time=0.8)
             self.mark("windows", wins, f"{B} random {T}-token windows from the training split")
             self.play(TransformFromCopy(wins, grid), FadeIn(gl), run_time=0.9)
             self.mark("batch", grid, f"one batch: {B} × {T} = {PER_STEP:,} next-token predictions")
@@ -116,54 +156,73 @@ class TrainYourOwn(VScene):
                     self.M("≈", 40, MUTED), self.M(f"{EPOCH_STEPS:.0f} steps", 40, FG)).arrange(RIGHT, buff=0.3)
         eq.move_to(DOWN * 0.2)
         eql = self.T("one epoch = one full pass over the training tokens", 32, FG).next_to(eq, UP, buff=0.6)
-        ours = self.T(f"our runs: {STEPS:,} steps ≈ {STEPS / EPOCH_STEPS:.1f} epochs", 32, TEAL).next_to(eq, DOWN, buff=0.6)
+        ours = self.T(f"these experiments: {B} × {T} tokens × {STEPS:,} steps ≈ {STEPS / EPOCH_STEPS:.1f} epochs", 30, TEAL) \
+            .next_to(eq, DOWN, buff=0.6)
+        ship_ep = 64 * 64 * 3000 / TR_TOK
+        ship = self.T(f"the shipped TinyGPT: 64 × 64 tokens × 3,000 steps ≈ {ship_ep:.1f} epochs", 26, MUTED).next_to(ours, DOWN, buff=0.25)
+        rnd = self.T("windows are random: on average, not exactly; some tokens are seen more, some never", 22, MUTED) \
+            .to_edge(DOWN, buff=0.55)
         with self.say(f"An epoch is one full pass over the training data: about {EPOCH_STEPS:.0f} steps here. "
-                      f"Our {STEPS:,}-step runs see each token about twice.",
+                      f"Our {STEPS:,}-step runs see each token about twice, on average. Windows are random, so some "
+                      f"tokens get seen more, and some never.",
                       scene=f"Equation: {TR_TOK:,} training tokens ÷ {PER_STEP:,} tokens per step ≈ {EPOCH_STEPS:.0f} "
                             f"steps per epoch; {STEPS:,} steps ≈ {STEPS / EPOCH_STEPS:.1f} epochs."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(bar, wins, grid, gl, loop, la, into, one)), run_time=0.4)
+            self.play(FadeOut(VGroup(bar, wins, grid, gl, loop, la, into, one, nts)), run_time=0.4)
             self.play(FadeIn(eql), LaggedStart(*[FadeIn(e, shift=UP * 0.15) for e in eq], lag_ratio=0.15), run_time=0.9)
             self.mark("epoch", VGroup(eql, eq), f"epoch = {TR_TOK:,} / {PER_STEP:,} ≈ {EPOCH_STEPS:.1f} steps")
             self.sync("Our", 0.1)
-            self.play(FadeIn(ours, shift=UP * 0.1), run_time=0.4)
+            self.play(FadeIn(ours, shift=UP * 0.1), FadeIn(ship), run_time=0.4)
             self.mark("ours", ours, f"{STEPS} steps ≈ {STEPS / EPOCH_STEPS:.2f} epochs")
+            self.mark("shipped", ship, f"the shipped model trained 3,000 steps of 64×64 tokens ≈ {ship_ep:.2f} epochs")
+            self.sync("Windows are", 0.1)
+            self.play(FadeIn(rnd), run_time=0.3)
+            self.mark("random", rnd, "random windows: expected ~1.9 visits per token, about 15% of tokens never sampled")
 
         # ------------------------------------------------------------ train vs val (full data)
         hdr3 = self.header("Train vs validation")
-        ymax = 3.0
-        pl = Plot([0, STEPS], [0, ymax], width=10.5, height=4.6, xticks=[0, 500, 1000, 1500], yticks=[0, 1, 2, 3],
-                  xlabel="training step", ylabel="loss").move_to(DOWN * 0.35)
+        pl0 = Plot([0, STEPS], [0, 6], width=10.5, height=4.6, xticks=[0, 500, 1000, 1500], yticks=[0, 2, 4, 6],
+                   xlabel="training step", ylabel="loss").move_to(DOWN * 0.35)
         c = FULL["curve"]
-        tr = pl.line(c["step"], c["train"], YELLOW, 4)
-        va = pl.line(c["step"], c["val"], TEAL, 3, dashed=True)
-        lg = legend([("train loss", YELLOW, False), ("validation loss", TEAL, True)]).next_to(pl.ax, UP, buff=0.15) \
-            .align_to(pl.ax, RIGHT)
+        tr = pl0.line(c["step"], c["train"], YELLOW, 4)
+        va = pl0.line(c["step"], c["val"], PINK, 3)
+        vd = pl0.line(c["step"], c["val_dedup"], BLUE, 3, dashed=True)
+        lg = legend([("train", YELLOW, False), ("validation", PINK, False), ("validation, deduplicated", BLUE, True)]) \
+            .next_to(pl0.ax, UP, buff=0.15).align_to(pl0.ax, RIGHT)
         gap = FULL["final_val"] - FULL["final_train"]
-        endl = VGroup(self.M(f"train {FULL['final_train']:.3f}", 26, YELLOW), self.M(f"val   {FULL['final_val']:.3f}", 26, TEAL)) \
-            .arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(pl.p(STEPS, 1.6), LEFT, buff=0.1)
-        with self.say("Now watch two numbers. Training loss: how well it does on text it studies. Validation loss: "
-                      "text it has never seen. With all the data, they move together. That's real learning.",
-                      scene=f"Real curves, all {TR_TOK:,} training tokens, {STEPS} steps: train loss (yellow) and validation "
-                            f"loss (dashed teal) fall together from {c['val'][0]:.2f} to {FULL['final_train']:.3f} / "
-                            f"{FULL['final_val']:.3f} (gap {gap:+.3f}).", chapter="Train vs validation"):
+        endl = VGroup(self.M(f"train {FULL['final_train']:.3f}", 26, YELLOW), self.M(f"val   {FULL['final_val']:.3f}", 26, PINK),
+                      self.M(f"dedup {FULL['final_val_dedup']:.3f}", 26, BLUE)) \
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(pl0.p(STEPS, 3.2), LEFT, buff=0.1)
+        with self.say(f"Now watch two numbers. Training loss: how well it does on text it studies. Validation loss: "
+                      f"held-out text. With all the data they move together, and the deduplicated set lands at "
+                      f"{FULL['final_val_dedup']:.2f}. Here, unseen means new combinations of familiar sentences.",
+                      scene=f"Real curves, all {TR_TOK:,} training tokens, {STEPS} steps, loss axis 0–6: train (yellow), "
+                            f"validation (pink) and deduplicated validation (dashed blue) start at {c['val'][0]:.2f} and end at "
+                            f"{FULL['final_train']:.3f} / {FULL['final_val']:.3f} / {FULL['final_val_dedup']:.3f}.",
+                      chapter="Train vs validation"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(eq, eql, ours)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
-            self.play(FadeIn(pl), FadeIn(lg), run_time=0.6)
-            self.play(Create(tr), run_time=1.3, rate_func=linear)
+            self.play(FadeOut(VGroup(eq, eql, ours, ship, rnd)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
+            self.play(FadeIn(pl0), FadeIn(lg), run_time=0.6)
+            self.play(Create(tr), run_time=1.2, rate_func=linear)
             self.mark("full-train", tr, f"training loss with all data: {c['train'][0]:.2f} → {FULL['final_train']:.3f}")
             self.sync("Validation loss", 0.1)
-            self.play(Create(va), run_time=1.3, rate_func=linear)
+            self.play(Create(va), run_time=1.2, rate_func=linear)
             self.mark("full-val", va, f"validation loss with all data: {c['val'][0]:.2f} → {FULL['final_val']:.3f}")
-            self.play(FadeIn(endl), run_time=0.3)
-            self.mark("full-end", endl, f"final: train {FULL['final_train']:.3f}, val {FULL['final_val']:.3f}, gap {gap:+.3f}")
+            self.sync("deduplicated", 0.1)
+            self.play(Create(vd), FadeIn(endl), run_time=0.9)
+            self.mark("full-dedup", vd, f"deduplicated validation loss (stories never seen verbatim): → {FULL['final_val_dedup']:.3f}")
+            self.mark("full-end", endl, f"final: train {FULL['final_train']:.3f}, val {FULL['final_val']:.3f}, "
+                                        f"dedup val {FULL['final_val_dedup']:.3f}")
 
         # ------------------------------------------------------------ overfitting
         hdr4 = self.header("Overfitting")
+        ymax = 3.0
+        pl = Plot([0, STEPS], [0, ymax], width=10.5, height=4.6, xticks=[0, 500, 1000, 1500], yticks=[0, 1, 2, 3],
+                  xlabel="training step", ylabel="loss (zoomed: 0–3)").move_to(DOWN * 0.35)
         ct = TINY["curve"]
         tr2 = pl.line(ct["step"], ct["train"], YELLOW, 4)
         va2 = pl.line(ct["step"], ct["val"], PINK, 4)
-        lg2 = legend([("train loss", YELLOW, False), ("validation loss", PINK, False)]).move_to(lg).align_to(lg, RIGHT)
+        lg2 = legend([("train", YELLOW, False), ("validation", PINK, False)]).next_to(pl.ax, UP, buff=0.15).align_to(pl.ax, RIGHT)
         bs, bv = TINY["best_val_step"], TINY["best_val"]
         best = VGroup(Dot(pl.p(bs, bv), color=TEAL, radius=0.09),
                       self.T(f"best val {bv:.2f} at step {bs}", 24, TEAL))
@@ -176,12 +235,13 @@ class TrainYourOwn(VScene):
         with self.say(f"Now the same model and the same {STEPS:,} steps, but only {TINY['data_tokens']:,} tokens of training "
                       f"data. That's {TINY['epochs']:.0f} epochs. Training loss dives to {TINY['final_train']:.2f}. "
                       f"Validation loss bottoms out around step {bs}, then climbs.",
-                      scene=f"Real overfitting run: {TINY['data_tokens']:,} training tokens ({TINY['epochs']:.0f} epochs). "
-                            f"Train loss (yellow) → {TINY['final_train']:.3f}; validation loss (pink) is best "
-                            f"({bv:.3f}) at step {bs} and ends at {TINY['final_val']:.3f}.", chapter="Overfitting"):
+                      scene=f"Real overfitting run (axis zoomed to 0–3): {TINY['data_tokens']:,} training tokens "
+                            f"({TINY['epochs']:.0f} epochs). Train loss (yellow) → {TINY['final_train']:.3f}; validation loss "
+                            f"(pink) is best ({bv:.3f}) at step {bs} and ends at {TINY['final_val']:.3f} (deduplicated "
+                            f"validation: {TINY['final_val_dedup']:.3f}).", chapter="Overfitting"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(tr, va, endl)), ReplacementTransform(lg, lg2), ReplacementTransform(hdr3, hdr4),
-                      run_time=0.4)
+            self.play(FadeOut(VGroup(tr, va, vd, endl, pl0, lg)), FadeIn(pl), FadeIn(lg2), ReplacementTransform(hdr3, hdr4),
+                      run_time=0.5)
             self.play(FadeIn(tag, shift=DOWN * 0.1), run_time=0.4)
             self.mark("tiny-tag", tag, f"{TINY['data_tokens']:,} training tokens, {TINY['epochs']} epochs")
             self.sync("Training loss dives", 0.1)
@@ -200,7 +260,7 @@ class TrainYourOwn(VScene):
                       "overfitting.",
                       scene=f"A pink arrow spans the gap between train {TINY['final_train']:.2f} and validation "
                             f"{TINY['final_val']:.2f} at step {STEPS}: overfitting (memorizing, not generalizing)."):
-            self.play(GrowArrow(gapl), run_time=0.5)
+            self.play(GrowArrow(gapl), FadeOut(tag), run_time=0.5)
             self.mark("gap", gapl, f"generalization gap: {TINY['final_val'] - TINY['final_train']:.2f} nats")
             self.sync("overfitting", 0.1)
             self.flash("memorized ≠ learned", PINK, 56, hold=0.8, pos=UP * 0.9 + RIGHT * 1.5)
@@ -216,21 +276,21 @@ class TrainYourOwn(VScene):
             l2 = p.line(cc["step"], cc["val"], PINK, 3)
             ttl = self.T(r["label"], 26, FG, BOLD).next_to(p.ax, UP, buff=0.2)
             g = r["final_val"] - r["final_train"]
-            gl_ = self.M(f"gap {g:.2f}", 26, PINK if g > 0.1 else TEAL).next_to(p.xl, DOWN, buff=0.2)
+            gl_ = self.M(f"gap {g:.3f}", 26, PINK if g > 0.1 else TEAL).next_to(p.xl, DOWN, buff=0.2)
             mini.add(VGroup(p, l1, l2, ttl, gl_))
         mini.arrange(RIGHT, buff=0.85)
         if mini.width > 12.6:
             mini.scale(12.6 / mini.width)
         mini.move_to(DOWN * 0.2)
         lg3 = legend([("train", YELLOW, False), ("validation", PINK, False)]).to_edge(DOWN, buff=0.45)
-        gaps = ", ".join(f"{r['final_val'] - r['final_train']:.2f}" for r in RUNS)
-        with self.say(f"Give it more data and the gap closes. From {RUNS[0]['final_val'] - RUNS[0]['final_train']:.1f} "
-                      f"with four thousand tokens, to almost nothing with all of it.",
+        gaps = ", ".join(f"{r['final_val'] - r['final_train']:.3f}" for r in RUNS)
+        with self.say(f"Give it more data and the gap closes. {RUNS[0]['final_val'] - RUNS[0]['final_train']:.1f} with four "
+                      f"thousand tokens, and by 256 thousand it's already gone. This corpus repeats itself a lot.",
                       scene=f"Four real runs side by side ({', '.join(r['label'] for r in RUNS)}), each with train (yellow) "
                             f"and validation (pink) curves; final gaps (val − train): {gaps}.",
                       chapter="More data closes the gap"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(pl, tr2, va2, best, end2, gapl, tag, lg2)), ReplacementTransform(hdr4, hdr5),
+            self.play(FadeOut(VGroup(pl, tr2, va2, best, end2, gapl, lg2)), ReplacementTransform(hdr4, hdr5),
                       run_time=0.4)
             self.play(LaggedStart(*[FadeIn(m, shift=UP * 0.2) for m in mini], lag_ratio=0.25), FadeIn(lg3), run_time=1.6)
             for r, m in zip(RUNS, mini):
@@ -243,7 +303,7 @@ class TrainYourOwn(VScene):
         chk = [
             (f"step 0 loss ≈ ln(vocab) = {math.log(256):.2f}", f"ours started at {FULL['curve']['val'][0]:.2f}. If not: bug.", BLUE),
             ("fast drop, then a slow grind", "flat from the start: learning rate too low, or a bug", TEAL),
-            ("validation follows training", "a growing gap: more data, smaller model, or stop at best val", PINK),
+            ("validation follows training", "a growing gap: more data, a smaller model, or stop early · dedupe first", PINK),
             ("no spikes, no NaN", "spikes or NaN: learning rate too high (see Optimizers)", ORANGE),
         ]
         rows = VGroup()
@@ -259,10 +319,10 @@ class TrainYourOwn(VScene):
                       "a slow grind. Validation following training. And no spikes.",
                       scene=f"Checklist: 1) step-0 loss ≈ ln(256) = {math.log(256):.2f} (ours {FULL['curve']['val'][0]:.2f}); "
                             "2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / "
-                            "early stop); 4) no spikes or NaN (else lower the learning rate).", chapter="What to watch", gap=1.4):
+                            "early stop); 4) no spikes or NaN (else lower the learning rate).", chapter="What to watch", gap=0.5):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(mini, lg3)), ReplacementTransform(hdr5, hdr6), run_time=0.4)
-            for k, ph in enumerate(["First loss", "A fast drop", "Validation following", "no spikes"]):
+            for k, ph in enumerate(["First loss", "A fast drop", "Validation following", "And no"]):
                 self.sync(ph, 0.1)
                 self.play(FadeIn(rows[k][0][0]), FadeIn(rows[k][1], shift=RIGHT * 0.2), run_time=0.35)
                 self.play(Write(rows[k][0][1]), run_time=0.2)

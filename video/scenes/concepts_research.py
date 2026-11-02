@@ -119,7 +119,7 @@ class ResearchLoop(CScene):
             f"{n} steps each (TinyGPT's real run: 3,000)",
             f"batch {R['batch']} × 64 tokens · AdamW, lr {R['lr']:g}, cosine",
             f"same seed ({R['seed']}) · the exact same batches · same code",
-            f"CPU, {R['threads']} threads: {min(SECS) / 60:.1f}–{max(SECS) / 60:.1f} min per run (machine load varies)")]
+            f"CPU, {R['threads']} threads: {min(SECS) / 60:.1f}–{max(SECS) / 60:.1f} min per run")]
                         ).arrange(DOWN, aligned_edge=LEFT, buff=0.22)
         sh_t = self.T("identical in both runs", 26, MUTED, BOLD)
         shg = VGroup(sh_t, shared).arrange(DOWN, aligned_edge=LEFT, buff=0.25)
@@ -163,7 +163,7 @@ class ResearchLoop(CScene):
         brk = self.M("≈", 30, MUTED).move_to(ax.c2p(S0, Y0) + LEFT * 0.0 + UP * 0.12)
         legend = VGroup(VGroup(Line(ORIGIN, RIGHT * 0.5, color=BLUE, stroke_width=4), self.T("baseline", 22, BLUE)).arrange(RIGHT, buff=0.12),
                         VGroup(Line(ORIGIN, RIGHT * 0.5, color=PINK, stroke_width=4), self.T("no positions", 22, PINK)).arrange(RIGHT, buff=0.12)
-                        ).arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(ax.c2p(n, Y1), DL, buff=0.1)
+                        ).arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(ax.c2p(n, 0.86), LEFT, buff=0.2)
 
         def curve(run, col):
             return VMobject(color=col, stroke_width=4).set_points_as_corners(
@@ -186,7 +186,7 @@ class ResearchLoop(CScene):
                       chapter="Compare"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(shg, cards, one)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
-            self.play(Create(ax), FadeIn(xl), FadeIn(yl), FadeIn(xt), FadeIn(yt), FadeIn(ev), FadeIn(brk), FadeIn(legend), run_time=0.6)
+            self.play(Create(ax), FadeIn(xl), FadeIn(yl), FadeIn(xt), FadeIn(yt), FadeIn(ev), FadeIn(legend), run_time=0.6)
             self.mark("legend", legend, "blue = baseline (with positions), pink = no position embeddings")
             self.play(Create(cb), Create(cn), run_time=1.8, rate_func=linear)
             self.mark("curve-base", cb, f"baseline val loss: {BASE['val'][i0]:.3f} at step {S0} → {BASE['val'][-1]:.3f} at step {n}")
@@ -221,14 +221,16 @@ class ResearchLoop(CScene):
         self.fitw(gl, 12.6)
         note = self.T(f"measurement noise per number ≈ ±{se:.3f} (SE over the {R['n_eval_batches']} eval batches)", 22, MUTED)
         note.to_edge(DOWN, buff=0.4)
-        with self.say('But one seed could be luck. So we ran two more seeds per arm, each with its own initial weights and batch order. Both numbers move, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap beats the seed-to-seed spread.',
+        with self.say(f"But one seed could be luck. So we ran two more seeds per arm, each with its own initial weights and "
+                      f"batch order. Both numbers move, yet every seed agrees: no positions is worse, by {min(GAPS):.2f} to "
+                      f"{max(GAPS):.2f}. That gap beats the seed-to-seed spread.",
                       scene=f"Number line of val loss at step {n} for seeds {', '.join(SEEDS)}: baseline "
                             f"{', '.join(f'{v:.4f}' for v in VB)}; no positions {', '.join(f'{v:.4f}' for v in VN)}. Paired gaps "
                             f"{', '.join(f'{g:+.4f}' for g in GAPS)}, mean {mg:+.4f}, sd {sdg:.4f}. Each seed changes the "
                             f"initial weights and the batch order; eval batches are fixed.",
                       chapter="Seeds"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ax, xl, yl, xt, yt, cb, cn, fin, fin_t, ev, brk, legend)), ReplacementTransform(hdr3, hdr4), run_time=0.5)
+            self.play(FadeOut(VGroup(ax, xl, yl, xt, yt, cb, cn, fin, fin_t, ev, legend)), ReplacementTransform(hdr3, hdr4), run_time=0.5)
             self.play(Create(nl), FadeIn(nlab), FadeIn(nt), FadeIn(note), run_time=0.5)
             self.play(FadeIn(dots_b[0]), FadeIn(dots_n[0]), FadeIn(sl[0]), FadeIn(lb), FadeIn(ln), run_time=0.5)
             self.sync("So we ran", 0.1)
@@ -247,10 +249,10 @@ class ResearchLoop(CScene):
         specs = [
             ("different compute", ["vs the released model", f"(3,000 steps, {REL['val']:.3f}):", f"the gap looks {fake:.2f},",
                                    f"{fake / gap:.0f}× the real {gap:.3f}"], ORANGE),
-            ("one seed", ["one lucky run", "can fake a win:", "look at the spread"], YELLOW),
-            ("data leakage", [f"{LEAK['frac'] * 100:.0f}% of held-out lines", f"({LEAK['in_train']:,} of {LEAK['val_docs']:,}) appear in",
-                              f"training: all {SHORT['in_train']:,} short", "templated ones, but only",
-                              f"{100 * TRADE['in_train'] / TRADE['n']:.1f}% of trade stories"], PINK)]
+            ("unfair tuning", [f"lr {R['lr']:g} was picked", "for the baseline;", "the variant might", "prefer another"], YELLOW),
+            ("data leakage", [f"{LEAK['frac'] * 100:.0f}% of held-out lines", f"({LEAK['text_frac'] * 100:.0f}% of the text)",
+                              "also appear in training,", "mostly short templates;",
+                              f"trade stories: {100 * TRADE['in_train'] / TRADE['n']:.1f}%"], PINK)]
         for title, lines, col in specs:
             t = VGroup(self.T(title, 30, col, BOLD), *[self.T(l, 26, FG) for l in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.14)
             b = RoundedRectangle(corner_radius=0.16, width=4.25, height=3.8, stroke_color=col, stroke_width=2.5,
@@ -260,26 +262,27 @@ class ResearchLoop(CScene):
             cards.add(VGroup(b, t))
         cards.arrange(RIGHT, buff=0.3).move_to(DOWN * 0.1)
         with self.say(f"Three classic traps. Different compute: compare against the released model, trained five times "
-                      f"longer, and the gap looks {fake / gap:.0f} times bigger than it is. One seed: luck can fake a win. "
-                      f"And leakage: {LEAK['frac'] * 100:.0f} percent of TinyGPT's held-out lines also appear in training, "
-                      f"mostly short templated ones. So part of its validation loss measures memory.",
+                      f"longer, and the gap looks {fake / gap:.0f} times bigger than it is. Unfair tuning: the learning rate "
+                      f"was picked for the baseline, not the variant. And leakage: {LEAK['frac'] * 100:.0f} percent of "
+                      f"held-out lines, {LEAK['text_frac'] * 100:.0f} percent of the text, also appear in training.",
                       scene=f"Three trap cards. Different compute: comparing the 600-step no-positions run ({NOPOS['val'][-1]:.3f}) "
                             f"to the released 3,000-step model ({REL['val']:.3f}, same eval batches) suggests a {fake:.3f} gap, "
-                            f"{fake / gap:.1f}× the real {gap:.3f}. One seed: luck can fake a win. Data leakage: "
+                            f"{fake / gap:.1f}× the real {gap:.3f}. Unfair tuning: lr {R['lr']:g} was chosen for the baseline. Data leakage: "
                             f"{LEAK['in_train']:,} of {LEAK['val_docs']:,} held-out lines ({LEAK['frac'] * 100:.1f}%) appear "
                             f"verbatim in the training split: all {SHORT['n']:,} short templated lines (Q&A, counting, pets, "
-                            f"days, facts) but only {TRADE['in_train']} of {TRADE['n']} trade stories.", chapter="Traps"):
+                            f"days, facts) but only {TRADE['in_train']} of {TRADE['n']} trade stories; {LEAK['text_frac'] * 100:.1f}% of held-out "
+                            f"characters.", chapter="Traps"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(nl, nlab, nt, db, dn, lb, ln, gl, note)), ReplacementTransform(hdr4, hdr5),
+            self.play(FadeOut(VGroup(nl, nlab, nt, dots_b, dots_n, sl, lb, ln, gl, note)), ReplacementTransform(hdr4, hdr5),
                       run_time=0.5)
-            for k, ph in enumerate(["Different compute", "One seed", "And leakage"]):
+            for k, ph in enumerate(["Different compute", "Unfair tuning", "And leakage"]):
                 self.sync(ph, 0.1)
                 self.play(FadeIn(cards[k], shift=UP * 0.2), run_time=0.5)
             self.mark("trap-compute", cards[0], f"unequal compute: released model val {REL['val']:.4f} (3,000 steps) vs "
                                                 f"no-pos {NOPOS['val'][-1]:.4f} (600 steps) → misleading gap {fake:.3f}")
-            self.mark("trap-seed", cards[1], "single-seed comparisons can be noise")
+            self.mark("trap-tuning", cards[1], f"the learning rate {R['lr']:g} was tuned for the baseline, which can be unfair to the variant")
             self.mark("trap-leak", cards[2], f"{LEAK['in_train']:,}/{LEAK['val_docs']:,} validation lines also occur in the "
-                                             f"training split; trade stories: {TRADE['in_train']}/{TRADE['n']}")
+                                             f"training split ({LEAK['text_frac'] * 100:.1f}% of held-out text); trade stories: {TRADE['in_train']}/{TRADE['n']}")
 
         # ============================================================ scale up
         hdr6 = self.header("Scale up only what wins", "#b48cff")
@@ -289,25 +292,51 @@ class ResearchLoop(CScene):
         self.fitw(ladder, 12.6).move_to(UP * 0.6)
         la = VGroup(*[Arrow(ladder[i].get_right(), ladder[i + 1].get_left(), buff=0.08, color=MUTED, stroke_width=3)
                       for i in range(3)])
-        verdict = self.T(f"today's hint: at this size, the position embeddings earn their {BASE['params'] - NOPOS['params']:,} weights", 28, FG)
-        verdict.move_to(DOWN * 1.0)
-        cta = self.T("your turn: pick a hypothesis in the Invent lab →", 40, YELLOW, BOLD).move_to(DOWN * 2.5)
-        self.fitw(cta, 12.8)
-        with self.say("So positions win, for now, at this size. Next: more seeds, then longer runs, then a bigger model, "
-                      "checking the gap holds at every step. Your turn: pick a hypothesis.",
-                      scene="Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? Verdict: position "
-                            "embeddings (4,096 weights) help at this size (one seed, 600 steps). CTA: Invent lab.",
+        mb, mn = float(np.mean(VB)), float(np.mean(VN))
+        def pair(title, vb, vn, sub):
+            g = VGroup(self.T(title, 26, FG, BOLD),
+                       VGroup(self.T("baseline", 24, BLUE), self.M(f"{vb:.3f}", 28, BLUE)).arrange(RIGHT, buff=0.2),
+                       VGroup(self.T("no positions", 24, PINK), self.M(f"{vn:.3f}", 28, PINK)).arrange(RIGHT, buff=0.2),
+                       VGroup(self.T("gap", 24, YELLOW), self.M(f"{vn - vb:+.3f}", 28, YELLOW)).arrange(RIGHT, buff=0.2),
+                       self.T(sub, 20, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
+            return g
+        p600 = pair(f"{n} steps", mb, mn, f"mean of {len(SEEDS)} seeds · this video")
+        p3k = pair("3,000 steps", A_BASE, A_NOPOS, "1 seed · the app's ablation run (own eval batches)")
+        pairs = VGroup(p600, p3k).arrange(RIGHT, buff=1.4, aligned_edge=UP).scale(1.15)
+        self.fitw(pairs, 11.6).move_to(DOWN * 0.35)
+        arrow = Arrow(p600.get_right(), p3k.get_left(), buff=0.3, color=MUTED, stroke_width=3).shift(UP * 0.3)
+        hav = self.T("papers report causal models can learn position without embeddings (Haviv et al. 2022)", 22, MUTED)
+        hav.next_to(pairs, DOWN, buff=0.35)
+        self.fitw(hav, 12.4)
+        ladder.move_to(UP * 2.3)
+        la = VGroup(*[Arrow(ladder[i].get_right(), ladder[i + 1].get_left(), buff=0.08, color=MUTED, stroke_width=3)
+                      for i in range(3)])
+        cta = self.T("your turn: pick a hypothesis in the Invent lab →", 36, YELLOW, BOLD).to_edge(DOWN, buff=0.35)
+        self.fitw(cta, 12.4)
+        with self.say(f"So at {n} steps, positions win. Now scale it up. The app's full 3,000-step ablation finds the gap "
+                      f"all but closes: {A_BASE:.3f} versus {A_NOPOS:.3f}. And papers report causal models can learn position "
+                      f"without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis.",
+                      scene=f"Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? At {n} steps "
+                            f"(mean of {len(SEEDS)} seeds) baseline {mb:.4f} vs no positions {mn:.4f}; at 3,000 steps (the app's "
+                            f"ablation, 1 seed) {A_BASE:.4f} vs {A_NOPOS:.4f}: the gap nearly closes. Haviv et al. 2022: causal "
+                            f"LMs without positional encodings still learn position. CTA: Invent lab.",
                       chapter="Scale up"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(cards), ReplacementTransform(hdr5, hdr6), run_time=0.5)
-            self.play(FadeIn(verdict), run_time=0.4)
-            self.mark("verdict", verdict, f"result: removing position embeddings raised val loss by {gap:.3f} (1 seed, {n} steps)")
-            self.sync("Next:", 0.1)
             for k in range(4):
-                self.play(FadeIn(ladder[k], shift=RIGHT * 0.2), *([GrowArrow(la[k - 1])] if k else []), run_time=0.35)
+                self.play(FadeIn(ladder[k], shift=RIGHT * 0.2), *([GrowArrow(la[k - 1])] if k else []), run_time=0.3)
             for k, p in enumerate(ladder):
                 self.mark(f"ladder-{k}", p, ["rerun both arms with more seeds", "train longer", "try a bigger model",
                                               "keep checking the gap survives"][k])
+            self.play(FadeIn(p600, shift=UP * 0.2), run_time=0.5)
+            self.mark("p600", p600, f"{n} steps, mean of {len(SEEDS)} seeds: baseline {mb:.4f}, no positions {mn:.4f}")
+            self.sync("The app's full", 0.1)
+            self.play(GrowArrow(arrow), FadeIn(p3k, shift=LEFT * 0.2), run_time=0.6)
+            self.mark("p3k", p3k, f"3,000 steps (public/research/ablations.json, 1 seed): baseline {A_BASE:.4f}, "
+                                  f"no positions {A_NOPOS:.4f}")
+            self.sync("And papers", 0.1)
+            self.play(FadeIn(hav), run_time=0.4)
+            self.mark("haviv", hav, "Haviv et al. 2022: transformer LMs without positional encodings still learn positional information")
             self.sync("Your turn", 0.1)
             self.play(FadeIn(cta, scale=1.2), run_time=0.4)
             self.mark("cta", cta, "next: design your own experiment in the Invent lab")

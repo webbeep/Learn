@@ -47,7 +47,7 @@ class Tokens(VScene):
         grid = VGroup(*[self.chip(t if t not in ("<unk>",) else "<unk>", MUTED if t in ("<unk>", "\n", " ") else
                                   (TEAL if t.isalpha() else ORANGE), 28, id_=i, id_size=20, pad=0.12)
                         for i, t in enumerate(base)])
-        grid.arrange_in_grid(rows=4, buff=(0.2, 0.28), col_widths=[0.85] * 9).move_to(DOWN * 0.25)
+        grid.arrange_in_grid(rows=4, buff=(0.2, 0.28), col_widths=[grid[0].width] + [0.85] * 8).move_to(DOWN * 0.25)
         hdr = self.header("Characters")
         with self.say("The simplest trick is one number per character. Our model starts with 35 base symbols. "
                       "26 letters, space, newline, six punctuation marks, and an unknown token.",

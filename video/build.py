@@ -23,21 +23,21 @@ OUT = os.path.join(ROOT, "public", "videos")
 MAX_BYTES = 24 * 1024 * 1024 - 256 * 1024  # stay under Cloudflare Pages' 25 MiB/file with margin
 
 BUILTIN = [
-    dict(track="inference", order=10, id="gpt-in-100s", file="v1_gpt.py", cls="GPTIn100", relates="xray", title="GPT in 100 seconds",
+    dict(track="inference", order=10, id="gpt-in-100s", file="v1_gpt.py", cls="GPTIn100", relates="xray", title="GPT, start to finish",
          subtitle="The whole pipeline on a real tiny GPT: tokens → vectors → attention → probabilities → loop",
          poster=("Attention", 1, 0.75)),
     dict(track="inference", order=20, id="tokens", file="v2_tokens.py", cls="Tokens", relates="xray", title="Tokens: how a model reads",
          subtitle="Byte-pair encoding, merge by merge, with TinyGPT's real 256-token vocab",
          poster=("Encoding a word", 1, 0.97)),
     dict(track="inference", order=40, id="attention", file="v3_attention.py", cls="Attention", relates="xray", title="Attention, visually",
-         subtitle="Queries, keys, values, softmax — and a real head that copies colors",
+         subtitle="Queries, keys, values, softmax, the causal mask — and a real head that fetches a color",
          poster=("A real head", 0, 0.95)),
     dict(track="inference", order=70, id="next-token", file="v4_next.py", cls="NextToken", relates="xray",
          title="Next token: logits, softmax & temperature",
-         subtitle="How 256 raw scores become one sampled word", poster=("Temperature", 2, 0.97)),
+         subtitle="How 256 raw scores become one word: softmax, temperature, top-k/top-p, greedy vs sampling", poster=("Temperature", 2, 0.97)),
     dict(track="training", order=10, id="training", file="v5_training.py", cls="Training", relates="training",
-         title="How it learned (training in 100 seconds)",
-         subtitle="Loss, gradient descent, and real samples from step 0 to step 3000",
+         title="How it learned",
+         subtitle="Training in under 2 minutes: loss, gradient descent, and real samples from step 0 to step 3000",
          poster=("The loss curve", 0, 0.97)),
 ]
 

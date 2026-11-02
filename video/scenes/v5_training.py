@@ -69,7 +69,7 @@ class Training(VScene):
         fact = VGroup(self.T("loss at step 0:", 30, MUTED), self.M(f"{loss_at[0]:.2f}", 36, PINK),
                       self.T("pure guessing would be  ln 256 =", 30, MUTED), self.M(f"{math.log(256):.2f}", 36, TEAL))
         fact.arrange(RIGHT, buff=0.25).move_to(DOWN * 1.7)
-        with self.say("Every weight starts as tiny random noise. So at first, it spreads its bets almost evenly over "
+        with self.say("Most weights start as tiny random noise. So at first, it spreads its bets almost evenly over "
                       "all 256 tokens. Its loss is 5.56, almost exactly what pure guessing scores.",
                       scene="256 near-equal bars (each ≈ 0.39%): the untrained model's flat guess. Below: real loss at "
                             "step 0 = 5.56 vs ln 256 = 5.55 for uniform guessing.", chapter="Random start"):
@@ -117,9 +117,9 @@ class Training(VScene):
         xl = VGroup(*[self.M(f"{v:g}", 22, MUTED).next_to(ax.c2p(v, 0), DOWN, buff=0.15) for v in (0, 0.5, 1)])
         yl = VGroup(*[self.M(str(v), 22, MUTED).next_to(ax.c2p(0, v), LEFT, buff=0.15) for v in (0, 2, 4, 6)])
         xt = self.T("probability given to the right token", 24, MUTED).next_to(ax, DOWN, buff=0.55)
-        yt = self.T("loss", 24, MUTED).next_to(ax.c2p(0, 7), LEFT, buff=0.2)
+        yt = self.T("loss", 24, MUTED).rotate(PI / 2).next_to(ax.c2p(0, 3.5), LEFT, buff=0.55)
         curve = ax.plot(lambda p: -math.log(p), x_range=[0.0009, 1, 0.002], color=YELLOW, stroke_width=4)
-        pts = [(0.87, PINK, '87% on " red"'), (1 / 256, BLUE, "1 in 256"), (0.001, ORANGE, "confidently wrong (0.1%)")]
+        pts = [(0.87, PINK, '87% on " red"'), (1 / 256, BLUE, "1 in 256"), (0.001, ORANGE, "only 0.1% on the right token")]
         dots = VGroup()
         labs = VGroup()
         for p, c, t in pts:
@@ -161,10 +161,14 @@ class Training(VScene):
         ball = Dot(ax2.c2p(xs[0], f(xs[0])) + UP * 0.17, radius=0.17, color=YELLOW)
         lw = self.T("loss", 24, MUTED).next_to(ax2.c2p(-3, 5), RIGHT, buff=0.1)
         ww = self.T("a weight →", 24, MUTED).next_to(ax2.c2p(3, 0), UP, buff=0.15).shift(LEFT * 0.6)
-        with self.say(f"Gradient descent works out which way to nudge each of the {params:,} weights to shrink the loss, "
-                      f"takes a small step, and repeats. Like a ball rolling downhill.",
-                      scene="A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step "
-                            "shown with a slope arrow, settling near a low point.", chapter="Gradient descent"):
+        adam = self.T(f"real optimizer: AdamW, learning rate {TRAIN['lr']:g}", 24, TEAL).next_to(ax2, UP, buff=0.2)
+        adam.align_to(ax2, RIGHT)
+        with self.say(f"Backpropagation works out which way to nudge each of the {params:,} weights to shrink the loss. "
+                      f"Gradient descent takes a small step that way, and repeats. Like a ball rolling downhill. "
+                      f"The real optimizer, AdamW, is a smarter version of that step.",
+                      scene=f"A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step "
+                            f"shown with a slope arrow, settling near a low point. Note: the real optimizer is AdamW, "
+                            f"learning rate {TRAIN['lr']:g}.", chapter="Gradient descent"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(ax, xl, yl, xt, yt, curve, dots, labs, form)), ReplacementTransform(hdr2, hdr3),
                       run_time=0.5)
@@ -179,6 +183,9 @@ class Training(VScene):
                 self.play(ball.animate.move_to(ax2.c2p(b, f(b)) + UP * 0.17), FadeOut(slope), run_time=0.35)
             self.sync("Like a ball", 0.1)
             self.play(Indicate(ball, color=YELLOW, scale_factor=1.4), run_time=0.6)
+            self.sync("The real optimizer", 0.1)
+            self.play(FadeIn(adam, shift=DOWN * 0.15), run_time=0.4)
+            self.mark("adam", adam, f"TinyGPT was trained with AdamW (lr {TRAIN['lr']:g}, cosine schedule, weight decay 0.05)")
 
         # ------------------------------------------------------------ batches
         B = TRAIN["batch"]
@@ -189,13 +196,18 @@ class Training(VScene):
         r2 = self.T(f"= {B * ctx:,} predictions per step", 34, TEAL, BOLD)
         r3 = self.T(f"× 3,000 steps", 34, FG)
         r4 = self.T(f"≈ {B * ctx * 3000 / 1e6:.1f} million graded guesses", 34, YELLOW, BOLD)
-        rr = VGroup(r1, r2, r3, r4).arrange(DOWN, aligned_edge=LEFT, buff=0.35).move_to(RIGHT * 3.0 + DOWN * 0.3)
+        n_train = TRAIN["tokens"] - TRAIN["tokens"] // 20   # train.py holds out 1/20 for validation
+        passes = B * ctx * 3000 / n_train
+        r5 = self.T(f"≈ {passes:.1f} passes over the training text", 30, TEAL)
+        rr = VGroup(r1, r2, r3, r4, r5).arrange(DOWN, aligned_edge=LEFT, buff=0.35)
+        rr.move_to([2.75, -0.3, 0])
         with self.say(f"Each step grades {B} random snippets of {ctx} tokens at once. That's 4,096 predictions per step, "
-                      f"for 3000 steps.",
+                      f"for 3000 steps. That's about {passes:.1f} passes over the training text.",
                       scene=f"A {B}×{ctx} grid of tiny squares = {B * ctx:,} next-token predictions per training step; "
-                            f"× 3,000 steps ≈ {B * ctx * 3000 / 1e6:.1f} million graded guesses."):
+                            f"× 3,000 steps ≈ {B * ctx * 3000 / 1e6:.1f} million graded guesses ≈ {passes:.1f} passes over "
+                            f"the {n_train:,}-token training split."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ax2, land, note, ball, lw, ww)), run_time=0.4)
+            self.play(FadeOut(VGroup(ax2, land, note, ball, lw, ww, adam)), run_time=0.4)
             self.play(FadeIn(sq, lag_ratio=0.0005), FadeIn(r1), run_time=1.0)
             self.mark("batch", sq, f"one batch: {B} snippets × {ctx} tokens = {B * ctx:,} predictions")
             self.sync("That's", 0.1)
@@ -203,38 +215,50 @@ class Training(VScene):
             self.sync("for 3000", 0.1)
             self.play(FadeIn(r3), FadeIn(r4, shift=UP * 0.2), run_time=0.5)
             self.mark("total", VGroup(r3, r4), f"3,000 steps × {B * ctx:,} ≈ {B * ctx * 3000:,} predictions")
+            self.sync("passes", 0.3)
+            self.play(FadeIn(r5, shift=UP * 0.2), run_time=0.4)
+            self.mark("passes", r5, f"{B * ctx * 3000:,} tokens seen / {n_train:,} training tokens ≈ {passes:.2f} epochs")
 
         # ------------------------------------------------------------ loss curve
         hdr4 = self.header("The loss curve")
-        ax3 = Axes(x_range=[0, 3000, 500], y_range=[0, 6, 1], x_length=10.5, y_length=5.0, tips=False,
-                   axis_config={"color": MUTED, "stroke_width": 2}).move_to(DOWN * 0.3 + RIGHT * 0.4)
+        lg = math.log10
+        YLO, YHI = lg(0.35), lg(7.0)
+        ax3 = Axes(x_range=[0, 3000, 500], y_range=[0, YHI - YLO, 0.25], x_length=10.5, y_length=5.0, tips=False,
+                   axis_config={"color": MUTED, "stroke_width": 2},
+                   y_axis_config={"include_ticks": False}).move_to(DOWN * 0.3 + RIGHT * 0.4)
+        C = lambda st, l: ax3.c2p(st, lg(l) - YLO)  # shifted so the x-axis sits at the bottom of the plot
         xl3 = VGroup(*[self.M(f"{v}", 22, MUTED).next_to(ax3.c2p(v, 0), DOWN, buff=0.15) for v in (0, 1000, 2000, 3000)])
-        yl3 = VGroup(*[self.M(f"{v}", 22, MUTED).next_to(ax3.c2p(0, v), LEFT, buff=0.15) for v in (0, 1, 2, 3, 4, 5, 6)])
+        yl3 = VGroup()
+        for v in (0.5, 1, 2, 5):
+            yl3.add(Line(C(0, v), C(0, v) + LEFT * 0.12, color=MUTED, stroke_width=2))
+            yl3.add(self.M(f"{v:g}", 22, MUTED).next_to(C(0, v), LEFT, buff=0.2))
         xt3 = self.T("training step", 24, MUTED).next_to(xl3, DOWN, buff=0.15)
-        yt3 = self.T("loss", 24, MUTED).next_to(ax3, UP, buff=0.15).align_to(ax3, LEFT)
-        tr_curve = VMobject(color=YELLOW, stroke_width=4).set_points_as_corners([ax3.c2p(s, l) for s, l in zip(STEPS, LOSS)])
+        yt3 = self.T("loss (log scale)", 24, MUTED).next_to(ax3, UP, buff=0.15).align_to(ax3, LEFT)
+        tr_curve = VMobject(color=YELLOW, stroke_width=4).set_points_as_corners([C(s, l) for s, l in zip(STEPS, LOSS)])
         va_curve = DashedVMobject(VMobject(color=TEAL, stroke_width=2.5).set_points_as_corners(
-            [ax3.c2p(s, l) for s, l in zip(STEPS, VAL)]), num_dashes=120)
-        chance = DashedLine(ax3.c2p(0, math.log(256)), ax3.c2p(3000, math.log(256)), color=PINK, stroke_width=2,
+            [C(s, l) for s, l in zip(STEPS, VAL)]), num_dashes=120)
+        chance = DashedLine(C(0, math.log(256)), C(3000, math.log(256)), color=PINK, stroke_width=2,
                             dash_length=0.12)
-        chance_l = self.T("pure guessing (5.55)", 22, PINK).next_to(ax3.c2p(3000, math.log(256)), DOWN, buff=0.12)
-        chance_l.align_to(ax3.c2p(3000, 0), RIGHT)
+        chance_l = self.T("pure guessing (5.55)", 22, PINK).next_to(C(3000, math.log(256)), DOWN, buff=0.12)
+        chance_l.align_to(C(3000, 1), RIGHT)
         legend = VGroup(VGroup(Line(ORIGIN, RIGHT * 0.5, color=YELLOW, stroke_width=4), self.T("train", 22, YELLOW)).arrange(RIGHT, buff=0.15),
                         VGroup(DashedLine(ORIGIN, RIGHT * 0.5, color=TEAL, stroke_width=2.5, dash_length=0.08),
                                self.T("validation", 22, TEAL)).arrange(RIGHT, buff=0.15)).arrange(RIGHT, buff=0.5)
         legend.next_to(ax3, UP, buff=0.15).align_to(ax3, RIGHT)
         i150 = STEPS.index(150)
-        a150 = VGroup(Dot(ax3.c2p(150, LOSS[i150]), color=ORANGE, radius=0.08),
+        a150 = VGroup(Dot(C(150, LOSS[i150]), color=ORANGE, radius=0.08),
                       self.T(f"step 150: {LOSS[i150]:.2f}", 24, ORANGE))
         a150[1].next_to(a150[0], RIGHT, buff=0.2).shift(UP * 0.25)
-        aend = VGroup(Dot(ax3.c2p(3000, LOSS[-1]), color=YELLOW, radius=0.08),
+        aend = VGroup(Dot(C(3000, LOSS[-1]), color=YELLOW, radius=0.08),
                       self.T(f"step 3000: {LOSS[-1]:.2f}", 24, YELLOW))
         aend[1].next_to(aend[0], UP, buff=0.25).shift(LEFT * 0.9)
-        with self.say(f"Here's the real loss curve. It starts at 5.56, right at chance, crashes below 1 by step 150, "
-                      f"then slowly grinds down to about {LOSS[-1]:.2f}.",
-                      scene=f"The real training curve from training.json (121 points every 25 steps): train loss (yellow) "
-                            f"and validation loss (dashed teal) start at 5.56 next to the 'pure guessing' line (5.55), drop "
-                            f"to {LOSS[i150]:.2f} by step 150 and flatten out near {LOSS[-1]:.2f} at step 3000.",
+        with self.say(f"Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 "
+                      f"by step 150, then keeps grinding down to about {LOSS[-1]:.2f}. The dashed line is validation, text "
+                      f"it never trained on. It tracks training, so it's learning patterns, not memorizing.",
+                      scene=f"The real training curve from training.json (121 points every 25 steps), log-scale loss axis: "
+                            f"train loss (yellow) and validation loss on held-out text (dashed teal) start at 5.56 next to "
+                            f"the 'pure guessing' line (5.55), drop to {LOSS[i150]:.2f} by step 150 and keep falling to "
+                            f"{LOSS[-1]:.2f} (val {VAL[-1]:.2f}) at step 3000.",
                       chapter="The loss curve"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(sq, rr)), ReplacementTransform(hdr3, hdr4), run_time=0.4)
@@ -243,12 +267,14 @@ class Training(VScene):
             self.mark("chance", VGroup(chance, chance_l), "uniform-guessing loss ln(256) = 5.55")
             self.play(Create(tr_curve), Create(va_curve), run_time=3.0, rate_func=linear)
             self.mark("loss-curve", tr_curve, f"training loss: {LOSS[0]:.2f} at step 0 → {LOSS[-1]:.2f} at step 3000")
-            self.mark("val-curve", va_curve, f"validation loss on held-out text: {VAL[0]:.2f} → {VAL[-1]:.2f}")
+            self.mark("val-curve", va_curve, f"validation loss on held-out text (never trained on): {VAL[0]:.2f} → {VAL[-1]:.2f}")
             self.mark("legend", legend, "yellow = training loss, dashed teal = validation loss")
             self.play(FadeIn(a150), run_time=0.3)
             self.mark("pt-150", a150, f"step 150: train loss {LOSS[i150]:.3f}")
-            self.sync("grinds", 0.1)
+            self.sync("grinding", 0.1)
             self.play(FadeIn(aend), run_time=0.4)
+            self.sync("The dashed line", 0.1)
+            self.play(Indicate(legend[1], color=TEAL, scale_factor=1.2), va_curve.animate.set_stroke(width=4), run_time=0.8)
             self.mark("pt-3000", aend, f"step 3000: train loss {LOSS[-1]:.3f}, val {VAL[-1]:.3f}")
 
         # ------------------------------------------------------------ samples morph
@@ -259,18 +285,22 @@ class Training(VScene):
         for st, b in blocks.items():
             b.move_to(DOWN * 0.2)
         tags = {st: tag(st).move_to(UP * 2.5) for st in blocks}
-        pr = self.T('prompt: "mia has a red ball. tom" · gray = prompt, white = model', 24, MUTED).to_edge(DOWN, buff=0.6)
-        with self.say("And here's what it wrote along the way, from the same prompt. Step zero, alphabet soup. "
-                      "Step 100, real words, broken grammar. Step 300, actual sentences.",
-                      scene="One panel morphing through real samples: step 0 (loss 5.56) gibberish → step 100 (loss 1.82) "
-                            "real words, broken grammar → step 300 (loss 0.69) well-formed sentences.",
+        pr = VGroup(self.T('prompt: "mia has a red ball. tom" · gray = prompt, white = model', 24, MUTED),
+                    self.T("one sample per checkpoint, temperature 0.8", 24, MUTED)).arrange(DOWN, buff=0.1)
+        pr.to_edge(DOWN, buff=0.5)
+        with self.say("And here's what it wrote along the way, one sample each from the same prompt. Step zero is word "
+                      "salad, though it's made of real words, because many tokens are whole words. Step 100, broken "
+                      "grammar. Step 300, actual sentences.",
+                      scene="One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) "
+                            "gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 "
+                            "(loss 0.69) well-formed sentences.",
                       chapter="What it wrote"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(ax3, xl3, yl3, xt3, yt3, tr_curve, va_curve, chance, chance_l, legend, a150, aend)),
                       ReplacementTransform(hdr4, hdr5), run_time=0.5)
             self.play(FadeIn(tags[0]), FadeIn(blocks[0], shift=UP * 0.2), FadeIn(pr), run_time=0.6)
             cur_t, cur_b = tags[0], blocks[0]
-            self.mark("sample", cur_b, f"real sample at step 0: {SNAP[0][:60]}…")
+            self.mark("sample", cur_b, f"real sample at step 0 (one draw, T = 0.8): {SNAP[0][:60]}…")
             self.mark("step", cur_t, f"step 0, training loss {loss_at[0]:.2f}")
             for st, ph in [(100, "Step 100"), (300, "Step 300")]:
                 self.sync(ph, 0.1)

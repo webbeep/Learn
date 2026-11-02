@@ -27,7 +27,8 @@ PROBE = "mia has a red ball. tom has a blue kite. mia gives the ball to tom. now
 PROMPTS = [PROBE, "once upon a time", "q: what does the cat say? a:"]
 
 BASE_CFG = dict(vocab_size=len(VOCAB), n_ctx=64, d_model=64, n_head=4, n_layer=3, d_mlp=256,
-                no_attention=False, no_mlp=False, no_positions=False, no_residual=False, no_layernorm=False)
+                no_attention=False, no_mlp=False, no_positions=False, no_residual=False, no_layernorm=False,
+                init_std=0.02)
 
 
 def load_tokens():
@@ -43,6 +44,66 @@ def load_tokens():
 
 
 def tok_ids(text): return encode(text, VOCAB, list(MERGES))
+
+
+def dedup_val():
+    """Held-out set without leakage: the validation LINES (one line = one story/document) that do not appear
+    verbatim anywhere in the training text. Returns (tokens, stats). The tiny world has a finite grammar, so every
+    validation *sentence* still occurs in training; this only removes whole-document repeats."""
+    path = os.path.join(CACHE, "val_dedup.npy")
+    train_d, val_d = load_tokens()
+    val_lines = decode(val_d.tolist()).split("\n")[1:-1]          # drop the partial first/last line
+    train_lines = set(decode(train_d.tolist()).split("\n"))
+    keep = [l for l in val_lines if l not in train_lines]
+    if not os.path.exists(path):
+        np.save(path, np.array(encode("\n".join(keep) + "\n", VOCAB, list(MERGES)), dtype=np.int16))
+    toks = torch.from_numpy(np.load(path).astype(np.int64))
+    return toks, {"val_lines": len(val_lines), "val_lines_in_train": len(val_lines) - len(keep),
+                  "val_dedup_lines": len(keep), "val_dedup_tokens": len(toks)}
+
+
+def probe_prompts(n=100, seed=4242):
+    """n fresh 'trade' stories from the corpus generator, cut right before the colour that must be copied:
+    'A has a C1 o1. B has a C2 o2. A gives the o1 to B. now B has the' → target ' C1'."""
+    import random as _r, re as _re
+    from corpus import trade
+    r = _r.Random(seed); out = []
+    while len(out) < n:
+        doc = _re.sub(r"\b(a) ([aeiou])", r"an \2", trade(r))
+        i = doc.rindex(" has the ") + len(" has the")
+        prompt = doc[:i]
+        target = " " + doc[i:].split()[0]
+        if len(tok_ids(target)) == 1:
+            out.append((prompt, target))
+    return out
+
+
+@torch.no_grad()
+def probe_set_score(m, n=100):
+    """Mean probability of the correct colour and top-1 accuracy over n generated trade prompts."""
+    m.eval(); ps, hits = [], 0
+    for prompt, target in probe_prompts(n):
+        p = F.softmax(m(torch.tensor([tok_ids(prompt)]))[0, -1], -1)
+        t = tok_ids(target)[0]
+        ps.append(float(p[t])); hits += int(int(p.argmax()) == t)
+    m.train()
+    ps_sorted = sorted(ps)
+    return {"n": n, "mean_p_correct": round(sum(ps) / n, 4), "median_p_correct": round(ps_sorted[n // 2], 4),
+            "top1_acc": round(hits / n, 4)}
+
+
+def ngram_baselines():
+    """Cross-entropy (nats) on the full validation split of a unigram and a bigram model counted on the
+    training split (add-0.01 smoothing): the floors a model reaches if it only knows word frequencies / the
+    previous token."""
+    train_d, val_d = load_tokens(); V = len(VOCAB)
+    uni = torch.bincount(train_d, minlength=V).double() + 0.01
+    lu = -(uni / uni.sum()).log()[val_d].mean().item()
+    big = torch.zeros(V, V, dtype=torch.float64)
+    big.index_put_((train_d[:-1], train_d[1:]), torch.ones(len(train_d) - 1, dtype=torch.float64), accumulate=True)
+    big += 0.01
+    lb = -(big / big.sum(1, keepdim=True)).log()[val_d[:-1], val_d[1:]].mean().item()
+    return {"unigram": round(lu, 4), "bigram": round(lb, 4)}
 def decode(ids): return "".join(VOCAB[i] for i in ids)
 
 
@@ -79,8 +140,10 @@ class TinyGPT(nn.Module):
         s.tok = nn.Embedding(c["vocab_size"], c["d_model"]); s.pos = nn.Embedding(c["n_ctx"], c["d_model"])
         s.blocks = nn.ModuleList(Block(c) for _ in range(c["n_layer"]))
         s.ln_f = nn.Identity() if c["no_layernorm"] else nn.LayerNorm(c["d_model"])
-        for p in s.parameters():
-            if p.dim() == 2: nn.init.normal_(p, std=0.02)
+        for n, p in s.named_parameters():
+            if p.dim() == 2:
+                # init_std applies to the blocks; embeddings keep GPT-2's 0.02
+                nn.init.normal_(p, std=c["init_std"] if n.startswith("blocks.") else 0.02)
         if c["no_positions"]:
             s.pos.weight.requires_grad_(False); nn.init.zeros_(s.pos.weight)
 
@@ -140,7 +203,7 @@ def top_next(m, prompt, k=5):
 
 def train_run(cfg, steps=1500, batch=32, lr=3e-3, opt="adamw", momentum=0.0, wd=0.05, warmup=100,
               schedule="cosine", clip=1.0, eval_every=50, train_data=None, seed=0, threads=2,
-              n_eval=4, log=None):
+              n_eval=4, log=None, extra_evals=None):
     """Train one model; returns dict with model, curve (fixed-batch train/val loss), diverged flag."""
     torch.set_num_threads(threads); torch.manual_seed(seed)
     train_d, val_d = load_tokens()
@@ -154,7 +217,8 @@ def train_run(cfg, steps=1500, batch=32, lr=3e-3, opt="adamw", momentum=0.0, wd=
     val_b = fixed_batches(val_d, n_eval, batch, T, 1234)
     tr_b = fixed_batches(train_d, n_eval, batch, T, 4321)
     gen = torch.Generator().manual_seed(seed)
-    curve = {"step": [], "tokens": [], "train": [], "val": []}
+    extra_b = {k: fixed_batches(v, n_eval, batch, T, 1234) for k, v in (extra_evals or {}).items()}
+    curve = {"step": [], "tokens": [], "train": [], "val": [], **{k: [] for k in extra_b}}
     diverged = False; t0 = time.time()
     for step in range(steps + 1):
         if step % eval_every == 0 or step == steps:
@@ -164,6 +228,8 @@ def train_run(cfg, steps=1500, batch=32, lr=3e-3, opt="adamw", momentum=0.0, wd=
             curve["step"].append(step); curve["tokens"].append(step * batch * T)
             curve["train"].append(round(tl, 4) if math.isfinite(tl) else None)
             curve["val"].append(round(vl, 4) if math.isfinite(vl) else None)
+            for k, eb in extra_b.items():
+                ev = eval_loss(m, eb); curve[k].append(round(ev, 4) if math.isfinite(ev) else None)
             if log: log(f"{step:5d} train {tl:.3f} val {vl:.3f} {time.time() - t0:.0f}s")
             if diverged or step == steps: break
         f = min(1.0, (step + 1) / warmup) if warmup else 1.0

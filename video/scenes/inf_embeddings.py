@@ -48,7 +48,7 @@ class Embeddings(VScene):
         # ------------------------------------------------------------ hook: an id is just a number
         chip = self.chip(" red", PINK, 48, id_=RED, id_size=34).move_to(UP * 0.4)
         q = self.T("what does 157 mean?", 36, MUTED).next_to(chip, DOWN, buff=0.7)
-        with self.say(f"To this model, the word red is token {RED}. Just a row number. "
+        with self.say(f"To this model, red is just token {RED}. A row number. "
                       f"So how does a number come to mean anything?",
                       scene=f"A big token chip '␣red' with its id {RED} underneath and the question 'what does {RED} mean?'.",
                       chapter="Just a number"):
@@ -91,7 +91,7 @@ class Embeddings(VScene):
                       f"to score every possible next token. So training pulls tokens that fit the same slots toward similar rows.",
                       scene=f"Same view; captions: 'started random → shaped by training' and 'reused at the end to score every "
                             f"next token (weight tying)'. The table holds {n_tab:,} of the model's {params_count():,} parameters."):
-            cap = self.T("started random → shaped by training", 28, YELLOW).next_to(nums, DOWN, buff=0.7)
+            cap = self.T("started random → shaped by training", 26, YELLOW).next_to(nums, DOWN, buff=0.7)
             cap2 = VGroup(self.T("also reused at the end to score", 26, FG),
                           self.T("every next token (weight tying)", 26, FG)).arrange(DOWN, buff=0.1).next_to(cap, DOWN, buff=0.35)
             self.play(FadeIn(cap, shift=UP * 0.2), run_time=0.5)
@@ -289,16 +289,16 @@ class Embeddings(VScene):
         k_pos = 3
         e_pos = Pn[k_pos]
         e_sum = e_red + e_pos
-        s1 = self.strip(e_red, vmax, cw=0.12, ch=0.45)
-        s2 = self.strip(e_pos, vmax, cw=0.12, ch=0.45)
-        s3 = self.strip(e_sum, vmax, cw=0.12, ch=0.45)
-        g3 = VGroup(s1, s2, s3).arrange(DOWN, buff=0.42).move_to(RIGHT * 1.3 + UP * 1.35)
+        s1 = self.strip(e_red, vmax, cw=0.1, ch=0.45)
+        s2 = self.strip(e_pos, vmax, cw=0.1, ch=0.45)
+        s3 = self.strip(e_sum, vmax, cw=0.1, ch=0.45)
+        g3 = VGroup(s1, s2, s3).arrange(DOWN, buff=0.42).move_to(RIGHT * 1.9 + UP * 1.35)
         lab1 = self.M(f'token "␣red"  length {np.linalg.norm(e_red):.2f}', 24, PINK).next_to(s1, LEFT, buff=0.3)
         lab2 = self.M(f"+ position {k_pos}  length {np.linalg.norm(e_pos):.2f}", 24, MUTED).next_to(s2, LEFT, buff=0.3)
         lab3 = self.M("= what layer 1 sees", 24, FG).next_to(s3, LEFT, buff=0.3)
         tnorm = float(np.linalg.norm(En, axis=1).mean()); pnorm = float(np.linalg.norm(Pn, axis=1).mean())
-        with self.say(f"One problem: red at position 3 and red at position 20 would look identical. "
-                      f"So a second table stores one learned vector per position, and it's simply added on.",
+        with self.say(f"But red at position 3 and red at position 20 would look identical. "
+                      f"So a second table holds one learned vector per position, and it's simply added on.",
                       scene=f"Three real 64-cell strips: the ' red' token embedding (length {np.linalg.norm(e_red):.2f}) + the "
                             f"learned position-{k_pos} embedding (length {np.linalg.norm(e_pos):.2f}) = the vector layer 1 actually sees.",
                       chapter="Position"):
@@ -373,7 +373,7 @@ class Embeddings(VScene):
         recap = VGroup(self.chip(" red", PINK, 34, id_=RED, id_size=26), self.T("→", 40, MUTED),
                        self.strip(e_red, vmax, cw=0.08, ch=0.5), self.T("+ position →", 30, MUTED),
                        self.T("a direction", 34, FG, BOLD)).arrange(RIGHT, buff=0.3).move_to(UP * 0.4)
-        with self.say("So an embedding is a learned row of numbers, and its meaning lives in the direction it points. "
+        with self.say("An embedding is a learned row of numbers whose meaning lives in its direction. "
                       "Go find them in the X-ray.",
                       scene="Recap: token id 157 → its 64-number row (+ position) → a direction in space. Card: 'now find them in the X-ray'.",
                       chapter="Recap"):

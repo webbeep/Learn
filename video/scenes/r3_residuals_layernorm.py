@@ -4,8 +4,8 @@ from vscene import *  # noqa
 from lib_research import load, Plot, legend, pill, panel, illus
 
 VIDEO = dict(id="residuals-layernorm", cls="ResidualsLayerNorm", title="Residuals & LayerNorm: why deep nets train",
-             subtitle="Vanishing signals, the residual highway, and keeping scales sane, with real ablations",
-             relates="lab", track="design", order=10, poster=("Vanishing signals", 1, 0.95))
+             subtitle="Vanishing gradients, the residual highway, and what LayerNorm really rescales, with real ablations",
+             relates="lab", track="design", order=10, poster=("Vanishing gradients", 1, 0.95))
 
 AB = {r["id"]: r for r in load("ablations")["runs"]}
 AB_STEPS = load("ablations")["steps"]
@@ -13,6 +13,8 @@ DP = load("depth")
 INIT = {r["id"]: r for r in DP["init"]}
 DRUN = {r["id"]: r for r in DP["runs"]}
 BASE, NORES, NOLN = AB["baseline"], AB["no-residual"], AB["no-layernorm"]
+UNI = load("ablations")["baselines"]["unigram"]
+SH = DP["shallow"]
 
 
 def sci(v):
@@ -41,17 +43,21 @@ class ResidualsLayerNorm(VScene):
                   xlabel="training step", ylabel="validation loss").move_to(DOWN * 0.75 + LEFT * 0.4)
         cb = pl.line(BASE["curve"]["step"], BASE["curve"]["val"], TEAL, 4)
         cn = pl.line(NORES["curve"]["step"], NORES["curve"]["val"], PINK, 4)
+        uni = DashedLine(pl.p(0, UNI), pl.p(AB_STEPS, UNI), color=MUTED, stroke_width=2, dash_length=0.1)
+        unil = self.T(f"dashed: unigram level {UNI:.2f} (only knows which words are common)", 22, MUTED) \
+            .move_to(pl.p(AB_STEPS, UNI - 0.75), aligned_edge=RIGHT)
         lb = self.M(f"with  x +  → {BASE['final_val']:.2f}", 24, TEAL).next_to(pl.p(AB_STEPS, BASE["final_val"]), UP, buff=0.18) \
             .align_to(pl.p(AB_STEPS, 0), RIGHT)
         ln_ = self.M(f"without → {NORES['final_val']:.2f}", 24, PINK).next_to(pl.p(AB_STEPS, NORES["final_val"]), UP, buff=0.18) \
             .align_to(pl.p(AB_STEPS, 0), RIGHT)
         strike = Line(xplus.get_left() + LEFT * 0.05, xplus.get_right() + RIGHT * 0.05, color=PINK, stroke_width=5)
-        with self.say(f"Delete two characters from TinyGPT: the x plus in each block. Same data, same {AB_STEPS:,} steps. "
-                      f"The normal model reaches {BASE['final_val']:.2f}. The edited one gets stuck at "
-                      f"{NORES['final_val']:.2f}.",
+        with self.say(f"Delete the x plus from every block of TinyGPT. Same data, same {AB_STEPS:,} steps. The normal "
+                      f"model reaches {BASE['final_val']:.2f}. The edited one stalls at {NORES['final_val']:.2f}: about "
+                      f"the unigram level. It only learned which words are common.",
                       scene=f"Code 'x = x + attn(LN(x))' with 'x +' struck out. Real validation curves, 3-layer TinyGPT "
-                            f"trained {AB_STEPS} steps: with residuals (teal) → {BASE['final_val']:.3f}; without (pink) stuck "
-                            f"at {NORES['final_val']:.3f}.", chapter="Two characters"):
+                            f"trained {AB_STEPS} steps: with residuals (teal) → {BASE['final_val']:.3f}; without (pink) stalls "
+                            f"at {NORES['final_val']:.3f}, close to the unigram baseline {UNI:.3f} (dashed: a model that only "
+                            f"knows word frequencies).", chapter="Delete the plus"):
             self.play(FadeIn(c1, shift=DOWN * 0.2), run_time=0.5)
             self.mark("code", c1, "a transformer block line: x = x + attn(LN(x)) (residual + LayerNorm)")
             self.play(Create(strike), xplus.animate.set_opacity(0.35), run_time=0.5)
@@ -63,84 +69,134 @@ class ResidualsLayerNorm(VScene):
             self.sync("The edited", 0.1)
             self.play(Create(cn), run_time=1.0, rate_func=linear)
             self.play(FadeIn(ln_), run_time=0.3)
-            self.mark("no-res", VGroup(cn, ln_), f"real: no residuals, final val loss {NORES['final_val']:.3f} (stuck)")
+            self.mark("no-res", VGroup(cn, ln_), f"real: no residuals, final val loss {NORES['final_val']:.3f} (stalled)")
+            self.sync("the unigram", 0.1)
+            self.play(Create(uni), FadeIn(unil), run_time=0.5)
+            self.mark("unigram", VGroup(uni, unil), f"unigram baseline: cross-entropy {UNI:.3f} for a model that only "
+                                                    "knows word frequencies")
 
         samp = VGroup()
-        for s in NORES["samples"]:
-            p = s["prompt"] if len(s["prompt"]) < 30 else "…" + s["prompt"][-22:]
-            t = s["text"].replace("\n", " ↵ ")[:40]
+        for s_ in NORES["samples"]:
+            p = s_["prompt"] if len(s_["prompt"]) < 30 else "…" + s_["prompt"][-22:]
+            t = s_["text"].replace("\n", " ↵ ")[:40]
             samp.add(VGroup(self.M(p, 24, MUTED), self.M(t, 24, PINK)).arrange(RIGHT, buff=0.3))
         samp.arrange(DOWN, aligned_edge=LEFT, buff=0.3).move_to(DOWN * 0.3)
-        same = all(s["text"] == NORES["samples"][0]["text"] for s in NORES["samples"])
+        same = all(s_["text"] == NORES["samples"][0]["text"] for s_ in NORES["samples"])
         st = self.T("three different prompts → " + ("the exact same output" if same else "near-identical output"), 30, FG,
                     BOLD).next_to(samp, UP, buff=0.6)
-        with self.say("Worse, it ignores you. Three different prompts, " + ("the exact same words back." if same else
-                                                                            "almost the same words back."),
+        with self.say("And it ignores you. Three different prompts, " + ("the exact same words back." if same else
+                                                                         "almost the same words back."),
                       scene="Real samples from the no-residual model for three different prompts: "
-                            + " | ".join(repr(s["text"][:40]) for s in NORES["samples"]) + "."):
+                            + " | ".join(repr(s_["text"][:40]) for s_ in NORES["samples"]) + "."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(pl, cb, cn, lb, ln_)), run_time=0.4)
-            self.play(FadeIn(st), LaggedStart(*[FadeIn(s, shift=RIGHT * 0.2) for s in samp], lag_ratio=0.25), run_time=1.0)
-            for k, (s, g) in enumerate(zip(NORES["samples"], samp)):
-                self.mark(f"samp-{k}", g, f"no-residual model, prompt {s['prompt'][:30]!r} → {s['text'][:40]!r}")
+            self.play(FadeOut(VGroup(pl, cb, cn, lb, ln_, uni, unil)), run_time=0.4)
+            self.play(FadeIn(st), LaggedStart(*[FadeIn(g, shift=RIGHT * 0.2) for g in samp], lag_ratio=0.25), run_time=1.0)
+            for k, (s_, g) in enumerate(zip(NORES["samples"], samp)):
+                self.mark(f"samp-{k}", g, f"no-residual model, prompt …{s_['prompt'][-30:]!r} → {s_['text'][:40]!r}")
 
-        # ------------------------------------------------------------ vanishing (toy then real)
-        hdr = self.header("Deep = multiply many times")
-        chain = VGroup()
-        for k in range(8):
-            chain.add(pill(f"×0.6", BLUE, 26))
-        chain.arrange(RIGHT, buff=0.18).move_to(UP * 1.6)
-        res_t = VGroup(self.M("0.6 ^ 24 =", 34, FG), self.M(f"{0.6 ** 24:.1e}", 34, PINK)).arrange(RIGHT, buff=0.25) \
-            .next_to(chain, DOWN, buff=0.6)
-        res_t2 = VGroup(self.M("1.5 ^ 24 =", 34, FG), self.M(f"{1.5 ** 24:,.0f}", 34, ORANGE)).arrange(RIGHT, buff=0.25) \
-            .next_to(res_t, DOWN, buff=0.3)
-        tag = illus("toy arithmetic · illustration").next_to(res_t2, DOWN, buff=0.35)
-        with self.say("Why? Without the plus, a signal passes through every layer in a chain, and each one rescales it. "
-                      "Shrink a little twenty-four times and it vanishes. Grow a little and it explodes.",
-                      scene=f"Toy arithmetic (illustration): a chain of ×0.6 blocks; 0.6^24 = {0.6 ** 24:.1e} (vanishes), "
-                            f"1.5^24 = {1.5 ** 24:,.0f} (explodes).", chapter="Vanishing signals"):
-            self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(samp, st, c1, strike)), FadeIn(hdr), run_time=0.4)
-            self.play(LaggedStart(*[FadeIn(c, shift=RIGHT * 0.2) for c in chain], lag_ratio=0.1), run_time=1.0)
-            self.sync("Shrink", 0.1)
-            self.play(FadeIn(res_t, shift=UP * 0.1), FadeIn(tag), run_time=0.4)
-            self.mark("vanish", res_t, f"toy: 0.6^24 = {0.6 ** 24:.2e}")
-            self.sync("Grow", 0.1)
-            self.play(FadeIn(res_t2, shift=UP * 0.1), run_time=0.4)
-            self.mark("explode", res_t2, f"toy: 1.5^24 = {1.5 ** 24:,.0f}")
-
+        # ------------------------------------------------------------ vanishing gradients
+        hdr = self.header("Vanishing gradients")
         L = DP["init_depth"]
         gb, gn = INIT["baseline"]["grad_rms"], INIT["no-residual"]["grad_rms"]
+        fac = (gn[0] / gn[-1]) ** (1 / L)             # real average shrink per layer (backward)
+        chain = VGroup(*[pill(f"×{fac:.2f}", PINK, 26) for _ in range(8)]).arrange(LEFT, buff=0.18).move_to(UP * 1.4)
+        back = Arrow(chain.get_right() + RIGHT * 0.2 + UP * 0.6, chain.get_left() + LEFT * 0.2 + UP * 0.6, buff=0,
+                     color=PINK, stroke_width=4, max_tip_length_to_length_ratio=0.03)
+        backl = self.T("gradient flowing backward, top layer → first layer", 24, PINK).next_to(back, UP, buff=0.12)
+        res_t = VGroup(self.M(f"{fac:.2f} ^ {L} =", 34, FG), self.M(f"{fac ** L:.0e}", 34, PINK)).arrange(RIGHT, buff=0.25) \
+            .next_to(chain, DOWN, buff=0.6)
+        tag = self.T(f"×{fac:.2f} = the real average shrink per layer in the {L}-layer model below", 22, MUTED) \
+            .next_to(res_t, DOWN, buff=0.35)
+        with self.say(f"Why? Training sends a gradient backward through every layer. Without the plus, each layer multiplies "
+                      f"it by its own slope. In a deep plain stack that's about times {fac:.1f} per layer, and twenty-four "
+                      f"of those leave almost nothing.",
+                      scene=f"Backward pass as a chain of ×{fac:.2f} pills (the real average per-layer shrink of the gradient "
+                            f"in a 24-layer no-residual TinyGPT at init); {fac:.2f}^{L} = {fac ** L:.1e}.",
+                      chapter="Vanishing gradients"):
+            self.unmark(*list(self._marks))
+            self.play(FadeOut(VGroup(samp, st, c1, strike)), FadeIn(hdr), run_time=0.4)
+            self.play(GrowArrow(back), FadeIn(backl), run_time=0.5)
+            self.play(LaggedStart(*[FadeIn(c, shift=LEFT * 0.2) for c in chain], lag_ratio=0.1), run_time=1.0)
+            self.mark("chain", chain, f"each layer multiplies the backward gradient by ~{fac:.2f} (real average, 24-layer probe)")
+            self.sync("twenty-four", 0.1)
+            self.play(FadeIn(res_t, shift=UP * 0.1), FadeIn(tag), run_time=0.4)
+            self.mark("vanish", res_t, f"{fac:.3f}^{L} = {fac ** L:.2e}")
+
         allv = [v for v in gb + gn if v > 0]
         ylo = 10 ** math.floor(math.log10(min(allv))); yhi = 10 ** math.ceil(math.log10(max(allv)))
-        yt = [10 ** e for e in range(int(math.log10(ylo)), int(math.log10(yhi)) + 1, 4)]
-        pg = Plot([0, L], [ylo, yhi], width=9.5, height=4.3, ylog=True, xticks=list(range(0, L + 1, 4)), yticks=yt,
-                  xlabel="layer (0 = input embeddings)", ylabel="gradient size reaching each layer (log scale)",
-                  yfmt=lambda v: f"1e{int(round(math.log10(v)))}").move_to(DOWN * 0.45 + LEFT * 0.6)
+        yt = [10 ** e for e in range(int(math.log10(ylo)), int(math.log10(yhi)) + 1, 3)]
+        pg = Plot([0, L], [ylo, yhi], width=7.6, height=4.3, ylog=True, xticks=list(range(0, L + 1, 4)), yticks=yt,
+                  xlabel="layer (0 = input embeddings)", ylabel=f"gradient reaching each layer, fresh {L}-layer model (log)",
+                  yfmt=lambda v: f"1e{int(round(math.log10(v)))}").move_to(DOWN * 0.45 + LEFT * 2.2)
         lgb = pg.line(list(range(L + 1)), gb, TEAL, 4)
         lgn = pg.line(list(range(L + 1)), [max(v, ylo) for v in gn], PINK, 4)
         ratio = gn[-1] / max(gn[0], 1e-300)
         lab_b = self.T("with residuals: nearly flat", 26, TEAL, BOLD).next_to(pg.p(1, gb[1]), DOWN, buff=0.18, aligned_edge=LEFT)
-        lab_n = self.T("without residuals", 26, PINK, BOLD).move_to(pg.p(L * 0.55, ylo * 1e3), aligned_edge=LEFT)
+        lab_n = self.T("without residuals", 26, PINK, BOLD).move_to(pg.p(L * 0.5, ylo * 1e3), aligned_edge=LEFT)
         drop = self.M(f"{sci(gn[-1])} → {sci(gn[0])}", 26, PINK).next_to(lab_n, DOWN, buff=0.15, aligned_edge=LEFT)
-        with self.say(f"Here's the real thing: a freshly built {L}-layer TinyGPT, measuring how much gradient reaches each "
-                      f"layer. Without residuals, by the first layer it has shrunk by a factor of 10 to the "
-                      f"{round(math.log10(ratio))}. Those layers can't learn. With residuals, it's nearly flat.",
-                      scene=f"Real measurement, {L}-layer TinyGPT at initialisation: RMS of the gradient reaching each layer "
-                            f"(log scale). Without residuals (pink) it falls from {gn[-1]:.1e} at the top to {gn[0]:.1e} at "
-                            f"the input (×10^-{round(math.log10(ratio))}); with residuals (teal) it stays ≈ {gb[0]:.1e}–{gb[-1]:.1e}."):
+        an = INIT["no-residual"]["act_rms"]; sp = INIT["no-residual"]["token_spread"]
+        side = VGroup(self.T("meanwhile, forward:", 22, MUTED),
+                      self.M(f"signal size {an[1]:.2f}…{max(an[1:]):.2f}", 22, FG), self.T("(LayerNorm keeps it flat)", 20, MUTED),
+                      self.M(f"positions differ by {sp[-1]:.0e}", 22, PINK), self.T("(every token, same vector)", 20, MUTED)) \
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(pg.ax, RIGHT, buff=0.35).shift(UP * 0.4)
+        with self.say(f"Measured in a fresh {L}-layer model: without residuals, the gradient reaching the first layer is "
+                      f"10 to the {round(math.log10(ratio))} times smaller than at the top. Forward, the signal keeps its size, "
+                      f"but every position ends up holding the same vector. With residuals, the gradient is nearly flat.",
+                      scene=f"Real measurement, a separate {L}-layer TinyGPT at initialisation: RMS of the gradient reaching "
+                            f"each layer (log scale). Without residuals (pink) it falls from {gn[-1]:.1e} at the top to "
+                            f"{gn[0]:.1e} at the input (×10^-{round(math.log10(ratio))}); with residuals (teal) it stays "
+                            f"≈ {gb[0]:.1e}–{gb[-1]:.1e}. Side note: without residuals the forward signal RMS stays "
+                            f"{an[1]:.2f}–{max(an[1:]):.2f}, but positions become identical (spread {sp[-1]:.1e})."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(chain, res_t, res_t2, tag)), run_time=0.4)
+            self.play(FadeOut(VGroup(chain, back, backl, res_t, tag)), run_time=0.4)
             self.play(FadeIn(pg), run_time=0.5)
-            self.sync("Without residuals", 0.1)
+            self.sync("without residuals", 0.1)
             self.play(Create(lgn), FadeIn(lab_n), run_time=1.2, rate_func=linear)
             self.play(FadeIn(drop), run_time=0.3)
             self.mark("grad-nores", VGroup(lgn, lab_n, drop), f"real: gradient RMS without residuals, {gn[-1]:.2e} at the "
                       f"top layer → {gn[0]:.2e} at the embeddings")
+            self.sync("Forward", 0.1)
+            self.play(FadeIn(side, shift=LEFT * 0.2), run_time=0.5)
+            self.mark("forward", side, f"without residuals the forward signal RMS stays {an[1]:.3f}–{max(an[1:]):.3f} "
+                                       f"(LayerNorm rescales each block's input) but positions collapse: spread "
+                                       f"{sp[-1]:.1e} of the RMS at layer {L}")
             self.sync("With residuals", 0.1)
             self.play(Create(lgb), FadeIn(lab_b), run_time=1.0, rate_func=linear)
             self.mark("grad-res", VGroup(lgb, lab_b), f"real: gradient RMS with residuals, {gb[-1]:.2e} → {gb[0]:.2e}: "
                       "nearly flat")
+
+        # ------------------------------------------------------------ shallow: depends on init
+        shg = SH["init"]["no-residual"]["grad_rms"]
+        shrink3 = shg[-1] / shg[0]
+        r02, r125 = SH["nores_runs"]
+        ps3 = Plot([0, 600], [0, 6], width=7.2, height=3.8, xticks=[0, 200, 400, 600], yticks=[0, 2, 4, 6],
+                   xlabel="training step", ylabel="validation loss · 3 layers, no residuals").move_to(DOWN * 0.5 + LEFT * 2.2)
+        l02 = ps3.line(r02["curve"]["step"], r02["curve"]["val"], PINK, 4)
+        l125 = ps3.line(r125["curve"]["step"], r125["curve"]["val"], ORANGE, 4)
+        lg3 = VGroup(VGroup(self.T("standard init (std 0.02)", 24, PINK, BOLD), self.M(f"→ {r02['final_val']:.2f}", 24, PINK)).arrange(DOWN, aligned_edge=LEFT, buff=0.06),
+                     VGroup(self.T("larger init (std 0.125)", 24, ORANGE, BOLD), self.M(f"→ {r125['final_val']:.2f}", 24, ORANGE)).arrange(DOWN, aligned_edge=LEFT, buff=0.06)) \
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.35).next_to(ps3.ax, RIGHT, buff=0.4)
+        s3 = self.T(f"at 3 layers the gradient shrinks only ~{shrink3:.0f}× at init", 24, FG).move_to(UP * 2.55)
+        with self.say(f"Our 3-layer model isn't that deep: its gradient shrinks only about {shrink3:.0f} times. So how stuck "
+                      f"it gets depends on the starting weights. With the standard small init, it stalls. Start the "
+                      f"blocks larger, and the same plain stack does learn. Residuals make depth easy to train, whatever "
+                      f"the init.",
+                      scene=f"Real: 3-layer TinyGPT without residuals at init, gradient shrinks {shrink3:.0f}× from top to "
+                            f"embeddings. Two 600-step runs (batch 32): block init std 0.02 → val {r02['final_val']:.3f} "
+                            f"(stalled), std 0.125 → {r125['final_val']:.3f} and still falling.", chapter="It depends on init"):
+            self.unmark(*list(self._marks))
+            hdr_i = self.header("It depends on init")
+            self.play(FadeOut(VGroup(pg, lgb, lgn, lab_b, lab_n, drop, side)), ReplacementTransform(hdr, hdr_i), run_time=0.4)
+            hdr = hdr_i
+            self.play(FadeIn(s3), FadeIn(ps3), run_time=0.5)
+            self.mark("shrink3", s3, f"3-layer no-residual model at init: gradient {shg[-1]:.1e} at the top vs {shg[0]:.1e} "
+                                     f"at the embeddings ({shrink3:.0f}×)")
+            self.sync("standard small", 0.1)
+            self.play(Create(l02), FadeIn(lg3[0]), run_time=0.9, rate_func=linear)
+            self.mark("init-002", VGroup(l02, lg3[0]), f"real: no residuals, std 0.02 init → val {r02['final_val']:.3f} after 600 steps")
+            self.sync("Start the", 0.1)
+            self.play(Create(l125), FadeIn(lg3[1]), run_time=0.9, rate_func=linear)
+            self.mark("init-0125", VGroup(l125, lg3[1]), f"real: no residuals, std 0.125 init → val {r125['final_val']:.3f} after 600 steps")
 
         # ------------------------------------------------------------ the highway
         hdr2 = self.header("The residual highway")
@@ -161,15 +217,15 @@ class ResidualsLayerNorm(VScene):
             blocks.add(b); plus.add(VGroup(pl_, pt)); taps.add(VGroup(up, a1, a2, dn))
         grad = Arrow(RIGHT * 6.3 + UP * (y - 1.3), LEFT * 6.3 + UP * (y - 1.3), buff=0, color=PINK, stroke_width=6,
                      max_tip_length_to_length_ratio=0.03)
-        gl = self.T("gradient flows straight back through every +", 26, PINK).next_to(grad, DOWN, buff=0.2)
-        with self.say("The plus sign builds a highway. The signal travels straight along it, and each block just reads "
-                      "from it and adds a small edit back. On the way back, the gradient rides the same highway, "
-                      "untouched by the plus signs.",
+        gl = self.T("each + passes the gradient back unchanged (plus the block's own share)", 26, PINK).next_to(grad, DOWN, buff=0.2)
+        with self.say("The plus sign builds a highway. The signal travels straight along it, and each block reads from it "
+                      "and adds an edit back. On the way back, every plus passes the gradient through unchanged, so even "
+                      "the first layer gets a strong signal.",
                       scene="Diagram: a yellow 'residual stream' arrow left to right; attention and MLP blocks branch off "
                             "it and add their output back through '+' nodes; a pink arrow below shows the gradient flowing "
                             "straight back through every +.", chapter="The residual highway"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(pg, lgb, lgn, lab_b, lab_n, drop)), ReplacementTransform(hdr, hdr2), run_time=0.4)
+            self.play(FadeOut(VGroup(s3, ps3, l02, l125, lg3)), ReplacementTransform(hdr, hdr2), run_time=0.4)
             self.play(GrowArrow(road), FadeIn(rl), run_time=0.7)
             self.mark("stream", VGroup(road, rl), "the residual stream: x passes straight through, blocks add to it")
             self.sync("each block", 0.1)
@@ -204,30 +260,34 @@ class ResidualsLayerNorm(VScene):
         op = self.M("(x − mean) / std", 26, TEAL).next_to(arr, UP, buff=0.15)
         op2 = self.M("× gain + bias", 24, MUTED).next_to(arr, DOWN, buff=0.15)
         lb1 = self.T(f"a vector: mean {mu:.1f}, std {sd:.1f}", 24, ORANGE).move_to([-4.3, -2.6, 0])
-        lb2 = self.T("mean 0, std 1", 24, TEAL).move_to([3.95, -2.6, 0])
+        lb2 = VGroup(self.T("mean 0, std 1", 24, TEAL),
+                     self.T("then a learned gain and bias rescale it", 20, MUTED)).arrange(DOWN, buff=0.08).move_to([3.95, -2.7, 0])
+        per_tok = self.T("per token, across its 64 numbers · the stream itself is not changed", 24, FG).move_to(UP * 2.5)
         tag2 = illus("illustrative numbers").to_corner(DR, buff=0.4)
-        with self.say("Residuals keep the signal alive, but adding edits layer after layer lets its size drift. "
-                      "LayerNorm resets it: subtract the mean, divide by the spread, then let a learned gain and bias "
-                      "pick the scale.",
+        with self.say("As blocks keep adding edits, the stream itself grows. LayerNorm doesn't shrink it. It hands each "
+                      "block a rescaled copy: subtract the mean, divide by the spread, per token, then a learned gain and "
+                      "bias. Every block reads inputs of a sane size.",
                       scene=f"Illustration: a 12-number vector (orange, mean {mu:.1f}, std {sd:.1f}) passes through "
-                            "LayerNorm, (x − mean)/std × gain + bias, and comes out with mean 0 and std 1 (teal).",
+                            "LayerNorm, (x − mean)/std (→ mean 0, std 1), then a learned gain and bias. Applied per token "
+                            "across its 64 numbers, to the copy each block reads; the residual stream itself is unchanged.",
                       chapter="LayerNorm"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(road, rl, blocks, plus, taps, grad, gl)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
             self.play(FadeIn(base1), LaggedStart(*[GrowFromEdge(b, DOWN) for b in before], lag_ratio=0.05), FadeIn(lb1),
                       FadeIn(tag2), run_time=0.9)
             self.mark("before", VGroup(before, lb1), f"illustrative vector before LayerNorm: mean {mu:.2f}, std {sd:.2f}")
-            self.sync("LayerNorm resets", 0.1)
+            self.sync("It hands", 0.1)
             self.play(GrowArrow(arr), FadeIn(op), FadeIn(op2), run_time=0.5)
-            self.play(FadeIn(base2), TransformFromCopy(before, after), FadeIn(lb2), run_time=1.0)
+            self.play(FadeIn(base2), TransformFromCopy(before, after), FadeIn(lb2), FadeIn(per_tok), run_time=1.0)
             self.mark("ln-op", VGroup(op, op2), "LayerNorm: (x − mean)/std, then × learned gain + bias")
-            self.mark("after", VGroup(after, lb2), "after LayerNorm: mean 0, std 1")
+            self.mark("after", VGroup(after, lb2), "after normalising: mean 0, std 1; the learned gain and bias then rescale it")
+            self.mark("per-token", per_tok, "LayerNorm works per token over its 64 features, on the copy each block reads")
 
         Ld = DP["train_depth"]
         ab, an = DRUN["baseline"]["act_rms_trained"], DRUN["no-layernorm"]["act_rms_trained"]
         top = max(ab + an)
         pa = Plot([0, Ld], [0, top * 1.15], width=5.6, height=3.6, xticks=list(range(0, Ld + 1, 4)),
-                  yticks=[0, round(top / 2, 1), round(top, 1)], xlabel="layer", ylabel="signal size (RMS)",
+                  yticks=[0, round(top / 2, 1), round(top, 1)], xlabel="layer", ylabel="residual stream size (RMS)",
                   yfmt=lambda v: f"{v:g}").move_to(LEFT * 3.4 + DOWN * 0.5)
         la = pa.line(list(range(Ld + 1)), ab, TEAL, 4)
         lna = pa.line(list(range(Ld + 1)), an, ORANGE, 4)
@@ -239,20 +299,19 @@ class ResidualsLayerNorm(VScene):
         lgc = VGroup(*[self.M(f"{n}: {DRUN[i]['final_val']:.2f}" if DRUN[i]["final_val"] is not None else f"{n}: diverged",
                               22, c) for i, c, n in runs]).arrange(DOWN, aligned_edge=RIGHT, buff=0.08)
         lgc.move_to(pc.p(steps_d, 3.3), aligned_edge=RIGHT)
-        ttl = self.T(f"real {Ld}-layer runs, {steps_d:,} steps", 26, FG, BOLD).move_to(UP * 2.75)
+        ttl = self.T(f"real {Ld}-layer runs, {steps_d:,} steps, 1 seed", 26, FG, BOLD).move_to(UP * 2.75)
         lga = legend([("with LN", TEAL, False), ("no LN", ORANGE, False)], size=22, direction=DOWN, buff=0.12)
         lga.move_to(pa.p(0.4, top * 1.05), aligned_edge=UL)
-        with self.say(f"In real {Ld}-layer models after training, the signal without LayerNorm ends up "
-                      f"{an[-1] / ab[-1]:.0f} times bigger at the top layer, and validation loss ends at "
-                      f"{DRUN['no-layernorm']['final_val']:.2f} instead of "
-                      f"{DRUN['baseline']['final_val']:.2f}. Remove the residuals instead, and it's "
-                      f"{DRUN['no-residual']['final_val']:.2f}.",
+        with self.say(f"In real trained {Ld}-layer models, the stream grows about {ab[-1] / ab[0]:.0f} times from bottom to "
+                      f"top even with LayerNorm. Without it, {an[-1] / an[0]:.0f} times, and validation loss ends at "
+                      f"{DRUN['no-layernorm']['final_val']:.2f} instead of {DRUN['baseline']['final_val']:.2f}. Remove the "
+                      f"residuals instead: {DRUN['no-residual']['final_val']:.2f}.",
                       scene=f"Left: real RMS of the hidden state at each layer of trained {Ld}-layer models: with LayerNorm "
                             f"{ab[0]:.2f} → {ab[-1]:.2f}; without {an[0]:.2f} → {an[-1]:.2f}. Right: real validation curves "
                             f"({steps_d} steps): residual+LN {DRUN['baseline']['final_val']:.3f}, no LN "
                             f"{DRUN['no-layernorm']['final_val']:.3f}, no residual {DRUN['no-residual']['final_val']:.3f}."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(before, after, base1, base2, arr, op, op2, lb1, lb2, tag2)), run_time=0.4)
+            self.play(FadeOut(VGroup(before, after, base1, base2, arr, op, op2, lb1, lb2, tag2, per_tok)), run_time=0.4)
             self.play(FadeIn(ttl), FadeIn(pa), FadeIn(lga), Create(la), run_time=0.8)
             self.play(Create(lna), run_time=0.9)
             self.mark("act-ln", la, f"real: signal RMS per layer with LayerNorm, {ab[0]:.2f} → {ab[-1]:.2f}")
@@ -273,7 +332,8 @@ class ResidualsLayerNorm(VScene):
         n1 = self.T("+ : the highway keeps gradients alive", 30, YELLOW).move_to(DOWN * 1.3)
         n2 = self.T("LN : keeps every layer's input at a sane scale", 30, TEAL).next_to(n1, DOWN, buff=0.3)
         with self.say("So every block is two lines: read a normalized copy, add the result back. Virtually every modern "
-                      "transformer keeps both ideas: a residual stream and a normalization layer.",
+                      "transformer keeps both ideas: a residual stream and a normalization layer, LayerNorm or its "
+                      "simpler cousin RMSNorm.",
                       scene="Recap: the pre-LN block is x = x + attn(LN(x)); x = x + mlp(LN(x)). '+' = the highway that keeps "
                             "gradients alive; LN = keeps every layer's input at a sane scale.", chapter="Recap"):
             self.unmark(*list(self._marks))

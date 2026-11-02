@@ -7,14 +7,16 @@ from model import VOCAB, META, tok, forward
 from lib_concepts import PROBE
 
 VIDEO = dict(id="frontier", cls="Frontier", title="The frontier: a map for model inventors",
-             subtitle="MoE, state-space models, efficient attention, RoPE, retrieval, diffusion LMs, test-time compute, distillation",
+             subtitle="RoPE, efficient attention, state-space models, GQA, MoE, distillation, retrieval, diffusion LMs, "
+                      "test-time compute, better training",
              relates="invent", track="research", order=20, poster=("The map", 0, 0.97))
 
 PURPLE = "#b48cff"
 HUB = [("tokens & positions", BLUE), ("attention", BLUE), ("MLP", TEAL), ("next-token loss", YELLOW),
        ("generation loop", PINK)]
-CLUSTERS = {"long": ("longer sequences", TEAL), "cheap": ("more model per FLOP", ORANGE),
-            "know": ("knowledge outside the weights", BLUE), "gen": ("new ways to generate", PINK)}
+CLUSTERS = {"long": ("long sequences & fast inference", TEAL), "cheap": ("more model per FLOP", ORANGE),
+            "know": ("knowledge outside the weights", BLUE), "gen": ("new ways to generate", PINK),
+            "train": ("how it learns", PURPLE)}
 
 
 class Frontier(CScene):
@@ -47,8 +49,8 @@ class Frontier(CScene):
         swaps = self.T(f"in TinyGPT terms: {tp['swaps']}", 24, MUTED)
         head = VGroup(title, swaps).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
         rows = VGroup()
-        for lab, key, c in (("idea", "idea", FG), ("attacks", "attacks", FG), ("open", "open", YELLOW)):
-            lines = textwrap.wrap(tp[key], 62)
+        for lab, key, c in (("idea", "idea", FG), ("open", "open", YELLOW)):
+            lines = textwrap.wrap(tp[key], 60)
             body = VGroup(*[self.T(l, 26, c) for l in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.08)
             tag = self.T(lab, 24, col, BOLD)
             tag.move_to([0, 0, 0], aligned_edge=RIGHT)
@@ -61,7 +63,7 @@ class Frontier(CScene):
         for r in rows:
             r[0].align_to([tx, 0, 0], RIGHT)
             r[1].next_to(r[0], RIGHT, buff=0.3).align_to(r[0], UP).shift(UP * 0.02)
-        g = VGroup(head, rows).arrange(DOWN, aligned_edge=LEFT, buff=0.35)
+        g = VGroup(head, rows).arrange(DOWN, aligned_edge=LEFT, buff=0.4)
         self.fitw(g, 10.0)
         g.move_to([-3.35, 2.95, 0], aligned_edge=UL)
         ref = self.T(tp["refs"], 22, MUTED)
@@ -121,12 +123,14 @@ class Frontier(CScene):
         l2 = VGroup(self.T(f"sliding window", 24, FG), self.T(f"~n·w pairs (w = {w})", 22, MUTED)).arrange(DOWN, buff=0.05).next_to(g2, UP, buff=0.12)
         c = cfg["n_ctx"]
         big = 2048
-        txt = VGroup(self.T(f"TinyGPT: {c} × {c} = {c * c:,} scores", 24, FG),
-                     self.T(f"per head, per layer", 24, FG),
+        txt = VGroup(self.T(f"TinyGPT: up to {c} × {c} = {c * c:,}", 24, FG),
+                     self.T(f"scores per head per layer;", 24, FG),
+                     self.T(f"the causal mask keeps {c * (c + 1) // 2:,}", 24, FG),
                      self.T(f"at {big:,} tokens: {big * big:,}", 24, ORANGE),
                      self.T(f"({(big * big) // (c * c):,}× more)", 24, ORANGE)).arrange(DOWN, aligned_edge=LEFT, buff=0.08)
         g = VGroup(VGroup(l1, g1), VGroup(l2, g2), txt).arrange(RIGHT, buff=0.6)
-        return g, f"TinyGPT computes {c}×{c} = {c * c:,} attention scores per head per layer; {big:,} tokens would need {big * big:,}"
+        return g, (f"TinyGPT: up to {c}×{c} = {c * c:,} attention scores per head per layer ({c * (c + 1) // 2:,} kept by the "
+                   f"causal mask); {big:,} tokens: {big * big:,}")
 
     def d_rope(self):
         c = Circle(radius=1.0, color=LINE, stroke_width=2)
@@ -143,7 +147,8 @@ class Frontier(CScene):
         rot = always_redraw(mk)
         lab = VGroup(self.T("query at position m", 24, BLUE), self.T("key at position n", 24, TEAL),
                      self.T("angle depends only on m − n", 24, YELLOW),
-                     self.T("TinyGPT instead learned a table of 64 slots", 24, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
+                     self.T("each pair of dimensions spins at its own frequency", 24, MUTED),
+                     self.T("TinyGPT instead learned 64 slots (positions 0–63)", 24, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
         g = VGroup(VGroup(c, rot), lab).arrange(RIGHT, buff=0.8)
         return g, th, rot
 
@@ -188,6 +193,41 @@ class Frontier(CScene):
         note = self.T("illustration (self-consistency style voting)", 24, MUTED).next_to(g, DOWN, buff=0.35)
         return VGroup(g, a1, a2, note)
 
+    def d_gqa(self, cfg):
+        H, D = cfg["n_head"], cfg["d_model"]
+
+        def panel(groups, title):
+            qs = VGroup(*[RoundedRectangle(corner_radius=0.06, width=0.7, height=0.45, stroke_color=BLUE, stroke_width=2,
+                                           fill_color=BLUE, fill_opacity=0.35) for _ in range(H)]).arrange(RIGHT, buff=0.18)
+            kvs = VGroup(*[RoundedRectangle(corner_radius=0.06, width=0.7 * (H // groups) + 0.18 * (H // groups - 1),
+                                            height=0.45, stroke_color=ORANGE, stroke_width=2, fill_color=ORANGE,
+                                            fill_opacity=0.35) for _ in range(groups)]).arrange(RIGHT, buff=0.18)
+            kvs.next_to(qs, DOWN, buff=0.55)
+            lines = VGroup(*[Line(qs[h].get_bottom(), kvs[h // (H // groups)].get_top(), color=LINE, stroke_width=2)
+                             for h in range(H)])
+            t = self.T(title, 26, FG).next_to(qs, UP, buff=0.15)
+            per_tok = 2 * groups * (D // H)
+            c = self.T(f"cache: {per_tok} numbers per token per layer", 24, ORANGE).next_to(kvs, DOWN, buff=0.15)
+            return VGroup(t, qs, lines, kvs, c), per_tok
+        p1, n1 = panel(H, f"TinyGPT: {H} query, {H} K/V heads")
+        p2, n2 = panel(H // 2, f"grouped: {H} query, {H // 2} K/V heads")
+        g = VGroup(p1, p2).arrange(RIGHT, buff=1.2)
+        return g, f"TinyGPT caches {n1} numbers per token per layer (keys + values); with 2 shared K/V heads it would be {n2}"
+
+    def d_train(self):
+        items = [("optimizers", "AdamW and successors", BLUE), ("data & curricula", "what, in what order", TEAL),
+                 ("new objectives", "e.g. multi-token prediction", YELLOW), ("RL post-training", "reward good answers", PINK),
+                 ("lower precision", "mixed, 8-bit formats", ORANGE)]
+        boxes = VGroup()
+        for t1, t2, c in items:
+            tt = VGroup(self.T(t1, 26, c, BOLD), self.T(t2, 22, FG)).arrange(DOWN, buff=0.06)
+            b = RoundedRectangle(corner_radius=0.12, width=max(3.0, tt.width + 0.3), height=tt.height + 0.3, stroke_color=c,
+                                 stroke_width=2, fill_color=c, fill_opacity=0.08)
+            boxes.add(VGroup(b, tt.move_to(b)))
+        top = VGroup(*boxes[:3]).arrange(RIGHT, buff=0.25)
+        bot = VGroup(*boxes[3:]).arrange(RIGHT, buff=0.25)
+        return VGroup(top, bot).arrange(DOWN, buff=0.25)
+
     def d_distill(self, probs):
         def chart(title, items, col, pcol):
             rows = VGroup()
@@ -202,7 +242,7 @@ class Frontier(CScene):
             return VGroup(tt, rows)
         pc = {" red": PINK, " white": "#e8e8e8", " purple": PURPLE}
         hard = chart("one-hot target", [(" red", 1.0), (" white", 0.0), (" purple", 0.0)], MUTED, pc)
-        soft = chart("teacher's soft target (real TinyGPT)", [(t, probs[t]) for t in (" red", " white", " purple")], FG, pc)
+        soft = chart("teacher's probabilities (real TinyGPT)", [(t, probs[t]) for t in (" red", " white", " purple")], FG, pc)
         g = VGroup(hard, soft).arrange(RIGHT, buff=0.9, aligned_edge=UP)
         return g
 
@@ -213,73 +253,62 @@ class Frontier(CScene):
         probs = {t: float(lg[VOCAB.index(t)]) for t in (" red", " white", " purple")}
 
         topics = [
-            dict(key="moe", label="mixture of\nexperts", cluster="cheap", hub=2, pos=(4.55, 0.25),
-                 title="Mixture of experts", swaps="replaces the MLP",
-                 idea="many expert MLPs; a learned router sends each token to just a few of them",
-                 attacks="more parameters (capacity) without proportionally more compute per token",
-                 open="balancing load across experts; memory to hold them all",
-                 refs="Shazeer et al. 2017 · Switch Transformer (Fedus et al. 2021) · Mixtral (2024)",
-                 say="Mixture of experts swaps the MLP for many expert MLPs, and a router sends each token to just a few. "
-                     "More parameters, without proportionally more compute per token."),
-            dict(key="ssm", label="state-space\n/ Mamba", cluster="long", hub=1, pos=(-4.75, -0.75),
-                 title="State-space models (Mamba)", swaps="replaces attention",
-                 idea="a recurrence carries a fixed-size state along the sequence; Mamba makes its updates depend on the input",
-                 attacks="attention cost grows with length squared, and the KV cache grows with every token",
-                 open="how much exact detail a fixed-size state can recall; hybrids that keep a few attention layers are a popular compromise",
-                 refs="S4 (Gu et al. 2021) · Mamba (Gu & Dao 2023)",
-                 say="State-space models like Mamba swap attention for a recurrence with a fixed-size state, so cost grows "
-                     "linearly with length. Open question: how much exact detail that state can hold."),
-            dict(key="eff", label="efficient\nattention", cluster="long", hub=1, pos=(-4.75, 0.6),
+            dict(key="rope", label="RoPE &\nlong context", cluster="long", hub=0, pos=(-4.75, 2.25),
+                 title="Positions & long context (RoPE)", swaps="replaces the position table",
+                 idea="rotate each query and key by angles set by its position, so position enters the score as relative distance",
+                 open="stretching past the training length only partly works; using very long contexts well is still hard",
+                 refs="RoFormer (Su et al. 2021) · Chen et al. 2023 · Lost in the Middle (Liu et al. 2023)"),
+            dict(key="eff", label="efficient\nattention", cluster="long", hub=1, pos=(-4.75, 1.05),
                  title="Linear / efficient attention", swaps="changes attention",
                  idea="approximate or restrict attention (kernel tricks, sparse or sliding windows) so cost grows ~linearly",
-                 attacks="the quadratic score grid: every token scored against every earlier token",
-                 open="approximations often cost some quality; FlashAttention instead stays exact and just runs faster",
-                 refs="Katharopoulos et al. 2020 · Longformer (2020) · FlashAttention (Dao et al. 2022)",
-                 say="Efficient attention keeps attention, but approximates or restricts it, like sliding windows, to dodge "
-                     "the quadratic cost. FlashAttention, by contrast, stays exact and just computes it smarter."),
-            dict(key="rope", label="RoPE &\nlong context", cluster="long", hub=0, pos=(-4.75, 1.95),
-                 title="Positions & long context (RoPE)", swaps="replaces the position table",
-                 idea="rotate each query and key by an angle set by its position, so position enters the score only as the distance between tokens",
-                 attacks="a learned table like TinyGPT's has exactly 64 slots: position 65 simply doesn't exist",
-                 open="stretching past the training length only partly works; using very long contexts well is still hard",
-                 refs="RoFormer (Su et al. 2021) · Chen et al. 2023 · Lost in the Middle (Liu et al. 2023)",
-                 say="Position schemes like RoPE rotate queries and keys by position, so scores depend on relative distance. "
-                     "Tricks built on it help stretch context, though using very long contexts well remains hard."),
-            dict(key="rag", label="retrieval\n(RAG)", cluster="know", hub=0, pos=(4.55, 2.05),
+                 open="approximations often cost quality; FlashAttention instead stays exact and just runs faster",
+                 refs="Katharopoulos et al. 2020 · Longformer (2020) · FlashAttention (Dao et al. 2022)"),
+            dict(key="ssm", label="state-space\n/ Mamba", cluster="long", hub=1, pos=(-4.75, -0.15),
+                 title="State-space models (Mamba)", swaps="replaces attention (Mamba: the whole block)",
+                 idea="a recurrence carries a fixed-size state along the sequence, yet still trains in parallel; Mamba makes "
+                      "its updates depend on the input",
+                 open="how much exact detail a fixed-size state can recall; hybrids that keep some attention are popular",
+                 refs="S4 (Gu et al. 2021) · Mamba (Gu & Dao 2023)"),
+            dict(key="gqa", label="grouped-query\nattention", cluster="long", hub=1, pos=(-4.75, -1.35),
+                 title="Grouped-query attention", swaps="changes attention and the KV cache",
+                 idea="several query heads share one key/value head, so far less has to be cached per token",
+                 open="how much sharing before quality drops; one shared K/V head (multi-query) is the extreme",
+                 refs="multi-query attention (Shazeer 2019) · GQA (Ainslie et al. 2023)"),
+            dict(key="moe", label="mixture of\nexperts", cluster="cheap", hub=2, pos=(4.7, 0.6),
+                 title="Mixture of experts", swaps="replaces the MLP",
+                 idea="many expert MLPs; a learned router sends each token to a few: more parameters, not proportionally "
+                      "more compute",
+                 open="balancing load across experts; the memory to hold them all",
+                 refs="Shazeer et al. 2017 · Switch Transformer (Fedus et al. 2021) · Mixtral (2024)"),
+            dict(key="distill", label="distillation &\nsmall models", cluster="cheap", hub=3, pos=(4.7, -0.55),
+                 title="Distillation & small models", swaps="changes the training target",
+                 idea="train a small student on a big teacher's outputs: its full probabilities, or text it generated",
+                 open="how much capability survives the shrink",
+                 refs="Hinton, Vinyals & Dean 2015 · DistilBERT (Sanh et al. 2019)"),
+            dict(key="rag", label="retrieval\n(RAG)", cluster="know", hub=0, pos=(4.7, 2.25),
                  title="Retrieval-augmented models", swaps="adds to the input (what it reads)",
                  idea="look up relevant documents in an external store and put them into the context",
-                 attacks="knowledge frozen in the weights: stale facts, made-up answers, giant models to memorise trivia",
                  open="finding the right text, and making the model actually use it",
-                 refs="RAG (Lewis et al. 2020) · RETRO (Borgeaud et al. 2021)",
-                 say="Retrieval-augmented models look things up: fetch relevant documents and put them in the context. "
-                     "Knowledge can stay fresh without retraining, if retrieval finds the right text."),
-            dict(key="diff", label="diffusion\nLMs", cluster="gen", hub=4, pos=(-2.75, -3.15),
+                 refs="RAG (Lewis et al. 2020) · RETRO (Borgeaud et al. 2021)"),
+            dict(key="diff", label="diffusion\nLMs", cluster="gen", hub=4, pos=(-2.65, -3.15),
                  title="Diffusion language models", swaps="replaces the left-to-right generation loop",
-                 idea="start from a fully masked sequence and fill in every position over a few refinement steps",
-                 attacks="strictly one token at a time, left to right",
-                 open="whether they can match autoregressive quality and efficiency at scale is still being studied",
-                 refs="D3PM (Austin et al. 2021) · masked diffusion LMs (e.g. Sahoo et al. 2024)",
-                 say="Diffusion language models drop left-to-right: start from a fully masked sequence and refine every "
-                     "position over a few steps. Whether they match autoregressive quality at scale is still open."),
-            dict(key="ttc", label="test-time\ncompute", cluster="gen", hub=4, pos=(2.75, -3.15),
+                 idea="start from a fully masked sequence and refine every position over a number of steps",
+                 open="whether they match autoregressive quality and efficiency at scale is still being studied",
+                 refs="D3PM (Austin et al. 2021) · masked diffusion LMs (e.g. Sahoo et al. 2024)"),
+            dict(key="ttc", label="test-time\ncompute", cluster="gen", hub=4, pos=(2.65, -3.15),
                  title="Test-time compute & reasoning", swaps="changes how the generation loop is used",
-                 idea="spend more computation per question: write out intermediate steps, or sample many answers and check or vote",
-                 attacks="a fixed amount of compute per token, even for hard problems",
-                 open="when extra thinking pays off, what it costs, and whether the written steps reflect the real computation",
-                 refs="chain of thought (Wei et al. 2022) · self-consistency (Wang et al. 2022)",
-                 say="And test-time compute spends more thinking per question: write out reasoning steps, or sample many "
-                     "answers and check them. Some recent reasoning models are trained with reinforcement learning to do this."),
-            dict(key="distill", label="distillation &\nsmall models", cluster="cheap", hub=3, pos=(4.55, -1.15),
-                 title="Distillation & small models", swaps="changes the training target (loss)",
-                 idea="train a small student to match a big teacher's full probability distribution, not just the right token",
-                 attacks="big models are expensive to run; one-hot targets throw away the teacher's near misses",
-                 open="how much capability survives the shrink",
-                 refs="Hinton, Vinyals & Dean 2015 · DistilBERT (Sanh et al. 2019)",
-                 say="Distillation trains a small student to match a big teacher's whole probability distribution, "
-                     "not just the one right token. Cheaper models that keep much of the skill."),
+                 idea="spend more compute per question: write out steps, or sample several answers and vote",
+                 open="when extra thinking pays off, what it costs, and whether written steps reflect the real computation",
+                 refs="chain of thought (Wei et al. 2022) · self-consistency (Wang et al. 2022) · DeepSeek-R1 (2025)"),
+            dict(key="train", label="better\ntraining", cluster="train", hub=3, pos=(4.85, -2.45),
+                 title="Better training", swaps="changes how it learns, not what it is",
+                 idea="the optimizer, the data and its order, the objective, RL after pretraining, the number format",
+                 open="many reported gains shrink at larger scale or against a well-tuned baseline",
+                 refs="Adam (Kingma & Ba 2015) · Micikevicius et al. 2018 · multi-token: Gloeckle et al. 2024"),
         ]
-        seq = ["rope", "eff", "ssm", "moe", "distill", "rag", "diff", "ttc"]
-        topics.sort(key=lambda t: seq.index(t["key"]))
+        SAY = ["Want to invent a new kind of model? Here's a map of where people are pushing. Each idea changes one part of the engine TinyGPT runs on.", 'RoPE rotates queries and keys by their position, so attention sees relative distance. It helps stretch context, but using very long contexts well is still hard.', 'Efficient attention approximates or restricts attention, like sliding windows, to dodge the quadratic cost, often losing some quality. FlashAttention instead stays exact and just runs faster.', 'State-space models like Mamba replace attention with a recurrence that carries a fixed-size state, so cost grows linearly with length. Open question: how much exact detail that state can hold.', 'Grouped-query attention lets several query heads share one key and value head. That shrinks the KV cache and speeds up generation, usually with little quality loss.', 'Mixture of experts swaps the MLP for many expert MLPs, with a router picking a few per token: more parameters, without proportionally more compute. Balancing the experts is the hard part.', "Distillation trains a small student on a big teacher's outputs: its full probabilities, or text it generated. How much skill survives the shrink is the open question.", 'Retrieval-augmented models look things up, putting relevant documents into the context. Knowledge can stay fresh without retraining, if retrieval finds the right text and the model uses it.', 'Diffusion language models drop left-to-right: start fully masked, and refine every position over a number of steps. Whether they match autoregressive quality at scale is still open.', 'Test-time compute spends more thinking per question: write out reasoning steps, or sample several answers and vote. Some recent models are trained with reinforcement learning to reason longer.', "And if you'd rather invent a training framework: optimizers, data quality and curricula, new objectives like predicting several tokens at once, RL after pretraining, and lower-precision math are all active areas.", 'Every one of these changes one box. Pick a box, form a hypothesis, and run the loop.']
+        for k, tp in enumerate(topics):
+            tp["say"] = SAY[k + 1]
 
         # ============================================================ the map
         hub = self.hub().move_to([0, 0.05, 0])
@@ -302,20 +331,23 @@ class Frontier(CScene):
             members = VGroup(*[nodes[tp["key"]] for tp in topics if tp["cluster"] == ck])
             h = SurroundingRectangle(members, buff=0.18, corner_radius=0.25, stroke_color=col, stroke_width=1.5,
                                      stroke_opacity=0.5, fill_color=col, fill_opacity=0.04)
-            lab = self.T(cname, 22, col, BOLD)
+            lab = self.T(cname, 20 if ck == "gen" else 22, col, BOLD)
             if ck == "gen":
                 lab.move_to([0, h.get_center()[1], 0])
+            elif ck in ("cheap", "train"):
+                lab.next_to(h, DOWN, buff=0.08)
             else:
                 lab.next_to(h, UP, buff=0.08)
             halos.add(h); clabs.add(lab)
-        order = ["long", "cheap", "know", "gen"]
-        with self.say("Want to invent a new kind of model? Here's a map of where people are pushing right now. Each idea "
-                      "swaps out one part of the same engine TinyGPT runs on.",
+        VGroup(hub, halos, clabs, *nodes.values(), *edges.values()).scale(0.93, about_point=ORIGIN)
+        order = ["long", "cheap", "know", "gen", "train"]
+        with self.say(SAY[0],
                       scene="A map: TinyGPT's parts in the centre (tokens & positions, attention, MLP, next-token loss, "
-                            "generation loop) with eight research directions around it, grouped into clusters: longer "
-                            "sequences (RoPE, efficient attention, state-space/Mamba), more model per FLOP (mixture of "
-                            "experts, distillation), knowledge outside the weights (retrieval), new ways to generate "
-                            "(diffusion LMs, test-time compute). Dashed lines show which part each idea replaces.",
+                            "generation loop) with ten research directions around it, grouped into clusters: long sequences & fast "
+                            "inference (RoPE, efficient attention, state-space/Mamba, grouped-query attention), more model per "
+                            "FLOP (mixture of experts, distillation), knowledge outside the weights (retrieval), new ways to "
+                            "generate (diffusion LMs, test-time compute), how it learns (better training). Dashed lines show "
+                            "which part each idea changes.",
                       chapter="The map"):
             self.play(FadeIn(hub, shift=UP * 0.2), run_time=0.7)
             for k, (nm, _) in enumerate(HUB):
@@ -335,6 +367,7 @@ class Frontier(CScene):
         # ============================================================ topic by topic
         everything = VGroup(halos, clabs, *nodes.values(), *edges.values())
         self.unmark(*list(self._marks))
+        hub_center0 = hub.get_center()
         hub_target = hub.copy().move_to([-5.3, -0.15, 0])
         diag_center = np.array([1.75, -1.75, 0])
         cur = None
@@ -346,7 +379,7 @@ class Frontier(CScene):
             if tp["key"] == "moe":
                 diag, extra = self.d_moe(cfg)
             elif tp["key"] == "ssm":
-                diag, extra = self.d_ssm([VOCAB[i] for i in tok(" tom has the red ball. now")][:8])
+                diag, extra = self.d_ssm([VOCAB[i] for i in tok(" tom has the red ball now mia")][:8])
             elif tp["key"] == "eff":
                 diag, extra = self.d_attn(cfg)
             elif tp["key"] == "rope":
@@ -357,6 +390,10 @@ class Frontier(CScene):
                 diag = self.d_diff()
             elif tp["key"] == "ttc":
                 diag = self.d_ttc()
+            elif tp["key"] == "gqa":
+                diag, extra = self.d_gqa(cfg)
+            elif tp["key"] == "train":
+                diag = self.d_train()
             else:
                 diag = self.d_distill(probs)
             self.fitw(diag, 9.6)
@@ -367,10 +404,11 @@ class Frontier(CScene):
             gap = card.get_bottom()[1] - diag.get_top()[1]
             if gap < 0.3:
                 diag.shift(DOWN * (0.3 - gap))
-            chapter = {"moe": "More model per FLOP", "rope": "Longer sequences", "rag": "Knowledge outside the weights",
-                       "diff": "New ways to generate"}.get(tp["key"])
+            chapter = {"moe": "More model per FLOP", "rope": "Long sequences & fast inference",
+                       "rag": "Knowledge outside the weights", "diff": "New ways to generate",
+                       "train": "Better training"}.get(tp["key"])
             with self.say(tp["say"], scene=f"{tp['title']} ({tp['swaps']} in TinyGPT). Idea: {tp['idea']}. "
-                                           f"Attacks: {tp['attacks']}. Open: {tp['open']}. Refs: {tp['refs']}.".replace("(replaces TinyGPT's ", "("),
+                                           f"Open question: {tp['open']}. Refs: {tp['refs']}.",
                           chapter=chapter):
                 self.unmark(*list(self._marks))
                 anims = []
@@ -384,26 +422,26 @@ class Frontier(CScene):
                 self.play(FadeIn(hl), FadeIn(card, shift=LEFT * 0.2), FadeIn(ref), run_time=0.6)
                 self.play(FadeIn(diag, shift=UP * 0.2), run_time=0.6)
                 self.mark("hub-part", hboxes[tp["hub"]], f"the TinyGPT part this idea touches: {tp['swaps']}")
-                self.mark("card-" + tp["key"], card, f"{tp['title']} — idea: {tp['idea']}; attacks: {tp['attacks']}; "
-                                                     f"open question: {tp['open']}")
+                self.mark("card-" + tp["key"], card, f"{tp['title']} — idea: {tp['idea']}; open question: {tp['open']}")
                 self.mark("diag-" + tp["key"], diag, extra or f"{tp['title']}: schematic diagram")
                 if th is not None:
                     self.play(th.animate.set_value(2.2), run_time=1.5)
                     self.play(th.animate.set_value(0.6), run_time=1.0)
                 cur = VGroup(card, ref, diag, hl)
+            self.wait(0.6)   # let the card breathe before the next one
             if rot is not None:
                 rot.clear_updaters()
 
         # ============================================================ outro
-        hub_home = hub.copy().move_to([0, 0.05, 0])
+        hub_home = hub.copy().move_to(hub_center0)
         cta = self.T("pick a box · form a hypothesis · run the loop →", 36, YELLOW, BOLD).to_edge(DOWN, buff=0.3)
-        with self.say("Every one of these is a change to one box. Pick a box, form a hypothesis, and run the loop.",
-                      scene="Back to the full map: TinyGPT's five parts with the eight directions around them. CTA: pick a "
+        with self.say(SAY[-1],
+                      scene="Back to the full map: TinyGPT's five parts with the ten directions around them. CTA: pick a "
                             "box, form a hypothesis, run the loop (Invent lab).", chapter="Your move"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(cur), Transform(hub, hub_home), run_time=0.6)
             self.play(FadeIn(everything), run_time=0.7)
-            self.play(VGroup(hub, everything).animate.scale(0.86).shift(UP * 0.55), run_time=0.6)
+            self.play(VGroup(hub, everything).animate.scale(0.9).shift(UP * 0.4), run_time=0.6)
             for tp in topics:
                 self.mark("node-" + tp["key"], nodes[tp["key"]], f"{tp['title']} ({tp['swaps']})")
             for k, (nm, _) in enumerate(HUB):

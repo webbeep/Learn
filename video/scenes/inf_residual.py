@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 import torch
 from vscene import *  # noqa
-from lib_inference import (VOCAB, W, E, PROBE, tid, tok, run, lens, _ln)
+from lib_inference import (VOCAB, W, E, PROBE, tid, tok, run, lens, _ln, tokhue)
 
 VIDEO = dict(id="residual-stream", cls="ResidualStream", title="The residual stream: a shared whiteboard",
              subtitle="Every block reads it and adds a note: real vector sizes, the logit lens, LayerNorm, and knockouts",
@@ -60,10 +60,10 @@ class ResidualStream(VScene):
             taps.add(VGroup(rd, wr, pl))
         rl = self.T("read", 24, MUTED).next_to(taps[0][0], LEFT, buff=0.1).shift(UP * 0.55)
         wl = self.T("add", 24, BLUE).next_to(taps[0][1], RIGHT, buff=0.35).shift(DOWN * 0.1)
-        chip = self.chip(" the", "#5fd0ff", 30).next_to(stream.get_start(), UP, buff=0.25).shift(RIGHT * 0.3)
+        chip = self.chip(" the", tokhue(" the"), 30).next_to(stream.get_start(), UP, buff=0.25).shift(RIGHT * 0.3)
         out = self.T("readout", 24, MUTED).next_to(stream.get_end(), UP, buff=0.25).shift(LEFT * 0.5)
-        with self.say("Every token carries one vector through the whole model, called the residual stream. "
-                      "Think of it as a whiteboard. No layer ever erases it. Each one reads it, then adds a note.",
+        with self.say("Every token carries one vector through the model: the residual stream. Think of it as a whiteboard. "
+                      "Blocks never wipe it. Each one reads it, then adds a note, which can even cancel what's there.",
                       scene="A long horizontal arrow (the residual stream) runs from the token ' the' to the readout. Six blocks "
                             "sit above it (attention 1, MLP 1, … MLP 3); each has a gray 'read' arrow up from the stream and a "
                             "colored 'add' arrow back down with a + sign.", chapter="The whiteboard"):
@@ -132,14 +132,22 @@ class ResidualStream(VScene):
         wtags = VGroup()
         for k, nm in enumerate(NAMES[1:], start=1):
             col = PINK if nm == "mlp3" else MUTED
-            wtags.add(self.M(f"+{wl_[nm]:.2f}", 26, col).next_to(rows[k][2], RIGHT, buff=0.5))
-        wh = self.T("note size", 24, MUTED).next_to(wtags[0], UP, buff=0.2).set_y(nh.get_y())
-        with self.say(f"Most notes are modest, around length one. But the last MLP writes a big one, {wl_['mlp3']:.2f}, "
-                      f"larger than the whole board before it.",
+            wtags.add(self.M(f"{wl_[nm]:.2f}", 26, col).next_to(rows[k][2], RIGHT, buff=0.5))
+        wh = self.M("|note|", 24, MUTED).next_to(wtags[0], UP, buff=0.2).set_y(nh.get_y())
+        shrink = next(k for k in range(1, 7) if norms[NAMES[k]] < norms[NAMES[k - 1]])
+        sk = NAMES[shrink]
+        arrows_note = VGroup(self.T("notes add as arrows, not lengths:", 26, YELLOW),
+                             self.T(f"{NICE[sk][2:]}'s note (length {wl_[sk]:.2f}) even shortens the board "
+                                    f"({norms[NAMES[shrink - 1]]:.2f} → {norms[sk]:.2f})", 24, FG)).arrange(DOWN, buff=0.1).move_to(DOWN * 2.75)
+        with self.say(f"Notes add as arrows, not lengths: {NICE[sk][2:]}'s note even makes the board shorter. Most are around "
+                      f"length one, but the last MLP writes a big one, {wl_['mlp3']:.2f}, larger than the whole board before it.",
                       scene="Next to each strip, the size (length) of the note that block added: " +
                             ", ".join(f"{NICE[k][2:]} {wl_[k]:.2f}" for k in NAMES[1:]) +
-                            f". MLP 3's note ({wl_['mlp3']:.2f}) is larger than the stream before it ({norms['attn3']:.2f})."):
-            self.play(FadeIn(wh), LaggedStart(*[FadeIn(t, shift=LEFT * 0.1) for t in wtags], lag_ratio=0.1), run_time=0.8)
+                            f". MLP 3's note ({wl_['mlp3']:.2f}) is larger than the stream before it ({norms['attn3']:.2f}). Caption: notes add as arrows, not lengths."):
+            self.play(FadeIn(wh), LaggedStart(*[FadeIn(t, shift=LEFT * 0.1) for t in wtags], lag_ratio=0.1), FadeOut(sub), run_time=0.8)
+            self.play(FadeIn(arrows_note, shift=UP * 0.1), Indicate(rows[shrink][2], color=YELLOW), run_time=0.7)
+            self.mark("arrows-note", arrows_note, f"vectors add as arrows: |a + b| can be smaller than |a| ({NICE[sk][2:]}: "
+                                                  f"{norms[NAMES[shrink - 1]]:.3f} → {norms[sk]:.3f} despite adding a note of length {wl_[sk]:.3f})")
             for k, nm in enumerate(NAMES[1:]):
                 self.mark(f"write-{nm}", wtags[k], f"length of the vector {NICE[nm][2:]} added at the last token: {wl_[nm]:.3f}")
             self.sync("But the last", 0.1)
@@ -170,15 +178,16 @@ class ResidualStream(VScene):
         cols.arrange(RIGHT, buff=0.55, aligned_edge=UP).move_to(DOWN * 0.35)
         lt = VGroup(self.T("read the board at any depth with the model's own final readout", 26, MUTED),
                     self.M("final LayerNorm → unembedding → softmax", 24, MUTED)).arrange(DOWN, buff=0.12).to_edge(UP, buff=0.95)
+        rough = self.T("a rough peek: early layers were never trained to be read this way", 24, MUTED).to_edge(DOWN, buff=0.45)
         (t0, p0), (t1, p1), (t2, p2), (t3, p3) = [lens_res[nm][0] for nm, _ in checkpoints]
         with self.say("Because every block shares one board, you can read it at any depth with the model's own final "
-                      "readout. That's the logit lens.",
+                      "readout. That's the logit lens: a rough peek, since early layers were never trained to be read this way.",
                       scene="Four checkpoints on the stream (token + position, after layer 1, after layer 2, after layer 3) will "
                             "each be decoded with the model's final LayerNorm + unembedding + softmax: the logit lens.",
                       chapter="Logit lens"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(rows, nh, sub, wtags, wh, box)), ReplacementTransform(hdr, hdr2), run_time=0.5)
-            self.play(FadeIn(lt), LaggedStart(*[FadeIn(c[0], shift=DOWN * 0.2) for c in cols], lag_ratio=0.15), run_time=0.9)
+            self.play(FadeOut(VGroup(rows, nh, wtags, wh, box, arrows_note)), ReplacementTransform(hdr, hdr2), run_time=0.5)
+            self.play(FadeIn(lt), FadeIn(rough), LaggedStart(*[FadeIn(c[0], shift=DOWN * 0.2) for c in cols], lag_ratio=0.15), run_time=0.9)
             self.mark("lens", lt, "logit lens: apply the final LayerNorm and unembedding to an intermediate stream vector")
 
         with self.say(f"Straight after embedding, it just says '{t0.strip()}', {p0 * 100:.0f} percent: the readout reuses the "
@@ -217,15 +226,17 @@ class ResidualStream(VScene):
                             self.T("divide by the spread", 26, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.08),
                      VGroup(self.T("standard size (spread 1)", 24, MUTED), s_ln).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
                      ).arrange(DOWN, aligned_edge=LEFT, buff=0.35).move_to(RIGHT * 3.6 + DOWN * 0.1)
+        preln = self.T("pre-LN: normalize the copy each block reads, never the board", 24, TEAL).to_edge(DOWN, buff=0.45)
         with self.say(f"One catch: the board's scale drifts. Averaged over the story, its length grows from "
                       f"{mean_norm['embed']:.1f} to {mean_norm['mlp3']:.1f}. So before any block reads it, LayerNorm "
-                      f"re-centres the vector and rescales it to a standard size.",
+                      f"re-centres the vector and rescales it to a standard size. Only the copy a block reads gets normalized; "
+                      f"the board itself stays a plain running sum.",
                       scene=f"Line chart of the real average stream length over the 23 story tokens at each stage: "
                             + ", ".join(f"{k} {mean_norm[k]:.2f}" for k in NAMES) + ". Right: the final stream vector before "
                             "and after LayerNorm (subtract the mean, divide by the spread; then a learned scale and shift).",
                       chapter="LayerNorm"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(cols, lt)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
+            self.play(FadeOut(VGroup(cols, lt, rough)), ReplacementTransform(hdr2, hdr3), run_time=0.5)
             self.play(Create(ax), FadeIn(xl), FadeIn(yl), FadeIn(at), run_time=0.6)
             self.sync("Averaged", 0.1)
             self.play(Create(curve), LaggedStart(*[FadeIn(d, scale=2) for d in dots], lag_ratio=0.15), FadeIn(v_s), run_time=1.2)
@@ -235,6 +246,9 @@ class ResidualStream(VScene):
             self.sync("So before", 0.1)
             self.play(FadeIn(lng[0]), run_time=0.4)
             self.play(FadeIn(lng[1]), FadeIn(lng[2], shift=DOWN * 0.2), run_time=0.7)
+            self.sync("Only the copy", 0.1)
+            self.play(FadeIn(preln, shift=UP * 0.1), run_time=0.5)
+            self.mark("preln", preln, "pre-LN transformer: LayerNorm is applied to each block's input copy; the residual stream itself is never normalized")
             self.mark("ln", lng, f"LayerNorm on the final stream vector: mean {float(xr.mean()):+.3f}, spread {float(xr.std(unbiased=False)):.3f} "
                                  "→ mean 0, spread 1 (then a learned per-dimension scale and shift)")
 
@@ -251,15 +265,22 @@ class ResidualStream(VScene):
         for r in cmp:
             r[2].next_to(r[1], RIGHT, buff=0.2)
         cmp_t = self.T('P(" red")', 26, PINK).next_to(cmp, LEFT, buff=0.3)
+        raw_top = VOCAB[int((xr @ E.T).argmax())]
+        still = raw_top == " red"
+        still_t = self.T("still the top guess", 24, MUTED) if still else VGroup()
         with self.say(f"The final readout needs one too. Skip it, and red drops from {p_ln * 100:.0f} percent to "
-                      f"{p_raw * 100:.0f}.",
+                      f"{p_raw * 100:.0f}" + (", but it's still the top guess: LayerNorm mostly sets the confidence." if still else "."),
                       scene=f"P(' red') at the end: {p_ln * 100:.1f}% with the final LayerNorm vs {p_raw * 100:.1f}% if the raw "
                             "stream is fed straight into the unembedding."):
             self.play(VGroup(ax, curve, dots, xl, yl, at, v_s, v_e).animate.scale(0.85).shift(UP * 0.55),
                       lng.animate.scale(0.85).shift(UP * 0.55), run_time=0.5)
             self.play(FadeIn(cmp[0][0]), GrowFromEdge(cmp[0][1], LEFT), FadeIn(cmp[0][2]), run_time=0.5)
             self.sync("Skip it", 0.1)
-            self.play(FadeIn(cmp[1][0]), GrowFromEdge(cmp[1][1], LEFT), FadeIn(cmp[1][2]), run_time=0.5)
+            self.play(FadeIn(cmp[1][0]), GrowFromEdge(cmp[1][1], LEFT), FadeIn(cmp[1][2]), FadeOut(preln), run_time=0.5)
+            if still:
+                still_t.next_to(cmp[1][2], RIGHT, buff=0.4)
+                self.play(FadeIn(still_t), run_time=0.4)
+                self.mark("still-top", still_t, f'without the final LayerNorm, " red" is still the top token ({p_raw * 100:.2f}%)')
             self.mark("with-ln", cmp[0], f'P(" red") with the final LayerNorm: {p_ln * 100:.2f}%')
             self.mark("no-ln", cmp[1], f'P(" red") reading the raw stream without the final LayerNorm: {p_raw * 100:.2f}%')
 
@@ -285,17 +306,18 @@ class ResidualStream(VScene):
             r[1].move_to([-1.9, y, 0], aligned_edge=LEFT)
             r[2].next_to(r[1], RIGHT, buff=0.2)
         kt = self.T('P(" red") when one block\'s note is erased (at every position)', 26, MUTED).move_to(UP * 2.85)
+        blunt = self.T("a blunt test: erasing a block also feeds every later block inputs it never saw", 24, MUTED).to_edge(DOWN, buff=0.4)
         p_m3 = ko[5][2]; p_a2 = ko[2][2]
-        with self.say(f"For interpretability, this is a gift. Every note is just a vector you can measure, read, or erase. "
+        with self.say(f"For interpretability, every note is just a vector you can measure, read, or erase. "
                       f"Erase layer 3's MLP note, and red falls to {p_m3 * 100:.0f} percent. Erase layer 2's attention, home of "
                       f"the color-copying head, and it falls to {p_a2 * 100:.0f}.",
                       scene="Real knockouts: P(' red') with nothing removed vs with one block's output erased (zeroed at every "
                             "position): " + ", ".join(f"{n} {p * 100:.1f}%" for n, _, p in allr) + ".",
                       chapter="Why it matters"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ax, curve, dots, xl, yl, at, v_s, v_e, lng, cmp, cmp_t)), ReplacementTransform(hdr3, hdr4),
+            self.play(FadeOut(VGroup(ax, curve, dots, xl, yl, at, v_s, v_e, lng, cmp, cmp_t, still_t)), ReplacementTransform(hdr3, hdr4),
                       run_time=0.5)
-            self.play(FadeIn(kt), FadeIn(krows[0][0]), GrowFromEdge(krows[0][1], LEFT), FadeIn(krows[0][2]), run_time=0.6)
+            self.play(FadeIn(kt), FadeIn(blunt), FadeIn(krows[0][0]), GrowFromEdge(krows[0][1], LEFT), FadeIn(krows[0][2]), run_time=0.6)
             self.sync("Erase layer 3", 0.1)
             self.play(LaggedStart(*[AnimationGroup(FadeIn(r[0]), GrowFromEdge(r[1], LEFT), FadeIn(r[2])) for r in krows[1:]],
                                   lag_ratio=0.12), run_time=1.0)
@@ -329,14 +351,14 @@ class ResidualStream(VScene):
         grad = DashedVMobject(Arrow([5.0, ys - 0.45, 0], [-5.0, ys - 0.45, 0], buff=0, color=ORANGE, stroke_width=4,
                                     max_tip_length_to_length_ratio=0.03), num_dashes=40)
         grad_l = self.T("gradient: straight back through every +", 24, ORANGE).next_to(grad, DOWN, buff=0.12)
-        with self.say("And for design. Because blocks add instead of overwrite, gradients flow straight back through the "
-                      "plus signs. That's a big part of why very deep networks can train at all. Many newer architectures keep this whiteboard, "
-                      "and change what writes on it.",
+        with self.say("For design: because blocks add instead of overwrite, gradients flow straight back through the plus signs, "
+                      "a big part of why deep networks can train at all. Many newer architectures keep the whiteboard and change "
+                      "what writes on it.",
                       scene="Two design takeaways: 'add, don't overwrite' (gradients flow straight back through the additions, "
                             "which lets very deep networks train) and 'keep the board, swap the writers' (e.g. mixture-of-experts "
                             "MLPs, new kinds of token mixing)."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(kt, krows)), run_time=0.4)
+            self.play(FadeOut(VGroup(kt, krows, blunt)), run_time=0.4)
             self.play(GrowArrow(dstream), FadeIn(dblocks), FadeIn(djoin), run_time=0.7)
             self.play(Create(grad), FadeIn(grad_l), FadeIn(g1, shift=UP * 0.2), run_time=0.9)
             self.mark("highway", VGroup(dstream, djoin, grad, grad_l), "the + junctions pass gradients straight back to early layers")
@@ -353,13 +375,15 @@ class ResidualStream(VScene):
             c = self.chip(t, PINK if t == " red" else MUTED, 28)
             pp = self.M(f"{p * 100:.0f}%", 24, PINK if t == " red" else MUTED)
             lab_chips.add(VGroup(c, pp).arrange(DOWN, buff=0.1).move_to([-4.8 + 3.2 * k, 0.4, 0]))
+        rec_l = VGroup(*[self.T(t_, 24, MUTED).move_to([-4.8 + 3.2 * k, -1.05, 0])
+                         for k, t_ in enumerate(["after embedding", "after layer 1", "after layer 2", "after layer 3"])])
         cta = self.T("now watch the board fill up in the X-ray →", 42, YELLOW, BOLD).move_to(DOWN * 2.4)
         with self.say("One shared board. Six notes. One readout. Go watch it fill up in the X-ray.",
                       scene="Recap: the stream arrow with the logit-lens guesses along it (' the' → ' the' → ' white' → ' red'). "
                             "CTA: watch the board fill up in the X-ray.", chapter="Recap"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(g, hdr4, dstream, dblocks, djoin, grad, grad_l)), run_time=0.4)
-            self.play(GrowArrow(stream2), LaggedStart(*[FadeIn(c, shift=UP * 0.2) for c in lab_chips], lag_ratio=0.25), run_time=1.2)
+            self.play(GrowArrow(stream2), LaggedStart(*[FadeIn(c, shift=UP * 0.2) for c in lab_chips], lag_ratio=0.25), FadeIn(rec_l), run_time=1.2)
             self.mark("recap", VGroup(stream2, lab_chips), "logit-lens guesses along the stream: " +
                       " → ".join(f'"{lens_res[nm][0][0]}" {lens_res[nm][0][1] * 100:.0f}%' for nm, _ in checkpoints))
             self.sync("Go watch", 0.1)

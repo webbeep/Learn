@@ -162,13 +162,13 @@ class Loss(VScene):
         k_end = max(k for k, (a, b, p, l) in enumerate(TL) if a == " the" and b == " red")
         _, _, p_end, l_end = TL[k_end]
         best = 1 / n_colors
-        c1 = VGroup(self.M('"mia has a" → "red"', 28, PINK), self.M(f"p {p_col * 100:.1f}%  loss {l_col:.2f}", 28, FG),
-                    self.T(f"{n_colors} colors can follow \"a\" ({', '.join(vowel_cols)} takes \"an\")", 26, MUTED),
-                    self.T(f"best possible: 1/{n_colors} = {best * 100:.1f}% · the model: {p_col * 100:.1f}%", 26, MUTED)
+        c1 = VGroup(self.M('"mia has a" → "red"', 26, PINK), self.M(f"p {p_col * 100:.1f}%  loss {l_col:.2f}", 26, FG),
+                    self.T(f"{n_colors} colors can follow \"a\" ({', '.join(vowel_cols)} takes \"an\")", 24, MUTED),
+                    self.T(f"best possible 1/{n_colors} = {best * 100:.1f}% · model {p_col * 100:.1f}%", 24, MUTED)
                     ).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
-        c2 = VGroup(self.M('"now tom has the" → "red"', 28, TEAL), self.M(f"p {p_end * 100:.1f}%  loss {l_end:.2f}", 28, FG),
-                    self.T("predictable from the story", 26, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
-        cc = VGroup(c1, c2).arrange(RIGHT, buff=1.0, aligned_edge=UP).move_to(UP * 2.1)
+        c2 = VGroup(self.M('"now tom has the" → "red"', 26, TEAL), self.M(f"p {p_end * 100:.1f}%  loss {l_end:.2f}", 26, FG),
+                    self.T("predictable from the story", 24, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+        cc = VGroup(c1, c2).arrange(RIGHT, buff=0.8, aligned_edge=UP).move_to(UP * 2.1)
         avg = VGroup(self.T(f"average of all {n}:", 30, FG), self.M(f"{mean_story:.2f}", 36, YELLOW, weight=BOLD)).arrange(RIGHT, buff=0.3)
         with self.say(f"The first red is a pure guess. Only {n_colors} colors can follow 'a', since {', '.join(vowel_cols)} takes 'an', "
                       f"so the best possible is {best * 100:.1f} percent. The model gives {p_col * 100:.1f}: essentially perfect. "
@@ -229,7 +229,7 @@ class Loss(VScene):
                      Rectangle(width=0.2 * (pplf - 1), height=0.2, stroke_width=0, fill_color=TEAL, fill_opacity=0.5)
                      ).arrange(RIGHT, buff=0.05, aligned_edge=LEFT)
         sqf.move_to(ghost.get_corner(UL) + sqf.get_center() - sqf.get_corner(UL))
-        ghost_l = self.T("same scale: 1 square = 1 choice (an average)", 24, MUTED).next_to(ghost, DOWN, buff=0.15)
+        ghost_l = self.T("same scale; an average over tokens", 24, MUTED).next_to(ghost, DOWN, buff=0.15)
         lf = VGroup(self.T("step 3000", 30, TEAL, BOLD), self.M(f"e^{LOSS[-1]:.2f} ≈ {pplf:.1f} choices", 28, TEAL)).arrange(DOWN, buff=0.12)
         lf.move_to([ghost.get_x(), l0.get_y(), 0])
         with self.say(f"Take e to the loss, and you get perplexity: roughly how many tokens it's choosing between. At step zero, "
@@ -351,9 +351,9 @@ class Loss(VScene):
         rng = np.random.default_rng(3)
         mean_dir = np.array([1.0, 0.35, 0])
         org = RIGHT * 1.2 + UP * 0.2
-        smalls = VGroup(*[Arrow(org, org + 1.1 * (mean_dir + rng.normal(0, 0.75, 3) * np.array([1, 1, 0])), buff=0,
+        smalls = VGroup(*[Arrow(org, org + 1.5 * (mean_dir + rng.normal(0, 0.55, 3) * np.array([1, 1, 0])), buff=0,
                                 color=MUTED, stroke_width=2.5, max_tip_length_to_length_ratio=0.2) for _ in range(12)])
-        big = Arrow(org, org + 1.5 * mean_dir, buff=0, color=YELLOW, stroke_width=7, max_tip_length_to_length_ratio=0.2)
+        big = Arrow(org, org + 1.8 * mean_dir, buff=0, color=YELLOW, stroke_width=7, max_tip_length_to_length_ratio=0.2)
         toy_l = self.T("toy picture", 24, MUTED).next_to(smalls, UP, buff=0.15)
         vote = self.T("every token casts a small vote on each nudge", 26, FG).next_to(eq, DOWN, buff=0.15)
         with self.say("Here's why that works. The gradient of an average is just the average of the gradients.",

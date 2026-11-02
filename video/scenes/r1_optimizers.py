@@ -21,8 +21,23 @@ def best(runs):
     return min(ok, key=lambda r: r["final_val"])
 
 
+WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+
+
 def spk(lr):
-    return f"{lr:.6f}".rstrip("0").rstrip(".")
+    """Learning rate as words, so TTS doesn't read digits one by one: 1e-4 → 'one e minus four'."""
+    if lr >= 0.01:
+        return f"{lr:g}"
+    e = int(math.floor(math.log10(lr) + 1e-9)); m = round(lr / 10 ** e)
+    return f"{WORDS[m]} e minus {WORDS[-e]}"
+
+
+def short_name(n):
+    """'blocks.0.ln1.weight' → 'block1.ln1.w' (1-indexed like the other videos)."""
+    if n.startswith("blocks."):
+        _, i, rest = n.split(".", 2)
+        n = f"block{int(i) + 1}.{rest}"
+    return n.replace(".weight", ".w").replace(".bias", ".b")
 
 
 def fv(r):
@@ -52,13 +67,15 @@ class Optimizers(VScene):
                             self.M(f"lr {fmt_lr(r['lr']):>5}", 22, c), self.M(fv(r), 22, FG)).arrange(RIGHT, buff=0.18))
         labs.arrange(DOWN, aligned_edge=LEFT, buff=0.2).next_to(pl.ax, RIGHT, buff=0.5)
         lhead = self.T("AdamW, final val loss", 22, MUTED).next_to(labs, UP, buff=0.25).align_to(labs, LEFT)
-        lo, hi = min(r["final_val"] for r in ADAM if r["final_val"]), max(r["final_val"] or 99 for r in ADAM)
-        with self.say(f"Same model, same data, same {STEPS:,} steps. The only thing that changed is one number: the "
-                      f"learning rate. And it decides everything.",
+        cav0 = self.T(f"sweep setup: constant learning rate · no warmup · no clipping · 1 seed · {STEPS:,} steps",
+                      22, MUTED).to_edge(DOWN, buff=0.3)
+        with self.say(f"Same model, same data, same {STEPS:,} steps. Only one number changed: the learning rate. And it "
+                      f"decides everything.",
                       scene=f"Real validation-loss curves of TinyGPT trained {STEPS} steps with AdamW at 7 learning rates "
                             f"(1e-4 … 0.1): " + ", ".join(f"lr {fmt_lr(r['lr'])} → {fv(r)}" for r in ADAM) + ".",
                       chapter="One knob"):
-            self.play(FadeIn(pl), FadeIn(lhead), run_time=0.6)
+            self.play(FadeIn(pl), FadeIn(lhead), FadeIn(cav0), run_time=0.6)
+            self.mark("sweep-setup", cav0, f"sweep setup: constant LR, no warmup, no gradient clipping, seed 0, {STEPS} steps")
             self.play(LaggedStart(*[Create(c) for c in curves], lag_ratio=0.12), LaggedStart(
                 *[FadeIn(l, shift=LEFT * 0.2) for l in labs], lag_ratio=0.12), run_time=2.6)
             for r, c, l in zip(ADAM, curves, labs):
@@ -92,7 +109,7 @@ class Optimizers(VScene):
                       scene="Toy 1-D loss landscape (illustration) with a yellow ball, an orange tangent showing the slope, "
                             "and the update rule w ← w − lr × slope; the ball takes 8 steps downhill.", chapter="Downhill"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(pl, curves, labs, lhead)), FadeIn(hdr), run_time=0.4)
+            self.play(FadeOut(VGroup(pl, curves, labs, lhead, cav0)), FadeIn(hdr), run_time=0.4)
             self.play(Create(ax), Create(land), FadeIn(tag), FadeIn(ball, scale=2), run_time=0.8)
             self.mark("landscape", land, "toy loss landscape (illustration, one weight)")
             self.sync("The gradient", 0.1)
@@ -115,7 +132,10 @@ class Optimizers(VScene):
                      axis_config={"color": LINE, "stroke_width": 2})
             bowl = a.plot(lambda x: 0.5 * x * x, x_range=[-2.7, 2.7, 0.02], color=BLUE, stroke_width=3)
             ttl = self.T(name, 30, col, BOLD).next_to(a, UP, buff=0.2)
-            sub = self.M(f"lr × curvature = {klr:g}", 22, MUTED).next_to(a, DOWN, buff=0.3)
+            sub = self.M(f"lr × curvature = {klr:g}" + (" > 2" if klr > 2 else ""), 22, PINK if klr > 2 else MUTED)
+            sub.next_to(a, DOWN, buff=0.3)
+            if klr > 2:
+                sub = VGroup(sub, self.T("→ diverges", 22, PINK).next_to(sub, DOWN, buff=0.1))
             xs_ = [-1.6]
             for _ in range(7):
                 xs_.append(xs_[-1] * (1 - klr))
@@ -139,8 +159,8 @@ class Optimizers(VScene):
             paths.append(VMobject(stroke_color=col, stroke_width=3).set_points_as_corners(pts))
             balls.append((Dot(pts[0], radius=0.12, color=col), pts))
         tag2 = illus("toy bowl · illustration").to_edge(DOWN, buff=0.5)
-        with self.say("Too small, and you crawl. Just right, and you settle in a few steps. Too big, and every step "
-                      "overshoots the valley, bouncing higher and higher.",
+        with self.say("Too small: you crawl. Just right: you settle in a few steps. Too big: every step overshoots, "
+                      "bouncing higher and higher.",
                       scene="Three toy bowls (illustration): too small (creeps), just right (settles), too big "
                             "(overshoots, bouncing out of the valley).", chapter="Too small, too big"):
             self.unmark(*list(self._marks))
@@ -190,8 +210,8 @@ class Optimizers(VScene):
             return Ellipse(width=2 * a, height=2 * b, color=col, stroke_width=1.5, stroke_opacity=0.7).move_to([0.9, y0, 0])
         rows = VGroup()
         trails = []
-        for name, lr, beta, col, y0 in [("plain gradient descent", 0.17, 0.0, ORANGE, 1.15),
-                                        ("with momentum (β = 0.8)", 0.1, 0.8, TEAL, -2.0)]:
+        for name, lr, beta, col, y0 in [("plain gradient descent (lr 0.19)", 0.19, 0.0, ORANGE, 1.15),
+                                        ("same lr + momentum (β = 0.5)", 0.19, 0.5, TEAL, -2.0)]:
             cont = VGroup(*[ell(l, y0, BLUE if l < 0.3 else LINE) for l in (0.08, 0.6, 1.6, 3.4)])
             P = run(lr, beta)
             pts = [c2(p, y0) for p in P]
@@ -203,11 +223,13 @@ class Optimizers(VScene):
             res.next_to(lab, RIGHT, buff=0.5)
             rows.add(VGroup(cont, star, lab, res)); trails.append((tr, dots))
         tag3 = illus("toy valley · illustration").to_corner(DR, buff=0.4)
-        with self.say("Real loss landscapes have long, narrow valleys. Plain gradient descent zigzags across the walls and "
-                      "barely moves along the floor. Momentum keeps a running average of past steps, so the zigzags "
-                      "cancel and it picks up speed.",
-                      scene="Toy 2-D elongated valley (illustration, contour ellipses). Top: plain gradient descent zigzags "
-                            "and covers little ground in 30 steps; bottom: momentum (β=0.8) builds speed along the floor.",
+        with self.say("Loss landscapes often have long, narrow valleys. Plain gradient descent zigzags across the walls and "
+                      "creeps along the floor. Momentum adds up past gradients: the back-and-forth parts cancel, and the "
+                      "steady downhill part builds speed.",
+                      scene="Toy 2-D elongated valley (illustration, contour ellipses), same learning rate 0.19 for both. "
+                            "Top: plain gradient descent zigzags for all 30 steps and ends 1.41 from the minimum; bottom: "
+                            "with momentum (β=0.5, v = 0.5·v + gradient) the zigzag dies out within ~8 steps and it ends "
+                            "0.32 from the minimum.",
                       chapter="Momentum"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(pl2, cs, tl)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
@@ -217,17 +239,18 @@ class Optimizers(VScene):
             self.play(FadeIn(rows[0][2]), Create(trails[0][0]), FadeIn(trails[0][1], lag_ratio=0.1), run_time=1.6)
             self.play(FadeIn(rows[0][3]), run_time=0.3)
             self.mark("gd-path", VGroup(trails[0][0], rows[0][2]), "toy: plain gradient descent zigzags across the valley")
-            self.sync("Momentum keeps", 0.1)
+            self.sync("Momentum adds", 0.1)
             self.play(FadeIn(rows[1][2]), Create(trails[1][0]), FadeIn(trails[1][1], lag_ratio=0.1), run_time=1.6)
             self.play(FadeIn(rows[1][3]), run_time=0.3)
-            self.mark("mom-path", VGroup(trails[1][0], rows[1][2]), "toy: momentum averages steps and speeds along the floor")
+            self.mark("mom-path", VGroup(trails[1][0], rows[1][2]), "toy: momentum sums past gradients; zigzags cancel, speed builds along the floor")
         pl3 = self.lr_plot(w=10.5).move_to(DOWN * 0.35)
         pair = [(S_BEST, ORANGE, "SGD"), (M_BEST, TEAL, "SGD + momentum 0.9")]
         cs3 = VGroup(*[pl3.line(r["curve"]["step"], r["curve"]["val"], c, 4) for r, c, _ in pair])
         lg3 = VGroup(*[VGroup(self.T(n, 24, c, BOLD), self.M(f"best lr {fmt_lr(r['lr'])} → {fv(r)}", 22, c))
                        .arrange(RIGHT, buff=0.2) for r, c, n in pair]).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
         lg3.move_to(pl3.p(STEPS, 5.5), aligned_edge=RIGHT)
-        with self.say(f"On the real model, the best plain SGD run ends at {fv(S_BEST)}. With momentum, {fv(M_BEST)}.",
+        with self.say(f"On the real model, the best plain SGD ends at {fv(S_BEST)}. With momentum, {fv(M_BEST)}, at a "
+                      f"lower learning rate, since momentum sums gradients.",
                       scene=f"Real runs, best learning rate of each: SGD (lr {fmt_lr(S_BEST['lr'])}) → {fv(S_BEST)}, "
                             f"SGD + momentum 0.9 (lr {fmt_lr(M_BEST['lr'])}) → {fv(M_BEST)}."):
             self.unmark(*list(self._marks))
@@ -253,16 +276,19 @@ class Optimizers(VScene):
         for k, (n, v) in enumerate(zip(pick, vals)):
             y = len(pick) - k - 0.5
             r = Rectangle(width=max(0.05, bp.p(v, y)[0] - bp.p(1e-5, y)[0]), height=0.36, stroke_width=0,
-                          fill_color=BLUE if v < 1e-3 else ORANGE, fill_opacity=0.85)
+                          fill_color=BLUE, fill_opacity=0.85)
             r.move_to(bp.p(1e-5, y), aligned_edge=LEFT)
             bars.add(r)
-            names.add(self.M(n.replace("blocks.", "b").replace(".weight", ".w").replace(".bias", ".b"), 22, FG)
+            names.add(self.M(short_name(n), 22, FG)
                       .next_to(bp.p(1e-5, y), LEFT, buff=0.2))
         sp = self.T(f"{spread:.0f}× spread", 34, YELLOW, BOLD).next_to(bp.ax, UP, buff=0.5).align_to(bp.ax, RIGHT)
-        src = self.T("real gradients · fresh TinyGPT at step 0 · one batch", 22, MUTED).next_to(sp, LEFT, buff=0.6).align_to(sp, DOWN)
-        with self.say(f"Here's the catch. In the real model at step zero, typical gradient sizes differ by "
-                      f"{spread:.0f} times between weight tensors. One learning rate is too big for some and too small "
-                      f"for others.",
+        src = self.T("real gradients at initialisation (step 0) · one batch", 22, MUTED).next_to(sp, LEFT, buff=0.6).align_to(sp, DOWN)
+        tr_vals = [t["grad_rms"] for t in GR["per_tensor"]]
+        all0 = [t["grad_rms_step0"] for t in GR["per_tensor"]]
+        spread_tr = max(tr_vals) / min(tr_vals)
+        trn = self.T(f"after training the spread is still {spread_tr:.0f}×", 22, MUTED).next_to(bp.xt, DOWN, buff=0.2)
+        with self.say(f"Here's the catch. At step zero, typical gradient sizes differ {spread:.0f} times between weight "
+                      f"tensors. One learning rate can't suit them all.",
                       scene=f"Real per-weight gradient size (RMS of the gradient) for 8 of TinyGPT's tensors at "
                             f"initialisation, log scale: from {lo_:.1e} ({pick[0]}) to {hi_:.1e} ({pick[-1]}), a "
                             f"{spread:.0f}× spread.", chapter="Adam"):
@@ -273,23 +299,32 @@ class Optimizers(VScene):
             for n, b, nm, v in zip(pick, bars, names, vals):
                 self.mark("g-" + n, VGroup(b, nm), f"{n}: gradient RMS {v:.2e} per weight at step 0")
             self.sync("differ", 0.1)
-            self.play(FadeIn(sp, scale=1.2), run_time=0.4)
-            self.mark("spread", sp, f"largest / smallest gradient size = {spread:.0f}×")
+            self.play(FadeIn(sp, scale=1.2), FadeIn(trn), run_time=0.4)
+            self.mark("spread", sp, f"largest / smallest gradient size at step 0 = {spread:.0f}× "
+                                    f"(over all {len(all0)} tensors: {max(all0) / min(all0):.0f}×)")
+            self.mark("spread-trained", trn, f"on the trained model the spread is {spread_tr:.0f}×")
 
+        den_t = self.M("avg(gradient²)", 32, TEAL)
+        root = self.M("√", 40, TEAL).next_to(den_t, LEFT, buff=0.02).align_to(den_t, DOWN)
+        vinc = Line(root.get_corner(UR) + LEFT * 0.03, [den_t.get_right()[0], root.get_top()[1], 0], color=TEAL, stroke_width=2.5)
+        den = VGroup(root, vinc, den_t)
+        num = self.M("avg(gradient)", 32, ORANGE)
         form = VGroup(self.M("step", 36, FG), self.M("=", 36, MUTED), self.M("lr", 36, YELLOW), self.M("×", 36, MUTED),
-                      VGroup(self.M("avg(gradient)", 32, ORANGE), Line(LEFT * 1.6, RIGHT * 1.6, color=FG, stroke_width=2),
-                             self.M("√avg(gradient²)", 32, TEAL)).arrange(DOWN, buff=0.12)).arrange(RIGHT, buff=0.25)
+                      VGroup(num, Line(LEFT * 1.85, RIGHT * 1.85, color=FG, stroke_width=2.5), den).arrange(DOWN, buff=0.3))
+        form.arrange(RIGHT, buff=0.25)
         form.move_to(UP * 0.8)
         f1 = self.T("momentum: the direction, smoothed", 26, ORANGE).next_to(form, UP, buff=0.5).shift(RIGHT * 2.0)
         f2 = self.T("each weight's own typical gradient size", 26, TEAL).next_to(form, DOWN, buff=0.5).shift(RIGHT * 2.0)
-        res = self.T("→ every weight moves about lr per step, whatever its gradient scale", 30, FG).move_to(DOWN * 2.3)
-        with self.say("Adam fixes that. It keeps two running averages for every single weight: the gradient, which is "
-                      "momentum, and the gradient squared. Dividing one by the square root of the other gives every weight "
-                      "its own step size.",
+        res = self.T("→ each weight moves at most ~lr per step, whatever its gradient scale", 28, FG).move_to(DOWN * 2.1)
+        defaults = self.T("PyTorch defaults: β1 = 0.9 (gradient avg), β2 = 0.999 (squared avg), + tiny ε", 22, MUTED)
+        defaults.next_to(res, DOWN, buff=0.3)
+        with self.say("Adam keeps two running averages for every weight: the gradient, which is momentum, and the "
+                      "gradient squared. Dividing one by the square root of the other gives each weight its own step size.",
                       scene="Adam's update: step = lr × avg(gradient) / √avg(gradient²). Top term = momentum (smoothed "
-                            "direction); bottom = each weight's own typical gradient size, so every weight moves about lr per step."):
+                            "direction); bottom = each weight's own typical gradient size, so each weight moves at most about "
+                            "lr per step. PyTorch defaults β1 0.9, β2 0.999, + ε."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(bp, bars, names, sp, src)), run_time=0.4)
+            self.play(FadeOut(VGroup(bp, bars, names, sp, src, trn)), run_time=0.4)
             self.play(FadeIn(form, shift=UP * 0.2), run_time=0.6)
             self.mark("adam-rule", form, "Adam: step = lr × avg(g) / sqrt(avg(g²)) (+ small ε), per weight")
             self.sync("the gradient,", 0.1)
@@ -297,8 +332,11 @@ class Optimizers(VScene):
             self.sync("gradient squared", 0.1)
             self.play(FadeIn(f2), Indicate(form[4][2], color=TEAL), run_time=0.6)
             self.sync("Dividing", 0.1)
-            self.play(FadeIn(res, shift=UP * 0.2), run_time=0.5)
-            self.mark("adam-result", res, "Adam normalises step sizes per weight")
+            self.play(FadeIn(res, shift=UP * 0.2), FadeIn(defaults), run_time=0.5)
+            self.mark("adam-result", res, "Adam normalises step sizes per weight: at most about lr when the gradient "
+                                          "sign is consistent, smaller when it is noisy")
+            self.mark("adam-defaults", defaults, "Adam hyper-parameters: beta1 0.9, beta2 0.999, epsilon 1e-8, with bias "
+                                                 "correction for the first steps")
 
         # ------------------------------------------------------------ why AdamW: robustness map
         hdr5 = self.header("Why AdamW")
@@ -330,20 +368,24 @@ class Optimizers(VScene):
             row[1].move_to([-3.25, row[1].get_y(), 0], aligned_edge=LEFT)
             row[0].next_to(row[1], LEFT, buff=0.35)
         n_ok = {name: sum(1 for r in runs if not r["diverged"] and r["final_val"] <= good) for name, runs, _ in groups}
-        cap = self.T(f"each box: learning rate → final val loss after {STEPS:,} steps · teal = within 25% of the best "
-                     f"({good:.2f})", 22, MUTED).to_edge(DOWN, buff=0.45)
+        cap = VGroup(self.T(f"each box: learning rate → final val loss · teal = within 25% of the best ({good:.2f})", 22, MUTED),
+                     self.T(f"one sweep: 1 seed, {STEPS:,} steps, constant learning rate", 22, MUTED)).arrange(DOWN, buff=0.1)
+        cap.to_edge(DOWN, buff=0.35)
         ok_lrs = [r["lr"] for r in ADAM if not r["diverged"] and r["final_val"] <= good]
         span = max(ok_lrs) / min(ok_lrs)
-        with self.say(f"AdamW is Adam plus weight decay applied straight to the weights. In our sweep, "
-                      f"{n_ok['AdamW']} of its learning rates landed near the best, across a {span:.0f}-fold range. "
-                      f"Momentum SGD, {n_ok['SGD + momentum']}. Plain SGD, {n_ok['SGD'] if n_ok['SGD'] else 'none'}. "
-                      f"Tuned momentum gets close on a model this small, but AdamW forgives a rough guess. That's why it's "
-                      f"the default for training transformers.",
+        ok_m = [r["lr"] for r in MOM if not r["diverged"] and r["final_val"] <= good]
+        span_m = max(ok_m) / min(ok_m) if ok_m else 0
+        wd = VGroup(self.T("weight decay: shrink every weight a little each step", 22, BLUE),
+                    self.T("AdamW applies it to the weights directly, not through Adam's rescaled gradient", 22, BLUE)) \
+            .arrange(DOWN, buff=0.08).next_to(rows_, UP, buff=0.4)
+        with self.say(f"AdamW adds weight decay, a small shrink of every weight each step, applied directly to the "
+                      f"weights. In this one sweep its good range spans {span:.0f} times; momentum SGD's, {span_m:.0f}; plain "
+                      f"SGD never got close. That forgiveness is a big reason it's the usual default.",
                       scene=f"Grid of every real sweep run (learning rate → final val loss). Teal boxes are within 25% of "
                             f"the best ({good:.2f}): AdamW {n_ok['AdamW']}/{len(ADAM)}, SGD+momentum "
                             f"{n_ok['SGD + momentum']}/{len(MOM)}, SGD {n_ok['SGD']}/{len(SGD)}.", chapter="Why AdamW"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(form, f1, f2, res)), ReplacementTransform(hdr4, hdr5), run_time=0.4)
+            self.play(FadeOut(VGroup(form, f1, f2, res, defaults)), ReplacementTransform(hdr4, hdr5), run_time=0.4)
             for k, row in enumerate(rows_):
                 self.play(FadeIn(row[0]), LaggedStart(*[FadeIn(c, scale=0.9) for c in row[1]], lag_ratio=0.08),
                           run_time=0.7)
@@ -351,21 +393,55 @@ class Optimizers(VScene):
                 for r, c in zip(runs, row[1]):
                     self.mark(f"cell-{name}-{fmt_lr(r['lr'])}", c, f"{name} lr {fmt_lr(r['lr'])}: final val {fv(r)}"
                               + (" (diverged)" if r["diverged"] else ""))
-            self.play(FadeIn(cap), run_time=0.3)
+            self.play(FadeIn(cap), FadeIn(wd), run_time=0.3)
+            self.mark("wd", wd, "weight decay shrinks each weight by lr × 0.05 × weight per step (AdamW, decoupled)")
+
+        # ------------------------------------------------------------ schedule (the recipe used everywhere else)
+        hdr6 = self.header("Schedule")
+        S_STEPS, S_LR, WARM = 3000, 3e-3, 100     # the shipped model's recipe (train/train.py)
+        sched = lambda st: S_LR * min(1, (st + 1) / WARM) * 0.5 * (1 + math.cos(math.pi * st / S_STEPS))
+        ps_ = Plot([0, S_STEPS], [0, 3.2e-3], width=9.0, height=3.8, xticks=[0, 1000, 2000, 3000],
+                   yticks=[0, 1e-3, 2e-3, 3e-3], xlabel="training step (shipped TinyGPT recipe)", ylabel="learning rate",
+                   yfmt=lambda v: "0" if v == 0 else f"{v * 1e3:g}e-3").move_to(DOWN * 0.4 + LEFT * 0.6)
+        xs_s = list(range(0, S_STEPS + 1, 10))
+        lr_line = ps_.line(xs_s, [sched(x) for x in xs_s], YELLOW, 4)
+        wl = self.T("warm-up: first 100 steps", 24, TEAL).move_to(ps_.p(260, 0.9e-3), aligned_edge=LEFT)
+        warm = VGroup(Arrow(wl.get_left() + LEFT * 0.05, ps_.p(60, 1.9e-3), buff=0.05, color=TEAL, stroke_width=3), wl)
+        dec = self.T("cosine decay to 0", 24, ORANGE).move_to(ps_.p(2350, 1.4e-3))
+        clip = self.T("+ gradient clipping: rescale any step whose gradient norm exceeds 1.0", 22, MUTED).to_edge(DOWN, buff=0.35)
+        with self.say("Our real recipe also uses a schedule: warm up for 100 steps while Adam's averages are still noisy, "
+                      "then decay along a cosine so the model settles. The sweep kept the rate constant on purpose.",
+                      scene=f"Real learning-rate schedule of the shipped TinyGPT recipe (train/train.py): linear warm-up over "
+                            f"{WARM} steps to {S_LR:g}, then cosine decay to 0 at step {S_STEPS}; plus gradient clipping at "
+                            f"norm 1.0. The sweep in this video used a constant rate instead.", chapter="Schedule"):
+            self.unmark(*list(self._marks))
+            self.play(FadeOut(VGroup(rows_, cap, wd)), ReplacementTransform(hdr5, hdr6), run_time=0.4)
+            self.play(FadeIn(ps_), run_time=0.4)
+            self.play(Create(lr_line), run_time=1.6, rate_func=linear)
+            self.mark("schedule", lr_line, f"learning rate: linear warm-up over {WARM} steps to {S_LR:g}, cosine decay to 0 "
+                                           f"at step {S_STEPS}")
+            self.sync("warm up", 0.1)
+            self.play(FadeIn(warm), run_time=0.4)
+            self.mark("warmup", warm, "warm-up: the rate ramps from ~0 to 3e-3 over the first 100 steps")
+            self.sync("then decay", 0.1)
+            self.play(FadeIn(dec), FadeIn(clip), run_time=0.4)
+            self.mark("decay", dec, "cosine decay: lr = 3e-3 × ½(1 + cos(π·step/3000))")
+            self.mark("clip", clip, "gradient clipping at total norm 1.0")
 
         # ------------------------------------------------------------ recap
-        tips = VGroup(*[pill(t, c, 30) for t, c in [
-            ("start with AdamW", BLUE), (f"sweep the learning rate ×3 at a time", YELLOW),
-            ("warm up, then decay", TEAL), ("loss spikes? lower it", PINK)]]).arrange(DOWN, buff=0.35, aligned_edge=LEFT)
+        tip_txt = [("start with AdamW", BLUE), ("sweep the learning rate ×3 at a time", YELLOW),
+                   ("warm up, then decay", TEAL), ("loss spikes? lower it", PINK)]
+        tips = VGroup(*[pill(t, c, 30) for t, c in tip_txt]).arrange(DOWN, buff=0.35, aligned_edge=LEFT)
         tips.move_to(DOWN * 0.1)
         with self.say("So: start with AdamW, sweep the learning rate in steps of three, warm up then decay, and if the "
                       "loss spikes, turn it down.",
                       scene="Recap pills: start with AdamW; sweep the learning rate ×3 at a time; warm up, then decay; "
                             "loss spikes → lower it.", chapter="Recap"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(rows_, cap)), ReplacementTransform(hdr5, self.header("Recap")), run_time=0.4)
+            self.play(FadeOut(VGroup(ps_, lr_line, warm, dec, clip)), ReplacementTransform(hdr6, self.header("Recap")),
+                      run_time=0.4)
             for k, ph in enumerate(["start with", "sweep", "warm up", "if the"]):
                 self.sync(ph, 0.1)
                 self.play(FadeIn(tips[k], shift=RIGHT * 0.2), run_time=0.3)
-                self.mark(f"tip-{k}", tips[k], tips[k][1].text)
-        self.wait(0.8)
+                self.mark(f"tip-{k}", tips[k], "recap: " + tip_txt[k][0])
+        self.wait(0.6)

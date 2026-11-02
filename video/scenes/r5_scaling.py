@@ -11,6 +11,17 @@ SC = load("scaling")
 RUNS = SC["runs"]
 FIT = SC["fit"]
 TOK = RUNS[0]["tokens_seen"]
+ABL = load("ablations"); OVF = load("overfit")
+BASE_RUN = next(r for r in RUNS if r["id"] == "base")
+ABL_BASE = next(r for r in ABL["runs"] if r["id"] == "baseline")
+ABL_TOK = ABL["steps"] * ABL["batch"] * 64
+OV256 = next(r for r in OVF["runs"] if r["data_tokens"] == 262144)
+OVALL = OVF["runs"][-1]
+
+
+def nfmt(v):
+    """1k, 10k, 100k, 1M, 10M"""
+    return f"{v / 1e6:g}M" if v >= 1e6 else f"{v / 1e3:g}k"
 COLS = ["#5fd0ff", BLUE, "#b48cff", TEAL, YELLOW, ORANGE, PINK]
 
 
@@ -63,23 +74,30 @@ class Scaling(VScene):
         xlo = 10 ** math.floor(math.log10(min(N))); xhi = 10 ** math.ceil(math.log10(max(N)))
         ylo, yhi = 0.3, math.ceil(max(L) * 5) / 5 + 0.1
         yt = [round(0.4 + k * 0.2, 1) for k in range(int((yhi - 0.4) / 0.2) + 1)]
-        ps = Plot([xlo, xhi], [ylo, yhi], width=8.0, height=4.6, xlog=True,
+        ps = Plot([xlo, xhi], [ylo, yhi], width=7.6, height=4.6, xlog=True,
                   xticks=[10 ** e for e in range(int(math.log10(xlo)), int(math.log10(xhi)) + 1)], yticks=yt,
                   xlabel="non-embedding parameters (log scale)", ylabel="final validation loss",
-                  xfmt=lambda v: fmt_n(v)).move_to(DOWN * 0.4 + LEFT * 2.3)
+                  xfmt=nfmt).move_to(DOWN * 0.4 + LEFT * 2.3)
         dots = VGroup(*[Dot(ps.p(n, l), radius=0.1, color=c) for n, l, c in zip(N, L, COLS)])
         x_fit0 = max(math.log10(xlo), math.log10(((yhi - FIT["c"]) / FIT["a"]) ** (-1 / FIT["alpha"])) + 0.02)
-        fit = ps.ax.plot(lambda lx: law(10 ** lx), x_range=[x_fit0, math.log10(xhi), 0.02], color=FG,
-                         stroke_width=3)
+        x_fit1 = math.log10(max(N))
+        fit = VGroup(ps.ax.plot(lambda lx: law(10 ** lx), x_range=[x_fit0, x_fit1, 0.02], color=FG, stroke_width=3),
+                     DashedVMobject(ps.ax.plot(lambda lx: law(10 ** lx), x_range=[x_fit1, math.log10(xhi), 0.02],
+                                               color=FG, stroke_width=2.5), num_dashes=12))
         floor = DashedLine(ps.p(xlo, FIT["c"]), ps.p(xhi, FIT["c"]), color=MUTED, stroke_width=2, dash_length=0.1)
-        fl = self.T(f"floor c = {FIT['c']:.2f}", 22, MUTED).next_to(ps.p(xlo, FIT["c"]), DOWN, buff=0.1).shift(RIGHT * 1.2)
-        form = VGroup(self.M("L(N) = c + a · N", 30, FG), self.M("-α", 22, FG)).arrange(RIGHT, buff=0.04, aligned_edge=UP)
-        nums = VGroup(self.M(f"a = {FIT['a']:.2f}", 26, MUTED), self.M(f"α = {FIT['alpha']:.2f}", 26, YELLOW),
-                      self.M(f"c = {FIT['c']:.2f}", 26, MUTED), self.M(f"R² = {FIT['r2']:.3f}", 22, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
+        fl = self.T("c", 22, MUTED).next_to(ps.p(xhi, FIT["c"]), RIGHT, buff=0.1)
+        form = VGroup(self.T("L = c + a · N", 32, FG), self.T("−alpha", 24, FG)).arrange(RIGHT, buff=0.04, aligned_edge=UP)
+        nums = VGroup(self.T(f"a = {FIT['a']:.2f}", 26, MUTED), self.T(f"alpha = {FIT['alpha']:.2f}", 26, YELLOW),
+                      self.T(f"c = {FIT['c']:.2f}", 26, MUTED), self.T(f"R² = {FIT['r2']:.3f}", 22, MUTED),
+                      self.T("(Kaplan, web text: alpha ≈ 0.076)", 20, MUTED),
+                      self.T(f"c = where this curve flattens", 20, MUTED), self.T(f"at {TOK / 1e6:.1f}M tokens, not a true floor", 20, MUTED)) \
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.12)
         box = VGroup(form, nums).arrange(DOWN, aligned_edge=LEFT, buff=0.25).next_to(ps.ax, RIGHT, buff=0.45).shift(UP * 0.9)
         with self.say(f"Plot final loss against size on a log axis, and the dots fall on a smooth curve: a power law. "
-                      f"Every time you multiply the size, the loss above a floor shrinks by a predictable factor. Here the "
-                      f"floor is {FIT['c']:.2f}.",
+                      f"Every time you multiply the size, the loss above a floor shrinks by a predictable factor. Here it "
+                      f"flattens near {FIT['c']:.2f}, but only for this token budget: the same 171 thousand parameter "
+                      f"model trained on four times more tokens reaches {ABL_BASE['final_val']:.2f} instead of "
+                      f"{BASE_RUN['final_val']:.2f}.",
                       scene=f"Real final losses vs non-embedding parameters (log x) with the fitted power law L(N) = c + a·N^-α: "
                             f"a = {FIT['a']:.3f}, α = {FIT['alpha']:.3f}, c = {FIT['c']:.3f} (R² = {FIT['r2']:.3f}).",
                       chapter="Loss vs size"):
@@ -93,9 +111,18 @@ class Scaling(VScene):
             self.play(Create(fit), FadeIn(box, shift=LEFT * 0.2), run_time=1.0)
             self.mark("fit", fit, f"fitted power law: L = {FIT['c']:.3f} + {FIT['a']:.3f}·N^-{FIT['alpha']:.3f}")
             self.mark("formula", box, f"fit parameters a = {FIT['a']:.3f}, alpha = {FIT['alpha']:.3f}, c = {FIT['c']:.3f}")
-            self.sync("Here the", 0.1)
+            self.sync("Here it", 0.1)
             self.play(Create(floor), FadeIn(fl), run_time=0.6)
-            self.mark("floor", VGroup(floor, fl), f"irreducible loss of this data (fit): c = {FIT['c']:.3f}")
+            self.mark("floor", VGroup(floor, fl), f"fitted floor c = {FIT['c']:.3f} at a fixed {TOK:,}-token budget; it moves "
+                                                  f"with data (171k model on {ABL_TOK:,} tokens: {ABL_BASE['final_val']:.3f})")
+            self.sync("four times", 0.1)
+            dot_m = Dot(ps.p(BASE_RUN["non_embedding_params"], ABL_BASE["final_val"]), radius=0.1, color=YELLOW)
+            lab_m = self.T(f"same 171k model, {ABL_TOK / TOK:.0f}× tokens: {ABL_BASE['final_val']:.2f}", 22, YELLOW) \
+                .move_to(ps.p(3e5, 0.85))
+            more = VGroup(dot_m, Arrow(lab_m.get_bottom(), dot_m.get_center(), buff=0.15, color=YELLOW, stroke_width=3), lab_m)
+            self.play(FadeIn(more, scale=1.3), run_time=0.4)
+            self.mark("more-data", more, f"the 171k model trained on {ABL_TOK:,} tokens (ablation baseline) reaches "
+                                         f"{ABL_BASE['final_val']:.3f} vs {BASE_RUN['final_val']:.3f} at {TOK:,} tokens: the flattening point moves with data")
 
         # ------------------------------------------------------------ compute
         hdr2 = self.header("Loss vs compute")
@@ -104,21 +131,32 @@ class Scaling(VScene):
         pc = Plot([fxlo, fxhi], [0, ymax], width=8.4, height=4.6, xlog=True,
                   xticks=[10 ** e for e in range(int(math.log10(fxlo)), int(math.log10(fxhi)) + 1, 2)],
                   yticks=list(range(0, ymax + 1)), xlabel="training compute, FLOPs ≈ 6 · params · tokens (log scale)",
-                  ylabel="validation loss", xfmt=pow10).move_to(DOWN * 0.35 + LEFT * 2.0)
+                  ylabel="validation loss", xfmt=pow10).move_to(DOWN * 0.1 + LEFT * 2.0)
         cc = VGroup(*[pc.line(r["curve"]["flops"][1:], r["curve"]["val"][1:], c, 3) for r, c in zip(RUNS, COLS)])
-        # frontier: for a grid of budgets, best loss any run reached within that budget
-        import bisect
-        grid = [10 ** (math.log10(fxlo) + k * (math.log10(fxhi) - math.log10(fxlo)) / 120) for k in range(121)]
+        # frontier: interpolate every curve in log-FLOPs and take the pointwise minimum (the lower envelope)
+        grid = [10 ** (math.log10(fxlo) + k * (math.log10(fxhi) - math.log10(fxlo)) / 240) for k in range(241)]
+        def interp(r, B):
+            fs, vs = r["curve"]["flops"][1:], r["curve"]["val"][1:]
+            if B < fs[0] or B > fs[-1]:
+                return None
+            lb = math.log10(B)
+            for (f0, v0), (f1, v1) in zip(zip(fs, vs), zip(fs[1:], vs[1:])):
+                if f0 <= B <= f1:
+                    t = (lb - math.log10(f0)) / (math.log10(f1) - math.log10(f0))
+                    return v0 + t * (v1 - v0)
+            return vs[-1]
         front, who = [], []
         for B in grid:
-            best, bi = None, None
-            for i, r in enumerate(RUNS):
-                vals = [v for f, v in zip(r["curve"]["flops"], r["curve"]["val"]) if 0 < f <= B]
-                if vals and (best is None or min(vals) < best):
-                    best, bi = min(vals), i
-            front.append(best); who.append(bi)
+            cand = [(interp(r, B), i) for i, r in enumerate(RUNS)]
+            cand = [c_ for c_ in cand if c_[0] is not None]
+            if cand:
+                v, i = min(cand); front.append(v); who.append(i)
+            else:
+                front.append(None); who.append(None)
         fpts = [(g, f) for g, f in zip(grid, front) if f is not None]
-        fr = pc.line([g for g, _ in fpts], [f for _, f in fpts], FG, 9, opacity=0.4)
+        fr = pc.line([g for g, _ in fpts], [f for _, f in fpts], FG, 8, opacity=0.45)
+        frc = self.T("caveat: checkpoints of fixed-length runs; a run scheduled for each budget would do a bit better",
+                     22, MUTED).to_edge(DOWN, buff=0.4)
         winners = []
         for g, w in zip(grid, who):
             if w is not None and (not winners or winners[-1][1] != w):
@@ -135,17 +173,19 @@ class Scaling(VScene):
         with self.say(f"Now plot the same runs against compute. For a tiny budget, small models win. As the budget grows, "
                       f"the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from "
                       f"{spk_n(RUNS[winners[0][1]]['params'])} to {spk_n(RUNS[winners[-1][1]]['params'])} parameters.",
-                      scene=f"Real validation loss vs training FLOPs (log x) for all 7 sizes; the faint white envelope is the "
-                            f"best loss reachable at each budget. Winners along it, small to large budget: {win_txt}.",
+                      scene=f"Real validation loss vs training FLOPs (log x; FLOPs = 6 × all params × tokens) for all 7 sizes; "
+                            f"the thick gray line is the lower envelope (best loss at each budget, curves interpolated in "
+                            f"log FLOPs). Winners along it, small to large budget: {win_txt}. Caveat: intermediate "
+                            f"checkpoints of fixed-length cosine runs.",
                       chapter="Loss vs compute"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ps, dots, fit, floor, fl, box)), ReplacementTransform(hdr, hdr2), run_time=0.4)
+            self.play(FadeOut(VGroup(ps, dots, fit, floor, fl, box, more)), ReplacementTransform(hdr, hdr2), run_time=0.4)
             self.play(FadeIn(pc), FadeIn(labs2), run_time=0.5)
             self.play(LaggedStart(*[Create(c) for c in cc], lag_ratio=0.12), run_time=2.0)
             for r, c in zip(RUNS, cc):
                 self.mark("fl-" + r["id"], c, f"{fmt_n(r['params'])} model: val loss vs compute, up to {r['flops']:.2e} FLOPs")
             self.sync("Following", 0.1)
-            self.play(Create(fr), FadeIn(lf_sw), run_time=1.2)
+            self.play(Create(fr), FadeIn(lf_sw), FadeIn(frc), run_time=1.2)
             self.mark("frontier", VGroup(fr, lf_sw), f"compute frontier (real): best run for each budget, {win_txt}")
 
         # ------------------------------------------------------------ the papers
@@ -171,7 +211,7 @@ class Scaling(VScene):
                             "parameters and tokens in roughly equal proportion; Chinchilla = 70B params on 1.4T tokens "
                             "(≈ 20 tokens per parameter).", chapter="What the papers found"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(pc, cc, fr, labs2, lf_sw)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
+            self.play(FadeOut(VGroup(pc, cc, fr, labs2, lf_sw, frc)), ReplacementTransform(hdr2, hdr3), run_time=0.4)
             self.play(FadeIn(pk, shift=UP * 0.2), run_time=0.5)
             self.mark("kaplan", pk, "Kaplan et al. 2020, 'Scaling Laws for Neural Language Models'")
             self.sync("Then Chinchilla", 0.1)
@@ -182,7 +222,7 @@ class Scaling(VScene):
         hdr4 = self.header("Our runs, in that light")
         tpp = [TOK / r["params"] for r in RUNS]
         pb = Plot([0.5, 3000], [0, len(RUNS)], width=8.0, height=4.4, xlog=True, xticks=[1, 10, 100, 1000], yticks=[],
-                  xlabel="training tokens per parameter (log scale)", ylabel="").move_to(DOWN * 0.4 + RIGHT * 0.9)
+                  xlabel="training tokens per parameter (log scale)", ylabel="").move_to(UP * 0.1 + RIGHT * 0.9)
         bars = VGroup(); names = VGroup()
         for i, (r, t, col) in enumerate(zip(RUNS, tpp, COLS)):
             y = len(RUNS) - i - 0.5
@@ -193,14 +233,22 @@ class Scaling(VScene):
             n = self.M(f"{fmt_n(r['params'])}", 22, col).next_to(pb.p(0.5, y), LEFT, buff=0.2)
             bars.add(VGroup(b, v)); names.add(n)
         ch = DashedLine(pb.p(20, 0), pb.p(20, len(RUNS)), color=YELLOW, stroke_width=3, dash_length=0.1)
-        chl = self.T("≈ 20 (Chinchilla)", 24, YELLOW).next_to(pb.p(20, len(RUNS)), UP, buff=0.12)
+        chl = self.T("≈ 20: Chinchilla's compute-optimal rule of thumb (large web-text runs)", 22, YELLOW) \
+            .next_to(pb.p(20, len(RUNS)), UP, buff=0.12)
+        rep = VGroup(self.T(f"but our data repeats: for the 171k model, {OV256['data_tokens'] // 1024}k tokens already matched", 22, MUTED),
+                     self.T(f"all {OVALL['data_tokens'] / 1e6:.1f}M (val {OV256['final_val']:.3f} vs {OVALL['final_val']:.3f})", 22, MUTED)) \
+            .arrange(DOWN, buff=0.06).to_edge(DOWN, buff=0.4)
         under = [r for r, t in zip(RUNS, tpp) if t < 20]
-        with self.say(f"By that yardstick, our {TOK / 1e6:.1f} million tokens are plenty for the small models, but our "
-                      f"{len(under)} biggest are undertrained. The largest saw just {tpp[-1]:.1f} tokens per parameter: "
-                      f"by Chinchilla's yardstick, it's starved for data.",
+        with self.say(f"By Chinchilla's rule of thumb, derived for huge web-text runs, our {len(under)} biggest models "
+                      f"would want more tokens: the largest saw just {tpp[-1]:.1f} per parameter. But our data repeats "
+                      f"itself, so treat that as a rough guide. And real labs often train far past 20 tokens per "
+                      f"parameter, to make models cheaper to run.",
                       scene=f"Real tokens-per-parameter of each run ({TOK:,} tokens / params): "
                             + ", ".join(f"{fmt_n(r['params'])}: {t:.1f}" for r, t in zip(RUNS, tpp))
-                            + ". A yellow dashed line marks Chinchilla's ≈ 20 tokens per parameter.",
+                            + ". A yellow dashed line marks Chinchilla's ≈ 20 tokens per parameter (a compute-optimal "
+                              "allocation heuristic for large web-text runs, not a 'trained enough' threshold). Our corpus is "
+                              f"highly redundant: the 171k model reached val {OV256['final_val']:.3f} on 256k tokens vs "
+                              f"{OVALL['final_val']:.3f} on all of them.",
                       chapter="Our runs, in that light"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(pk, pc_)), ReplacementTransform(hdr3, hdr4), run_time=0.4)
@@ -208,31 +256,34 @@ class Scaling(VScene):
                       run_time=1.3)
             for r, b, t in zip(RUNS, bars, tpp):
                 self.mark("tpp-" + r["id"], b, f"{r['params']:,} params trained on {TOK:,} tokens = {t:.1f} tokens/param")
-            self.sync("undertrained", 0.1)
             self.play(Create(ch), FadeIn(chl), run_time=0.6)
-            self.mark("chin-line", VGroup(ch, chl), "Chinchilla rule of thumb: about 20 training tokens per parameter")
+            self.mark("chin-line", VGroup(ch, chl), "Chinchilla rule of thumb: about 20 training tokens per parameter for "
+                                                    "compute-optimal large web-text runs")
+            self.sync("But our data", 0.1)
+            self.play(FadeIn(rep), run_time=0.4)
+            self.mark("repeats", rep, f"redundant corpus: 256k tokens ≈ all 1.6M for the 171k model")
 
         # ------------------------------------------------------------ takeaways
         hdr5 = self.header("For your own models")
-        tips = VGroup(*[pill(t, c, 30) for t, c in [
-            ("train a ladder of small models first", BLUE),
-            ("fit the curve, predict the big one", YELLOW),
-            ("balance size and data for your budget", TEAL),
-            ("the floor is set by the data", PINK)]]).arrange(DOWN, buff=0.32, aligned_edge=LEFT).move_to(UP * 0.2)
-        cav = self.T(f"caveat: our fit is {len(RUNS)} tiny models, one seed, one learning rate: the shape, not a law", 22,
+        tip_txt = [("train a ladder of small models first", BLUE), ("fit the curve, predict the big one", YELLOW),
+                   ("balance size and data for your budget", TEAL), ("where it flattens depends on the data", PINK)]
+        tips = VGroup(*[pill(t, c, 30) for t, c in tip_txt]).arrange(DOWN, buff=0.32, aligned_edge=LEFT).move_to(UP * 0.4)
+        cav = self.T(f"caveat: {len(RUNS)} tiny models · one seed · one learning rate for every size", 26,
                      MUTED).to_edge(DOWN, buff=0.5)
         with self.say("For your own models: train a ladder of small ones first, fit the curve, and predict before you "
-                      "spend. Balance size and data for your budget. And remember the floor comes from the data, not "
-                      "the model.",
+                      "spend. Balance size and data for your budget, and remember where the curve flattens depends on "
+                      "the data. Our fit is seven tiny models, one seed, one learning rate: the shape, not a law.",
                       scene="Takeaways: train a ladder of small models first; fit the curve, predict the big one; balance "
-                            "size and data for your budget; the loss floor is set by the data. Caveat: our fit uses 7 tiny "
-                            "models, one seed and one learning rate.", chapter="For your own models"):
+                            "size and data for your budget; where the curve flattens depends on the data. Caveat: our fit "
+                            "uses 7 tiny models, one seed and one learning rate for every size.",
+                      chapter="For your own models"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(pb, bars, names, ch, chl)), ReplacementTransform(hdr4, hdr5), run_time=0.4)
-            for k_, ph in enumerate(["train a ladder", "fit the curve", "Balance", "the floor"]):
+            self.play(FadeOut(VGroup(pb, bars, names, ch, chl, rep)), ReplacementTransform(hdr4, hdr5), run_time=0.4)
+            for k_, ph in enumerate(["train a ladder", "fit the curve", "Balance", "where the curve"]):
                 self.sync(ph, 0.1)
                 self.play(FadeIn(tips[k_], shift=RIGHT * 0.2), run_time=0.3)
-                self.mark(f"tip-{k_}", tips[k_], tips[k_][1].text)
+                self.mark(f"tip-{k_}", tips[k_], "takeaway: " + tip_txt[k_][0])
+            self.sync("Our fit", 0.1)
             self.play(FadeIn(cav), run_time=0.3)
             self.mark("caveat", cav, "caveat: small-scale fit, single seed and learning rate")
         self.wait(0.8)

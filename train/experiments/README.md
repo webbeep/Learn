@@ -17,6 +17,7 @@ python3 overfit.py      # ~4 min  → public/research/overfit.json     (4 runs �
 python3 lr_sweep.py     # ~6 min  → public/research/lr_sweep.json    (15 runs × 1000 steps × 32×64)
 python3 scaling.py      # ~15 min → public/research/scaling.json     (7 sizes × 1500 steps × 32×64; the 1.8M model dominates)
 python3 depth.py        # ~15 min → public/research/depth.json       (init probe + 4 runs of a 12-layer model)
+python3 nores_init.py   # ~2 min  → adds token_spread + "shallow" (3-layer init study) to depth.json
 python3 gradients.py    # seconds → public/research/gradients.json
 ```
 
@@ -37,6 +38,14 @@ shared 4-core CPU.
   Every `eval_every` steps it records **train** = mean loss on 4 fixed batches of the run's training data and **val** =
   mean loss on 4 fixed held-out batches (same for every run). Loss is cross-entropy in nats; ln 256 = 5.55 is chance.
 * Samples: temperature 0.8, `torch.Generator` seed 1, 24 new tokens.
+* `dedup_val()`: a leakage-free held-out set. The tiny world has a finite grammar: every validation *sentence* also
+  occurs in training, and 1,642 of the 3,001 validation lines (54.7%; one line = one story) appear verbatim in the
+  training text. `val_dedup` = the 1,359 validation lines that never appear verbatim in training (48,444 tokens):
+  held-out documents, i.e. new combinations of known templates (cached in `.cache/val_dedup.npy`).
+* `probe_set_score(m)`: colour-copy test on 100 fresh 'trade' stories from the corpus generator (seed 4242), cut before
+  the colour ("A has a C1 o1. B has a C2 o2. A gives the o1 to B. now B has the" → " C1").
+* `ngram_baselines()`: unigram / bigram cross-entropy on the validation split (counts from the training split).
+* `TinyGPT` cfg key `init_std` (default 0.02) sets the std of the block weight matrices (embeddings stay 0.02).
 
 Default training recipe (unless a file's `note` says otherwise): batch 32 × 64 tokens (2,048 tokens/step),
 AdamW lr 3e-3, 100 warmup steps, cosine decay to 0, weight decay 0.05, grad-norm clip 1.0.
@@ -66,10 +75,15 @@ Every file also has a free-text `note` describing the exact setup.
     "final_val": 0.55, "final_train": 0.55, "diverged": false, "seconds": 60.1,
     "samples": [{"prompt": "...", "text": "continuation only (prompt not repeated)"}],  // same 3 prompts, same order:
               // probe prompt, "once upon a time", "q: what does the cat say? a:"
-    "probe_top": [{"token": " red", "p": 0.87}, ...]   // top-5 next tokens for the probe prompt
-  }]
+    "probe_top": [{"token": " red", "p": 0.87}, ...],   // top-5 next tokens for the probe prompt
+    "probe_set": {"n": 100, "mean_p_correct": 0.99, "median_p_correct": 0.99, "top1_acc": 1.0},  // 100-story colour test
+    "curve_val_dedup": [...], "final_val_dedup": 0.47     // loss on the deduplicated validation set (same steps as curve)
+  }],
+  "baselines": {"unigram": 4.556, "bigram": 1.646}, "note_baselines": "...", "note_probe_set": "..."
 }
 ```
+
+Checkpoints of every ablation are saved to `.cache/ckpt/ablation-<id>.pt` (`{"cfg", "state"}`).
 
 ### `scaling.json`
 
@@ -109,9 +123,12 @@ when the run blew up to NaN (its curve then ends with a `null` at the step where
 ```jsonc
 {
   "steps": 1500, "batch": 32, "train_tokens": 1602516, "val_tokens": 84342, "corpus_chars": 5177530, "note": "...",
+  "val_dedup": {"val_lines": 3001, "val_lines_in_train": 1642, "val_dedup_lines": 1359, "val_dedup_tokens": 48444},
+  "note_dedup": "...",
   "runs": [{"label": "4k tokens", "data_tokens": 4096, "epochs": 750.0,
-            "curve": {"step": [...], "train": [...], "val": [...]},
-            "final_train": 0.1, "final_val": 2.0, "best_val": 1.5, "best_val_step": 300}]
+            "curve": {"step": [...], "train": [...], "val": [...], "val_dedup": [...]},
+            "final_train": 0.1, "final_val": 2.0, "best_val": 1.5, "best_val_step": 300,
+            "final_val_dedup": 2.1, "best_val_dedup": 1.4, "best_val_dedup_step": 200}]
 }
 ```
 
@@ -148,6 +165,11 @@ Why deep stacks need residuals and LayerNorm.
             "loss": 5.55}],
   "runs": [{"id": "...", "label": "...", "config": {...}, "params": 600000,
             "curve": {"step": [...], "train": [...], "val": [...]}, "final_val": 0.6, "diverged": false,
-            "act_rms_trained": [...]}]   // RMS of the hidden state after each layer of the TRAINED model
+            "act_rms_trained": [...]}],  // RMS of the hidden state after each layer of the TRAINED model
+  // added by nores_init.py:
+  //   init[*].token_spread: std across positions / RMS after each layer (≈0 → every position holds the same vector)
+  "shallow": {"n_layer": 3, "note": "...",
+              "init": {"baseline" | "no-residual": {"grad_rms": [...], "act_rms": [...], "token_spread": [...]}},
+              "nores_runs": [{"init_std": 0.02 | 0.125, "curve": {"step", "train", "val"}, "final_val": 4.57}]}
 }
 ```

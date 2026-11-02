@@ -106,7 +106,7 @@ class GPTIn100(VScene):
             cards.add(VGroup(box, g))
         cards.arrange(RIGHT, buff=0.45).move_to(DOWN * 0.6)
         with self.say("Three layers. 170 thousand parameters. Trained for 80 seconds on a CPU. "
-                      "That's about a million times smaller than GPT-3. Let's trace exactly how it thinks.",
+                      "About a million times smaller than GPT-3.",
                       scene="Three stat cards: 3 layers, 170,560 parameters, ~80 s of training on a CPU. "
                             "Punchline flash: about 1,000,000x smaller than GPT-3."):
             top = VGroup(lines, blank, ans, badge)
@@ -118,7 +118,7 @@ class GPTIn100(VScene):
             self.mark("card-params", cards[1], f"{prm:,} trainable parameters")
             self.mark("card-train", cards[2], "trained 3000 steps, ~80 seconds on a CPU")
             self.sync("a million")
-            self.flash("~1,000,000x smaller than GPT-3", YELLOW, 52, hold=1.1, pos=DOWN * 0.6)
+            self.flash("~1,000,000x smaller than GPT-3", YELLOW, 44, hold=1.1, pos=DOWN * 0.6)
 
         # ---------------------------------------------------------------- tokens
         def make_rows():
@@ -170,8 +170,8 @@ class GPTIn100(VScene):
         plus = self.T("+", 36, MUTED).next_to(s_pos, LEFT, buff=0.12).shift(LEFT * 2.6)
         dims = self.T("64 numbers", 24, MUTED).next_to(s_tok, UP, buff=0.15).align_to(s_tok, RIGHT)
         hdr2 = self.header("2 · Embeddings")
-        with self.say("Each ID grabs a row from a big lookup table: 64 numbers, called an embedding. Add a second "
-                      "vector for the position, and every token becomes a point in 64-dimensional space.",
+        with self.say("Each ID grabs a row of 64 numbers from a lookup table, its embedding. Add a position vector, "
+                      "and every token becomes a point in 64-dimensional space.",
                       scene="The ' red' chip (id 157) is pulled out; below it a strip of 64 colored cells (its real "
                             "embedding: orange positive, blue negative), plus the position-3 vector, equals the input vector.",
                       chapter="Embeddings"):
@@ -185,7 +185,7 @@ class GPTIn100(VScene):
                       LaggedStart(*[FadeIn(c, shift=DOWN * 0.2) for c in s_tok], lag_ratio=0.02), run_time=1.3)
             self.mark("chip-red", red_chip, 'token " red" (id 157) at position 3')
             self.mark("emb-tok", s_tok, f'embedding of " red": 64 learned numbers (range {e_tok.min():.2f} to {e_tok.max():.2f})')
-            self.sync("Add a second")
+            self.sync("Add a position")
             self.play(FadeIn(plus), FadeIn(labs[1]), LaggedStart(*[FadeIn(c) for c in s_pos], lag_ratio=0.01), run_time=0.9)
             self.mark("emb-pos", s_pos, "position embedding for slot 3 (64 numbers)")
             self.play(FadeIn(labs[2]), TransformFromCopy(VGroup(s_tok, s_pos), s_sum), run_time=0.9)
@@ -304,16 +304,17 @@ class GPTIn100(VScene):
                 self.mark(f"tok-{k}", c, f'token "{t}" (id {i}), position {k}; layer-2 average attention from the last " the": {a_avg[k] * 100:.1f}%' + (" (the query itself)" if k == 22 else ""))
 
         p_abl = p_red_without(ids, 1, 3)
-        with self.say(f"One head in layer two has a clear job here. From the last 'the', it puts 93 percent of its "
-                      f"attention on 'red'. Switch that one head off, and red drops from 87 percent to "
-                      f"{p_abl * 100:.0f}. On stories like this, it fetches the color of the item being handed over.",
+        with self.say(f"One head in layer two, looking from the last 'the', puts 93 percent of its attention on 'red'. "
+                      f"Switch that head off, and red drops from 87 percent to {p_abl * 100:.0f}. On stories like "
+                      f"this, it fetches the handed-over item's color.",
                       scene=f"Only layer 2 head 4 remains: a thick yellow line from the final ' the' to ' red' (position 3) "
                             f"labeled 93%, and two thin unlabeled lines (each under 3%) to '.' and ' ball'. Flash: "
                             f"'head off: red {p_red * 100:.0f}% → {p_abl * 100:.0f}%' (real ablation: this head's output "
                             f"zeroed)."):
             wires_h = {k: wire(k, float(a_head[k]), YELLOW if k == 3 else BLUE) for k in range(23) if a_head[k] > 0.01}
             hl = self.T("layer 2 · head 4", 30, YELLOW, BOLD).move_to([3.6, 3.3, 0])
-            self.play(FadeOut(wires_avg), FadeIn(hl), run_time=0.4)
+            self.unmark("avg-cap")
+            self.play(FadeOut(wires_avg), FadeOut(avg_cap), FadeIn(hl), run_time=0.4)
             self.play(*[Create(w) for w in wires_h.values()], run_time=0.8)
             pct = self.T(f"{a_head[3] * 100:.0f}%", 34, YELLOW, BOLD)
             w3 = wires_h[3]
@@ -331,8 +332,8 @@ class GPTIn100(VScene):
                     self.mark(f"arc-{k}", hd, f'attention L2H4: " the" → "{toks[k]}" (pos {k}) = {a_head[k] * 100:.1f}%')
             for k, (c, t, i) in enumerate(zip(keys, toks, ids)):
                 self.mark(f"tok-{k}", c, f'token "{t}" (id {i}), position {k}; L2H4 attention from last " the": {a_head[k] * 100:.1f}%')
-            self.sync("Switch that")
-            self.flash(f"head off: red {p_red * 100:.0f}% → {p_abl * 100:.0f}%", YELLOW, 40, hold=1.6, pos=[3.3, -2.7, 0])
+            self.sync("Switch that")  # noqa
+            self.flash(f"head off: red {p_red * 100:.0f}% → {p_abl * 100:.0f}%", YELLOW, 36, hold=1.6, pos=[3.1, -2.7, 0])
 
         # ---------------------------------------------------------------- layers + logit lens
         hdr4 = self.header("4 · Layers")
@@ -349,7 +350,7 @@ class GPTIn100(VScene):
                                          stroke_width=2, fill_color=PANEL, fill_opacity=1)
             name = self.T(f"layer {l + 1}", 24, MUTED).next_to(panel, UP, buff=0.12)
             layer_boxes.add(VGroup(panel, att, mlp, at, mt, name))
-        layer_boxes.arrange(RIGHT, buff=0.8).move_to(UP * 0.55)
+        layer_boxes.arrange(RIGHT, buff=0.8).move_to(UP * 0.2)
         inp = self.M("vectors", 24, MUTED).next_to(layer_boxes, LEFT, buff=0.55)
         out = self.M("scores", 24, MUTED).next_to(layer_boxes, RIGHT, buff=0.55)
         stream = VGroup(Arrow(inp.get_right(), layer_boxes[0][0].get_left(), buff=0.1, color=MUTED, stroke_width=3))
@@ -357,13 +358,13 @@ class GPTIn100(VScene):
             stream.add(Arrow(layer_boxes[l][0].get_right(), layer_boxes[l + 1][0].get_left(), buff=0.1, color=MUTED,
                              stroke_width=3))
         stream.add(Arrow(layer_boxes[2][0].get_right(), out.get_left(), buff=0.1, color=MUTED, stroke_width=3))
-        res_cap = VGroup(self.T("residual stream: each block adds its output onto the token's vector", 26, FG),
+        res_cap = VGroup(self.T("residual stream: each block adds its output onto the token's vector", 24, FG),
                          self.M("x = x + attention(x)     x = x + MLP(x)", 24, MUTED,
                                 t2c={"attention": BLUE, "MLP": TEAL})).arrange(DOWN, buff=0.18)
         res_cap.next_to(layer_boxes, UP, buff=0.45)
-        with self.say("Attention moves information between tokens. Then a small MLP works on each token by itself. "
-                      "Each one adds its result back onto the token's vector, the residual stream. "
-                      "Attention plus MLP is one layer, and this model stacks three.",
+        with self.say("Attention moves information between tokens. Then a small MLP works on each token alone. "
+                      "Each one adds its result onto the token's vector, the residual stream. "
+                      "That pair is a layer, and this model stacks three.",
                       scene="Diagram: vectors → three layer panels, each with a '+ attention' and a '+ MLP' box → scores. "
                             "Caption: residual stream, each block adds its output onto the token's vector "
                             "(x = x + attention(x), x = x + MLP(x)).",
@@ -398,13 +399,13 @@ class GPTIn100(VScene):
             g = VGroup(c, pt).arrange(DOWN, buff=0.15).next_to(layer_boxes[l], DOWN, buff=0.55)
             lens_chips.add(g)
         lens_lab = self.T("top guess if we stopped after this layer", 24, MUTED).next_to(lens_chips, DOWN, buff=0.35)
-        with self.say("Peek at its best guess after each layer. After layer one, it's 'the'. After layer two, 'white'. "
-                      "Only the final MLP locks in red, at 87 percent. Layer two fetched the information, and MLP "
-                      "three turns it into the answer.",
+        with self.say("Peek at its best guess after each layer. Layer one says 'the', layer two says 'white', and "
+                      "only the final MLP locks in red, at 87 percent. Layer two fetched the color, MLP three turns "
+                      "it into the answer.",
                       scene="Under each layer panel, the model's top guess for the next token if we stopped there "
                             "(logit lens): layer 1 ' the' 33%, layer 2 ' white' 12%, layer 3 ' red' 87%."):
             self.play(FadeIn(lens_lab), run_time=0.3)
-            for l, ph in enumerate(["layer one", "layer two", "final MLP"]):
+            for l, ph in enumerate(["Layer one", "layer two says", "final MLP"]):
                 self.sync(ph, 0.1)
                 self.play(FadeIn(lens_chips[l], shift=DOWN * 0.2), run_time=0.4)
                 t, p = lens_res[l]
@@ -431,8 +432,8 @@ class GPTIn100(VScene):
             r[1].move_to([-3.0, y, 0], aligned_edge=LEFT)
             r[2].next_to(r[1], RIGHT, buff=0.25)
         sub = self.T("softmax over all 256 tokens", 26, MUTED).next_to(bar_rows, UP, buff=0.4)
-        with self.say("The final vector gets scored against all 256 tokens, and softmax turns those scores into "
-                      "probabilities. Red gets 87 percent, white 6, purple 5, and everything else gets crumbs.",
+        with self.say("The final vector is scored against all 256 tokens, and softmax turns the scores into "
+                      "probabilities. Red 87 percent, white 6, purple 5, crumbs for the rest.",
                       scene=f"Horizontal probability bars for the next token: ' red' {top_p[0] * 100:.1f}%, ' white' "
                             f"{top_p[1] * 100:.1f}%, ' purple' {top_p[2] * 100:.1f}%, ' black' {top_p[3] * 100:.2f}%, ' ava' "
                             f"{top_p[4] * 100:.2f}%, all 251 others combined {rest * 100:.2f}%.",
@@ -459,9 +460,8 @@ class GPTIn100(VScene):
         ell = self.T("…", 34, MUTED)
         row = VGroup(ell, *ctx).arrange(RIGHT, buff=0.14)
         row.move_to(LEFT * 3.5 + UP * 0.6)
-        with self.say("Take the top pick, append it, and run the whole thing again. Red. Ball. Period. Newline. "
-                      "Once upon a time. Always taking the top pick is called greedy. Rolling weighted dice instead "
-                      "is sampling.",
+        with self.say("Take the top pick, append it, run it again. Red. Ball. Period. Newline. Once upon a time. "
+                      "Always taking the top pick is greedy. Rolling weighted dice is sampling.",
                       scene="Greedy decoding: the context '… now tom has the' gets the model's top pick appended each step "
                             "(' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time', with their probabilities); the "
                             "row slides left as it grows, with a loop arrow feeding the output back in.",
@@ -490,7 +490,7 @@ class GPTIn100(VScene):
                     sh = LEFT * over
                     c.shift(sh); pl.shift(sh)
                     movers = list(row) + self._pls
-                    offs = [m for m in movers if m.get_left()[0] - over < -6.8]
+                    offs = [m for m in movers if m.get_left()[0] - over < -6.3]
                     self.play(*[(m.animate.shift(sh).set_opacity(0) if m in offs else m.animate.shift(sh))
                                 for m in movers], run_time=0.25)
                     for m in offs:

@@ -2,6 +2,8 @@ import os, sys, math
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from vscene import *  # noqa
 from lib_research import load, Plot, legend, pill, panel, illus, fmt_n
+import torch
+from model import forward, tok, VOCAB
 
 VIDEO = dict(id="arch-lab", cls="ArchLab", title="Architecture lab: break it to understand it",
              subtitle="Remove attention, MLPs, positions, residuals or LayerNorm, retrain, and watch what breaks (real runs)",
@@ -12,6 +14,12 @@ RUNS = {r["id"]: r for r in AB["runs"]}
 STEPS = AB["steps"]
 PROBE = AB["probe_prompt"]
 BASE = RUNS["baseline"]
+NG = AB["baselines"]
+SHIPPED_RED = float(torch.softmax(forward(tok(PROBE))[-1], -1)[VOCAB.index(" red")])   # the shipped model, same prompt
+
+
+def acc(r):
+    return round(r["probe_set"]["top1_acc"] * r["probe_set"]["n"])
 COL = {"no-attention": BLUE, "no-mlp": ORANGE, "no-positions": "#b48cff", "no-residual": PINK,
        "no-layernorm": YELLOW, "1-layer": "#5fd0ff", "6-layer": TEAL, "baseline": FG}
 
@@ -42,15 +50,16 @@ SPOKEN = {"no-attention": "No attention", "no-mlp": "No MLP", "no-positions": "N
 
 # one short, data-driven line per ablation (the insight phrase is the only hand-written part)
 INSIGHT = {
-    "no-attention": "Every token is alone, so it can't look back and see that the ball was red.",
-    "no-mlp": "Attention still moves information around, so the copy survives.",
-    "no-positions": "Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, "
-                    "already leaks word order.",
-    "no-residual": "The signal can't get through. It never really learns.",
-    "no-layernorm": "Scales drift from layer to layer. It learns the language, but not the trick.",
-    "1-layer": "It knows a color comes next, but not which one. Copying like this typically needs two layers "
-               "working together.",
-    "6-layer": "Deeper isn't automatically better. On the same budget, it hasn't found the trick yet.",
+    "no-attention": f"Every token is alone. It's exactly a bigram model: loss {RUNS['no-attention']['final_val']:.2f}, "
+                    f"bigram baseline {NG['bigram']:.2f}.",
+    "no-mlp": f"Attention still moves information, so copying survives. Loss {RUNS['no-mlp']['final_val']:.2f}.",
+    "no-positions": f"Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, already "
+                    f"leaks word order. Loss {RUNS['no-positions']['final_val']:.2f}.",
+    "no-residual": f"It only learned which words are common: {RUNS['no-residual']['final_val']:.2f}, the unigram level.",
+    "no-layernorm": f"It learns the language, loss {RUNS['no-layernorm']['final_val']:.2f}, but rarely the trick.",
+    "1-layer": f"Loss {RUNS['1-layer']['final_val']:.2f}, but copying like this typically needs two layers working together.",
+    "6-layer": "Our one test prompt says it failed. But across all the stories, it often gets it right. One prompt can "
+               "mislead.",
 }
 ORDER = ["no-attention", "no-positions", "no-mlp", "no-residual", "no-layernorm", "1-layer", "6-layer"]
 
@@ -75,32 +84,37 @@ class ArchLab(VScene):
         for row in rows:
             row.shift(RIGHT * (rows[0][0].get_right()[0] - row[0].get_right()[0]))
         head = self.M("…now tom has the →", 24, MUTED)
-        text = r["samples"][0]["text"].split("\n")[0][:30]
-        samp = VGroup(self.T("a sample:", 22, MUTED), self.M(text if text.strip() else "(nothing)", 22, col)) \
-            .arrange(RIGHT, buff=0.2)
-        g = VGroup(head, rows, samp).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
+        text = r["samples"][0]["text"].split("\n")[0][:26]
+        samp = VGroup(self.T("one random sample (temperature 0.8):", 20, MUTED), self.M(text if text.strip() else "(nothing)", 22, col)) \
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.08)
+        a = acc(r)
+        score = VGroup(self.M(f"{a}/100", 34, TEAL if a >= 90 else (YELLOW if a >= 50 else PINK)),
+                       self.T("stories: right colour on top", 22, FG)).arrange(RIGHT, buff=0.2)
+        g = VGroup(head, rows, samp, score).arrange(DOWN, aligned_edge=LEFT, buff=0.28)
         return g
 
     def mini_plot(self, r, col, ymax):
         p = Plot([0, STEPS], [0, ymax], width=5.6, height=3.4, xticks=[0, STEPS // 2, STEPS],
-                 yticks=list(range(0, int(ymax) + 1)), xlabel="training step", ylabel="val loss")
+                 yticks=list(range(0, int(ymax) + 1)), xlabel="training step · gray = full model", ylabel="val loss")
         lb = p.line(BASE["curve"]["step"], BASE["curve"]["val"], MUTED, 3)
         la = p.line(r["curve"]["step"], r["curve"]["val"], col, 4)
         return p, lb, la
 
     def construct(self):
         # ------------------------------------------------------------ hook
-        parts = [("embeddings", TEAL), ("positions", "#b48cff"), ("attention", BLUE), ("MLP", ORANGE),
-                 ("residual +", PINK), ("LayerNorm", YELLOW), ("layers ×3", "#5fd0ff")]
+        parts = [("attention", BLUE), ("positions", "#b48cff"), ("MLP", ORANGE),
+                 ("residual +", PINK), ("LayerNorm", YELLOW), ("1 layer", "#5fd0ff"), ("6 layers", TEAL)]
         pills = VGroup(*[pill(t, c, 30) for t, c in parts]).arrange_in_grid(rows=2, buff=(0.35, 0.45)).move_to(DOWN * 0.3)
         ttl = self.T("what does each part actually do?", 46, FG, BOLD).move_to(UP * 2.3)
+        sub_ = self.T("five cuts + two resizes · each retrained from scratch with the shipped model's recipe", 24, MUTED) \
+            .next_to(pills, DOWN, buff=0.5)
         with self.say(f"What does each part of a transformer actually do? Remove it, retrain from scratch, and see what "
-                      f"breaks. Seven broken TinyGPTs, each trained exactly like the real one.",
-                      scene="Seven pills naming TinyGPT's parts: embeddings, positions, attention, MLP, residual +, "
-                            "LayerNorm, layers ×3. Question: what does each part actually do?",
+                      f"breaks. Five cuts and two resizes, each trained with the shipped model's recipe.",
+                      scene="Seven pills: five parts to remove (attention, positions, MLP, residual +, LayerNorm) and two "
+                            "resizes (1 layer, 6 layers). Each variant is retrained from scratch with the shipped recipe.",
                       chapter="Break it"):
             self.play(FadeIn(ttl, shift=DOWN * 0.2), run_time=0.5)
-            self.play(LaggedStart(*[FadeIn(p, scale=0.9) for p in pills], lag_ratio=0.1), run_time=1.2)
+            self.play(LaggedStart(*[FadeIn(p, scale=0.9) for p in pills], lag_ratio=0.1), FadeIn(sub_), run_time=1.2)
             for (t, _), p in zip(parts, pills):
                 self.mark("part-" + t.split()[0], p, f"model part: {t}")
             self.sync("remove it", 0.1)
@@ -110,7 +124,8 @@ class ArchLab(VScene):
         hdr = self.header("The full model")
         tb = top1(BASE)
         ymax = 5
-        pv = self.probe_view(BASE, TEAL).move_to(RIGHT * 3.4 + DOWN * 0.3)
+        pv = self.probe_view(BASE, TEAL)
+        pv.move_to([0.6, -0.3, 0], aligned_edge=LEFT)
         cut = PROBE.rfind(" ", 0, len(PROBE) // 2 + 4)
         prompt = VGroup(self.M(PROBE[:cut], 24, MUTED), self.M(PROBE[cut + 1:], 24, MUTED)).arrange(DOWN, buff=0.12)
         prompt.move_to(UP * 2.55)
@@ -121,14 +136,19 @@ class ArchLab(VScene):
         fvl = self.M(f"final {BASE['final_val']:.3f}", 24, FG).next_to(pb.p(STEPS, BASE["final_val"]), UP, buff=0.2) \
             .align_to(pb.p(STEPS, 0), RIGHT)
         pr = p_of(BASE, " red")
-        with self.say(f"First the control: the full model, {STEPS:,} steps. Validation loss {BASE['final_val']:.2f}. "
-                      f"Our test prompt: Mia gives Tom the red ball, now Tom has the… It answers red, {pct(pr or 0)}.",
-                      scene=f"Baseline (full TinyGPT, {BASE['params']:,} params, {STEPS} steps): validation loss curve ending at "
-                            f"{BASE['final_val']:.3f}; on the probe prompt its top next tokens are "
-                            + ", ".join(f"{t['token']!r} {pct(t['p'])}" for t in BASE["probe_top"][:3]) + ".",
+        with self.say(f"First the control: the full model. Loss {BASE['final_val']:.2f}. On our test prompt, Mia gives Tom "
+                      f"the red ball, it says red, {pct(pr or 0)}. The shipped model says {SHIPPED_RED * 100:.0f}: same "
+                      f"recipe, different batch order. Runs vary. So we also score 100 fresh stories like it: "
+                      f"{acc(BASE)} of 100 right.",
+                      scene=f"Baseline (full TinyGPT, {BASE['params']:,} params, {STEPS} steps): validation loss {BASE['final_val']:.3f}; "
+                            f"on the probe prompt its top next tokens are "
+                            + ", ".join(f"{t['token']!r} {pct(t['p'])}" for t in BASE["probe_top"][:3])
+                            + f". The shipped model (same recipe, different batch order) gives ' red' {SHIPPED_RED * 100:.1f}%. "
+                              f"On 100 generated trade stories the baseline puts the right colour on top {acc(BASE)}/100 "
+                              f"(mean p {BASE['probe_set']['mean_p_correct']:.2f}).",
                       chapter="The control"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ttl, pills)), FadeIn(hdr), run_time=0.4)
+            self.play(FadeOut(VGroup(ttl, pills, sub_)), FadeIn(hdr), run_time=0.4)
             self.play(FadeIn(pb), Create(lb_full), run_time=1.0)
             self.play(FadeIn(fvl), run_time=0.3)
             self.mark("base-curve", VGroup(lb_full, fvl), f"baseline validation loss → {BASE['final_val']:.3f}")
@@ -137,9 +157,13 @@ class ArchLab(VScene):
             self.mark("base-probe", pv[1], "baseline next-token probabilities: "
                       + ", ".join(f"{t['token']!r} {t['p']:.3f}" for t in BASE["probe_top"][:5]))
             self.mark("prompt", prompt, f"probe prompt: {PROBE}")
+            self.sync("The shipped", 0.1)
+            ship = self.T(f"shipped model, same recipe: ' red' {SHIPPED_RED * 100:.0f}%", 24, MUTED).next_to(pv, DOWN, buff=0.3).align_to(pv, LEFT)
+            self.play(FadeIn(ship), run_time=0.3)
+            self.mark("shipped", ship, f"the shipped TinyGPT (same recipe, different batch order): p(' red') = {SHIPPED_RED:.3f}")
 
         # ------------------------------------------------------------ each ablation
-        cur = VGroup(pb, lb_full, fvl, pv)
+        cur = VGroup(pb, lb_full, fvl, pv, ship)
         cur_hdr = hdr
         first = True
         for rid in ORDER:
@@ -153,19 +177,17 @@ class ArchLab(VScene):
             fl = VGroup(self.M(f"{r['final_val']:.2f}", 24, col), self.T("vs full model", 22, MUTED),
                         self.M(f"{BASE['final_val']:.2f}", 24, MUTED)).arrange(RIGHT, buff=0.15)
             fl.next_to(p.ax, UP, buff=0.18).align_to(p.ax, RIGHT)
-            pv2 = self.probe_view(r, col).move_to(RIGHT * 3.4 + DOWN * 0.3)
+            pv2 = self.probe_view(r, col)
+            pv2.move_to([0.6, -0.4, 0], aligned_edge=LEFT)
             h2 = self.header(r["label"], col)
-            t1 = top1(r)
-            pr = p_of(r, " red")
-            right = t1["token"] == " red"
-            ans = (f"It still says red, {pct(t1['p'])}." if right else
-                   f"Its top guess is {spoken_tok(t1['token'])}, {pct(t1['p'])}" + (f"; red gets {pct(pr)}." if pr else "; red isn't even in its top five."))
-            ln_s = f"{SPOKEN[rid]}. {INSIGHT[rid]} Loss {r['final_val']:.2f}. {ans}"
+            ln_s = f"{SPOKEN[rid]}. {INSIGHT[rid]} Right colour on {acc(r)} of 100 stories."
             with self.say(ln_s, scene=f"Ablation '{r['label']}' ({r['params']:,} params): {r['what']} Real validation curve "
                                       f"(colored) vs baseline (gray): final {r['final_val']:.3f} vs {BASE['final_val']:.3f}. "
                                       f"Probe top tokens: " + ", ".join(f"{t['token']!r} {pct(t['p'])}" for t in r["probe_top"][:3])
-                                      + f". Sample: {r['samples'][0]['text'][:40]!r}.",
-                          chapter="Seven broken models" if first else None):
+                                      + f". On 100 generated stories: right colour on top {acc(r)}/100 (mean p "
+                                        f"{r['probe_set']['mean_p_correct']:.2f}). One random sample (temperature 0.8): "
+                                        f"{r['samples'][0]['text'][:40]!r}.",
+                          chapter="Seven variants" if first else None):
                 self.unmark(*list(self._marks))
                 self.play(FadeOut(cur), FadeOut(prompt) if first else Wait(0), ReplacementTransform(cur_hdr, h2),
                           run_time=0.4)
@@ -174,10 +196,10 @@ class ArchLab(VScene):
                 self.mark(f"{rid}-curve", VGroup(lab_, fl), f"{r['label']}: val loss {r['final_val']:.3f} "
                           f"(baseline {BASE['final_val']:.3f})")
                 self.mark(f"{rid}-base", lbase, f"baseline curve for comparison ({BASE['final_val']:.3f})")
-                self.sync("Loss", 0.2)
                 self.play(FadeIn(pv2, shift=LEFT * 0.2), run_time=0.5)
                 self.mark(f"{rid}-probe", pv2, f"{r['label']} on the probe: " + ", ".join(
-                    f"{t['token']!r} {t['p']:.3f}" for t in r["probe_top"][:5]) + f"; wrote {r['samples'][0]['text'][:40]!r}")
+                    f"{t['token']!r} {t['p']:.3f}" for t in r["probe_top"][:5]) + f"; right colour on {acc(r)}/100 stories; one "
+                    f"random sample: {r['samples'][0]['text'][:40]!r}")
             cur = VGroup(p, lbase, lab_, fl, pv2)
             cur_hdr = h2
             first = False
@@ -193,8 +215,8 @@ class ArchLab(VScene):
             w = 5.5 * r["final_val"] / top
             b = Rectangle(width=w, height=0.42, stroke_width=0, fill_color=col, fill_opacity=0.8)
             v = self.M(f"{r['final_val']:.2f}", 24, FG)
-            pr = p_of(r, " red")
-            rd = self.M(f"red {pct(pr)}" if pr else "red not in top 5", 22, TEAL if top1(r)["token"] == " red" else MUTED)
+            a_ = acc(r)
+            rd = self.M(f"{a_:>3}/100 right", 22, TEAL if a_ >= 90 else (YELLOW if a_ >= 50 else PINK))
             bars.add(VGroup(name, b, v, rd))
         y0 = 2.35
         for k, row in enumerate(bars):
@@ -203,23 +225,28 @@ class ArchLab(VScene):
             row[1].move_to([-3.35, y, 0], aligned_edge=LEFT)
             row[2].next_to(row[1], RIGHT, buff=0.15)
             row[3].next_to(row[2], RIGHT, buff=0.35)
-        cap = self.T(f"final validation loss after {STEPS:,} steps (lower is better) · probability of ' red' on the probe",
-                     22, MUTED).to_edge(DOWN, buff=0.4)
+        cap = VGroup(self.T(f"final validation loss (lower is better) · colour-copy test on 100 generated stories", 22, MUTED),
+                     self.T("one run each · same learning rate and steps for all, not tuned per variant · loss noise ≈ ±0.01",
+                            22, MUTED)).arrange(DOWN, buff=0.08).to_edge(DOWN, buff=0.3)
         worst = order[-1]
         n_right = sum(1 for r in AB["runs"] if r["id"] != "baseline" and top1(r)["token"] == " red")
         by_loss = sorted([r for r in AB["runs"] if r["id"] != "baseline"], key=lambda r: -r["final_val"])
-        with self.say(f"Line them up. Cutting {by_loss[0]['label'].replace('no ', '')} or {by_loss[1]['label'].replace('no ', '')} "
-                      f"wrecks it. The rest look almost fine by loss, but only {n_right} of the seven still answer red. "
-                      f"Average loss can hide the skills you care about.",
-                      scene="Leaderboard of real final validation losses (lower = better) with each model's probability of "
-                            "' red' on the probe: " + ", ".join(f"{r['label']} {r['final_val']:.3f}" for r in order) + ".",
+        rest = [r for r in order if r["final_val"] < 1.0]
+        a_hi, a_lo = max(acc(r) for r in rest), min(acc(r) for r in rest)
+        with self.say(f"Line them up. Cutting {by_loss[0]['label'].replace('no ', '')}s or {by_loss[1]['label'].replace('no ', '')} "
+                      f"wrecks it. The rest look alike by loss, yet their copy scores run from {a_hi} down to {a_lo} out of "
+                      f"100. Loss can hide skills. And each is just one run.",
+                      scene="Leaderboard of real final validation losses (lower = better) with each model's colour-copy score "
+                            "on 100 generated stories: " + ", ".join(f"{r['label']} {r['final_val']:.3f} ({acc(r)}/100)"
+                                                                       for r in order) + ". One run each; same LR and steps "
+                            "for every variant.",
                       chapter="Leaderboard"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(cur), ReplacementTransform(cur_hdr, hdr3), run_time=0.4)
             self.play(LaggedStart(*[FadeIn(b, shift=RIGHT * 0.2) for b in bars], lag_ratio=0.08), FadeIn(cap), run_time=1.4)
             for r, b in zip(order, bars):
-                self.mark("lb-" + r["id"], b, f"{r['label']}: final val {r['final_val']:.3f}, p(' red') "
-                          f"{p_of(r, ' red') or 0:.3f}")
+                self.mark("lb-" + r["id"], b, f"{r['label']}: final val {r['final_val']:.3f}, colour-copy test "
+                          f"{acc(r)}/100 (mean p {r['probe_set']['mean_p_correct']:.2f})")
 
         # ------------------------------------------------------------ takeaway
         hdr4 = self.header("What each part does")
@@ -236,6 +263,7 @@ class ArchLab(VScene):
         rows.arrange(DOWN, buff=0.35).move_to(DOWN * 0.1)
         for row in rows:
             row[0].align_to([-1.2, 0, 0], RIGHT); row[1].next_to(row[0], RIGHT, buff=0.4)
+        rows.shift(RIGHT * -rows.get_center()[0])
         cta = self.T("try your own cuts in the Architecture lab →", 30, YELLOW, BOLD).to_edge(DOWN, buff=0.5)
         with self.say("So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep "
                       "it trainable, and depth composes. Now go break one yourself.",
