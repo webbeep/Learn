@@ -9726,7 +9726,7 @@
        0.154,
        0.3036,
        0.668,
-       0.0633
+       0.0678
       ]
      }
     ]
@@ -9939,7 +9939,7 @@
   "id": "arch-lab",
   "title": "Architecture lab: break it to understand it",
   "subtitle": "Remove attention, MLPs, positions, residuals or LayerNorm, retrain, and watch what breaks (real runs)",
-  "duration": 147.37,
+  "duration": 148.47,
   "track": "design",
   "order": 20,
   "src": "/videos/arch-lab.mp4",
@@ -9960,11 +9960,11 @@
     "title": "Seven broken models"
    },
    {
-    "t": 121.67,
+    "t": 122.77,
     "title": "Leaderboard"
    },
    {
-    "t": 133.87,
+    "t": 134.97,
     "title": "What each part does"
    }
   ],
@@ -10163,8 +10163,8 @@
    },
    {
     "start": 55.5,
-    "end": 66.7,
-    "text": "No mlp. Attention still moves information around, so the copy survives. Loss 0.46. It still says red, 89%.",
+    "end": 66.53,
+    "text": "No MLP. Attention still moves information around, so the copy survives. Loss 0.46. It still says red, 89%.",
     "scene": "Ablation 'no MLP' (70,912 params): MLP blocks removed, so the model can still mix tokens but has far less per-token processing and memory. Real validation curve (colored) vs baseline (gray): final 0.457 vs 0.450. Probe top tokens: ' red' 89%, ' purple' 7.4%, ' pink' 2.0%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -10200,9 +10200,9 @@
     ]
    },
    {
-    "start": 66.7,
-    "end": 78.23,
-    "text": "No residual. The signal can't get through. It never really learns. Loss 4.50. Its top guess is ., 9.0%; red isn't even in its top five.",
+    "start": 66.53,
+    "end": 77.73,
+    "text": "No residuals. The signal can't get through. It never really learns. Loss 4.50. Its top guess is a period, 9.0%; red isn't even in its top five.",
     "scene": "Ablation 'no residual' (170,560 params): Residual connections removed, so each layer must rebuild the whole signal instead of adding to it. Real validation curve (colored) vs baseline (gray): final 4.502 vs 0.450. Probe top tokens: '.' 9.0%, ' the' 7.2%, '\\n' 5.1%. Sample: ' daym a. one the toam the a..ied pink no'.",
     "objects": [
      {
@@ -10238,9 +10238,9 @@
     ]
    },
    {
-    "start": 78.23,
-    "end": 93.07,
-    "text": "No layernorm. Scales drift from layer to layer. It learns the language, but not the trick. Loss 0.54. Its top guess is orange, 14%; red isn't even in its top five.",
+    "start": 77.73,
+    "end": 93.27,
+    "text": "No LayerNorm. Scales drift from layer to layer. It learns the language, but not the trick. Loss 0.54. Its top guess is orange, 14%; red isn't even in its top five.",
     "scene": "Ablation 'no LayerNorm' (169,664 params): LayerNorm removed, so activation sizes are no longer re-scaled and can drift from layer to layer. Real validation curve (colored) vs baseline (gray): final 0.542 vs 0.450. Probe top tokens: ' orange' 14%, ' blue' 12%, ' black' 12%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -10276,9 +10276,9 @@
     ]
    },
    {
-    "start": 93.07,
-    "end": 108.2,
-    "text": "1 layer. It knows a color comes next, but not which one. Copying like this typically needs two layers working together. Loss 0.48. Its top guess is blue, 16%; red gets 12%.",
+    "start": 93.27,
+    "end": 108.6,
+    "text": "One layer. It knows a color comes next, but not which one. Copying like this typically needs two layers working together. Loss 0.48. Its top guess is blue, 16%; red gets 12%.",
     "scene": "Ablation '1 layer' (70,592 params): Only one block instead of three: less depth to build multi-step patterns. Real validation curve (colored) vs baseline (gray): final 0.476 vs 0.450. Probe top tokens: ' blue' 16%, ' green' 15%, ' black' 15%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -10314,9 +10314,9 @@
     ]
    },
    {
-    "start": 108.2,
-    "end": 121.67,
-    "text": "6 layers. Deeper isn't automatically better. On the same budget, it hasn't found the trick yet. Loss 0.46. Its top guess is black, 22%; red gets 18%.",
+    "start": 108.6,
+    "end": 122.77,
+    "text": "Six layers. Deeper isn't automatically better. On the same budget, it hasn't found the trick yet. Loss 0.46. Its top guess is black, 22%; red gets 18%.",
     "scene": "Ablation '6 layers' (320,512 params): Six blocks instead of three: twice the depth and roughly 1.9× the parameters. Real validation curve (colored) vs baseline (gray): final 0.460 vs 0.450. Probe top tokens: ' black' 22%, ' yellow' 21%, ' purple' 19%. Sample: ' purple ball.\\nonce upon a time, there wa'.",
     "objects": [
      {
@@ -10352,8 +10352,8 @@
     ]
    },
    {
-    "start": 121.67,
-    "end": 133.87,
+    "start": 122.77,
+    "end": 134.97,
     "text": "Line them up. Cutting residual or attention wrecks it. The rest look almost fine by loss, but only 2 of the seven still answer red. Average loss can hide the skills you care about.",
     "scene": "Leaderboard of real final validation losses (lower = better) with each model's probability of ' red' on the probe: baseline 0.450, no positions 0.451, no MLP 0.457, 6 layers 0.460, 1 layer 0.476, no LayerNorm 0.542, no attention 1.644, no residual 4.502.",
     "objects": [
@@ -10440,8 +10440,8 @@
     ]
    },
    {
-    "start": 133.87,
-    "end": 146.57,
+    "start": 134.97,
+    "end": 147.67,
     "text": "So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep it trainable, and depth composes. Now go break one yourself.",
     "scene": "Roles: attention = moves information between tokens; positions = word order; MLP = per-token processing/memory; residual + LayerNorm = keep it trainable; depth = more steps to compose. CTA: try your own cuts in the Architecture lab.",
     "objects": [

@@ -10,10 +10,18 @@ exactly what you selected.
 
 | Section | What you do |
 |---|---|
-| 🔬 **X-ray** | Type a prompt and press ▶. A real 170k-parameter GPT runs **in your browser** and you watch it, like a video, go through text → tokens → vectors → attention → layers (logit lens + MLP neurons) → probabilities → dice roll, then loop. Pause anywhere, click any number, or ✏️ drag a box over a region to ask about it. |
-| 📉 **Training** | The real loss curve of that same model, plus what it wrote at steps 0 / 25 / 100 / 300 / 1000 / 3000. |
-| 🎬 **Watch** | Hand-picked 3Blue1Brown and Karpathy videos. Pause, and the tutor knows which video you're on and the timestamp. |
-| 🧭 **My path** | The tutor's model of you: what you understand, what's still fuzzy, and what to try next, built from your questions. Also a **build list** of features you wish existed, which you can copy as a request for the next Claude Code session. That's how the app evolves. |
+| 🎓 **Curriculum** (`#/learn`) | 18 chapters in 4 tracks: *How a model thinks*, *How a model learns*, *How models are designed*, *Invent your own*. Each chapter has a narrated video, a lab to try it in, key ideas, a common misconception, a 3-question check, and collapsible math + runnable PyTorch. Progress is tracked; a first-visit question (beginner / intermediate / advanced) tailors order, depth and the tutor. |
+| 🎬 **Videos** (`#/videos`) | 18 explainers (~37 min) rendered with Manim from the real model and real experiments, narrated with Workers AI. Pause and tap anything in the frame to ask about it; captions, chapters and transcript stay in sync. Plus curated 3Blue1Brown / Karpathy picks. |
+| 🔬 **Inference X-ray** (`#/xray`) | A real 170k-parameter GPT runs in your browser; watch text → tokens → vectors → attention → layers → probabilities → sampling, like a video. |
+| 📉 **Training run** (`#/training`) | The real loss curve and what the model wrote at each checkpoint. |
+| 🏋️ **Train it yourself** (`#/train`) | A from-scratch autograd engine trains a small GPT in a Web Worker: live loss, samples, gradient flow, attention, weights; toggle attention/MLP/positions/residual/LayerNorm, optimizers and learning rates, or train on your own text. |
+| 🔁 **Backprop** (`#/backprop`) | Step gradients backwards through small graphs, nudge weights, fit toy datasets, then see the real model's gradients. |
+| 🧪 **Architecture lab** (`#/lab`) | Real ablation runs (no attention, no MLP, no positions, no residual, no LayerNorm, 1 vs 6 layers) with curves, samples and predictions. |
+| 📈 **Scaling** (`#/scaling`) | A real 7-size scaling sweep with a fitted power law, plus a compute/memory calculator for planning your own runs. |
+| 💡 **Invent your own** (`#/invent`) | The research loop, a map of frontier ideas with references, experiment cards, and a runnable single-file PyTorch script exported with your change applied. |
+| 🧭 **My path** (`#/path`) | How the tutor sees you, a build list of features you wish existed (copy it as a request for Claude Code), and every question you've asked. |
+
+Works on phones (bottom tab bar, tap-to-ask, long-press to highlight) and in light/dark themes.
 
 ## How "ask about anything" works
 
@@ -34,6 +42,13 @@ exactly what you selected.
 - **It knows what you're looking at:** it receives only the elements visible in the window, your selection or highlighted text,
   and what your mouse is over (so "what's *this*?" works). 👁 in the panel shows exactly what it receives.
 - Shortcuts: <kbd>V</kbd> talk · <kbd>H</kbd> highlight · <kbd>E</kbd> explain · <kbd>/</kbd> type · <kbd>A</kbd> panel · <kbd>M</kbd> mute · <kbd>Esc</kbd> stop · <kbd>?</kbd> help.
+
+## Experiments and videos
+
+- `train/experiments/` reproduces every number in the labs (ablations, scaling, learning-rate sweep, overfitting, gradients,
+  depth); results land in `public/research/*.json`. See its README for recipes and schemas.
+- `video/` builds the explainer series with Manim; each scene declares its own metadata and `python3 video/build.py <id>`
+  renders, narrates, encodes and indexes it. See `video/README.md`.
 
 ## The model
 
