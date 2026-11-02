@@ -76,7 +76,7 @@ function BODY(abl: Ablations | null, base: Run, nopos: Run): Record<(typeof STEP
     },
     small: {
       text: "Shrink the experiment until it runs in minutes. You learn from the number of experiments you finish, not the size of each one.",
-      example: "TinyGPT: 170,560 parameters, 80 seconds on a laptop CPU. A 1,500-step run of it is enough to see most architecture effects.",
+      example: "TinyGPT: 170,560 parameters, 80 seconds on a laptop CPU. Short runs show big effects fast, but some skills (like copying the right color) only appear later in training, so check more than one budget.",
       visual: <ShrinkViz />,
     },
     baseline: {
@@ -86,12 +86,14 @@ function BODY(abl: Ablations | null, base: Run, nopos: Run): Record<(typeof STEP
     },
     change: {
       text: "Change exactly one thing. If you change two, you won't know which one mattered.",
-      example: nv != null && bv != null ? <>positions: learned → none. Val loss <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b> ({((nv / bv - 1) * 100).toFixed(0)}% worse). Hypothesis survives, for now.</> : "positions: learned → none. Everything else identical.",
+      example: nv != null && bv != null ? (Math.abs(nv / bv - 1) < 0.02
+        ? <>positions: learned → none. Val loss <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b> ({((nv / bv - 1) * 100).toFixed(1)}%). Almost no difference: <b className="text-foreground">the hypothesis fails</b>. That's a win for science: with a causal mask, a token can work out roughly where it is from what came before it, so the model found another way. A failed prediction tells you more than a confirmed one.</>
+        : <>positions: learned → none. Val loss <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b> ({((nv / bv - 1) * 100).toFixed(0)}% worse). Hypothesis survives, for now.</>) : "positions: learned → none. Everything else identical.",
       visual: <div className="space-y-3"><DiffViz /><BarsViz bars={[{ label: "baseline", v: bv ?? 0.49, color: "var(--muted-foreground)" }, { label: "no positions", v: nv ?? 0.61, color: "var(--viz-pin)" }]} max={Math.max(bv ?? 0.5, nv ?? 0.6) * 1.15} real={bv != null && nv != null} /></div>,
     },
     seeds: {
       text: "Random init and batch order add noise. Rerun with 3+ seeds: an effect only counts if it's bigger than the spread between seeds.",
-      example: <>With the script this page exports (character-level, {SEED_RUNS.steps} steps): baseline {mean(SEED_RUNS.baseline).toFixed(3)} ± {spread(SEED_RUNS.baseline)}, no positions {mean(SEED_RUNS.nopos).toFixed(3)} ± {spread(SEED_RUNS.nopos)}. The gap is ~{Math.round((mean(SEED_RUNS.nopos) - mean(SEED_RUNS.baseline)) / Math.max(...[SEED_RUNS.baseline, SEED_RUNS.nopos].map((a) => Math.max(...a) - Math.min(...a))))}× the seed spread: real.</>,
+      example: <>With the script this page exports (character-level, {SEED_RUNS.steps} steps): baseline {mean(SEED_RUNS.baseline).toFixed(3)} ± {spread(SEED_RUNS.baseline)}, no positions {mean(SEED_RUNS.nopos).toFixed(3)} ± {spread(SEED_RUNS.nopos)}. The gap is ~{Math.round((mean(SEED_RUNS.nopos) - mean(SEED_RUNS.baseline)) / Math.max(...[SEED_RUNS.baseline, SEED_RUNS.nopos].map((a) => Math.max(...a) - Math.min(...a))))}× the seed spread: real. Notice this short character-level run says positions matter, while the full-length TinyGPT run above says they barely do. Same question, different setup and budget, different answer. That's why you state the setup with every result.</>,
       visual: <SeedsViz />,
     },
     scale: {

@@ -789,7 +789,7 @@ for residual in (False, True):
     promise: "After this you'll be able to design an ablation: remove one part, retrain, and measure what it was really doing.",
     keyIdeas: [
       { title: "Ablation = remove and measure", body: "To learn what a part does, take it out (or zero it), keep everything else identical, and compare validation loss. The damage tells you what the part was worth.", tryIt: "In the Architecture lab, switch off one component, retrain, and compare with the baseline curve." },
-      { title: "Predict before you run", body: "Without attention, each token sees only itself, so the model collapses to guessing from the current token (roughly a bigram model). Without position embeddings, word order is much harder to use. Guess the damage first, then check." },
+      { title: "Predict before you run", body: "Without attention, each token sees only itself, so the model collapses to guessing from the current token (roughly a bigram model). Without position embeddings, you'd expect word order to be much harder to use. Guess the damage first, then check: TinyGPT's real result may surprise you." },
       { title: "Not all heads are equal", body: "Studies of trained transformers found many heads can be removed with little loss while a few are critical. TinyGPT's color-copying head (layer 2, head 4) is a good candidate for a critical one." },
       { title: "One change, several seeds", body: "Random initialization alone moves the final loss a little. Run each variant with a few seeds and only trust differences bigger than that spread." },
     ],
