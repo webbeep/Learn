@@ -40,7 +40,7 @@ class Scaling(VScene):
         labs.arrange(DOWN, aligned_edge=LEFT, buff=0.2).next_to(pl.ax, RIGHT, buff=0.5)
         lh = self.T("params · final loss", 22, MUTED).next_to(labs, UP, buff=0.25).align_to(labs, LEFT)
         with self.say(f"Seven TinyGPTs, from {fmt_n(small['params'])} to {fmt_n(big['params'])} parameters. Same data, same "
-                      f"{TOK / 1e6:.1f} million tokens each. Every step up in size lands lower.",
+                      f"{TOK / 1e6:.1f} million tokens each. Bigger models land lower, with smaller gains at the top.",
                       scene=f"Real validation curves of 7 model sizes trained on the same {TOK:,} tokens: "
                             + ", ".join(f"{fmt_n(r['params'])} params → {r['final_val']:.3f}" for r in RUNS) + ".",
                       chapter="Bigger is better"):
@@ -57,22 +57,22 @@ class Scaling(VScene):
         N = [r["non_embedding_params"] for r in RUNS]
         L = [r["final_val"] for r in RUNS]
         xlo = 10 ** math.floor(math.log10(min(N))); xhi = 10 ** math.ceil(math.log10(max(N)))
-        ylo, yhi = math.floor(min(L) * 5) / 5 - 0.2, math.ceil(max(L) * 5) / 5 + 0.1
-        ylo = max(0.0, ylo)
-        yt = [round(ylo + k * 0.4, 1) for k in range(int((yhi - ylo) / 0.4) + 1)]
-        ps = Plot([xlo, xhi], [ylo, yhi], width=9.0, height=4.6, xlog=True,
+        ylo, yhi = 0.3, math.ceil(max(L) * 5) / 5 + 0.1
+        yt = [round(0.4 + k * 0.2, 1) for k in range(int((yhi - 0.4) / 0.2) + 1)]
+        ps = Plot([xlo, xhi], [ylo, yhi], width=8.0, height=4.6, xlog=True,
                   xticks=[10 ** e for e in range(int(math.log10(xlo)), int(math.log10(xhi)) + 1)], yticks=yt,
                   xlabel="non-embedding parameters (log scale)", ylabel="final validation loss",
-                  xfmt=lambda v: fmt_n(v)).move_to(DOWN * 0.4 + LEFT * 1.2)
+                  xfmt=lambda v: fmt_n(v)).move_to(DOWN * 0.4 + LEFT * 2.0)
         dots = VGroup(*[Dot(ps.p(n, l), radius=0.1, color=c) for n, l, c in zip(N, L, COLS)])
-        fit = ps.ax.plot(lambda lx: law(10 ** lx), x_range=[math.log10(xlo), math.log10(xhi), 0.02], color=FG,
+        x_fit0 = max(math.log10(xlo), math.log10(((yhi - FIT["c"]) / FIT["a"]) ** (-1 / FIT["alpha"])) + 0.02)
+        fit = ps.ax.plot(lambda lx: law(10 ** lx), x_range=[x_fit0, math.log10(xhi), 0.02], color=FG,
                          stroke_width=3)
         floor = DashedLine(ps.p(xlo, FIT["c"]), ps.p(xhi, FIT["c"]), color=MUTED, stroke_width=2, dash_length=0.1)
-        fl = self.T(f"floor c = {FIT['c']:.2f}", 22, MUTED).next_to(ps.p(xhi, FIT["c"]), UP, buff=0.1).align_to(ps.p(xhi, 0), RIGHT)
+        fl = self.T(f"floor c = {FIT['c']:.2f}", 22, MUTED).next_to(ps.p(xlo, FIT["c"]), DOWN, buff=0.1).shift(RIGHT * 1.2)
         form = VGroup(self.M("L(N) = c + a · N", 30, FG), self.M("-α", 22, FG)).arrange(RIGHT, buff=0.04, aligned_edge=UP)
         nums = VGroup(self.M(f"a = {FIT['a']:.2f}", 26, MUTED), self.M(f"α = {FIT['alpha']:.2f}", 26, YELLOW),
                       self.M(f"c = {FIT['c']:.2f}", 26, MUTED), self.M(f"R² = {FIT['r2']:.3f}", 22, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
-        box = VGroup(form, nums).arrange(DOWN, aligned_edge=LEFT, buff=0.25).next_to(ps.ax, RIGHT, buff=0.4).shift(UP * 0.9)
+        box = VGroup(form, nums).arrange(DOWN, aligned_edge=LEFT, buff=0.25).next_to(ps.ax, RIGHT, buff=0.5).shift(UP * 0.9)
         with self.say(f"Plot final loss against size on a log axis, and the dots fall on a smooth curve: a power law. "
                       f"Loss drops by a predictable factor every time you multiply the size, flattening toward a floor of "
                       f"{FIT['c']:.2f}.",
@@ -97,10 +97,10 @@ class Scaling(VScene):
         hdr2 = self.header("Loss vs compute")
         F_all = [f for r in RUNS for f in r["curve"]["flops"] if f > 0]
         fxlo = 10 ** math.floor(math.log10(min(F_all))); fxhi = 10 ** math.ceil(math.log10(max(F_all)))
-        pc = Plot([fxlo, fxhi], [0, ymax], width=9.4, height=4.6, xlog=True,
+        pc = Plot([fxlo, fxhi], [0, ymax], width=8.4, height=4.6, xlog=True,
                   xticks=[10 ** e for e in range(int(math.log10(fxlo)), int(math.log10(fxhi)) + 1, 2)],
                   yticks=list(range(0, ymax + 1)), xlabel="training compute, FLOPs ≈ 6 · params · tokens (log scale)",
-                  ylabel="validation loss", xfmt=pow10).move_to(DOWN * 0.35 + LEFT * 1.4)
+                  ylabel="validation loss", xfmt=pow10).move_to(DOWN * 0.35 + LEFT * 2.0)
         cc = VGroup(*[pc.line(r["curve"]["flops"][1:], r["curve"]["val"][1:], c, 3) for r, c in zip(RUNS, COLS)])
         # frontier: for a grid of budgets, best loss any run reached within that budget
         import bisect
@@ -114,19 +114,19 @@ class Scaling(VScene):
                     best, bi = min(vals), i
             front.append(best); who.append(bi)
         fpts = [(g, f) for g, f in zip(grid, front) if f is not None]
-        fr = pc.line([g for g, _ in fpts], [f for _, f in fpts], FG, 6, opacity=0.35)
+        fr = pc.line([g for g, _ in fpts], [f for _, f in fpts], FG, 9, opacity=0.4)
         winners = []
         for g, w in zip(grid, who):
             if w is not None and (not winners or winners[-1][1] != w):
                 winners.append((g, w))
         win_txt = " → ".join(fmt_n(RUNS[w]["params"]) for _, w in winners)
         lab_f = self.T("best loss for each budget", 24, FG).next_to(pc.p(fxlo * 30, 1.0), DOWN, buff=0.1) if False else \
-            self.T("best loss for each budget", 24, FG)
+            self.T("best per budget", 22, FG)
         lab_f.next_to(pc.ax, RIGHT, buff=0.35).shift(DOWN * 0.8)
         labs2 = VGroup(*[VGroup(Line(ORIGIN, RIGHT * 0.4, color=c, stroke_width=5), self.M(fmt_n(r["params"]), 22, c))
                          .arrange(RIGHT, buff=0.2) for r, c in zip(RUNS, COLS)]).arrange(DOWN, aligned_edge=LEFT, buff=0.16)
         labs2.next_to(pc.ax, RIGHT, buff=0.35).shift(UP * 0.9)
-        lf_sw = VGroup(Line(ORIGIN, RIGHT * 0.4, color=FG, stroke_width=8, stroke_opacity=0.35), lab_f).arrange(RIGHT, buff=0.2)
+        lf_sw = VGroup(Line(ORIGIN, RIGHT * 0.4, color=FG, stroke_width=9, stroke_opacity=0.4), lab_f).arrange(RIGHT, buff=0.2)
         lf_sw.next_to(labs2, DOWN, buff=0.35).align_to(labs2, LEFT)
         with self.say(f"Now plot the same runs against compute. For a tiny budget, small models win. As the budget grows, "
                       f"the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from "
@@ -147,17 +147,17 @@ class Scaling(VScene):
         # ------------------------------------------------------------ the papers
         hdr3 = self.header("What the papers found")
         k = VGroup(self.T("Kaplan et al., 2020", 32, BLUE, BOLD),
-                   self.T("loss falls as a smooth power law in", 26, FG),
-                   self.T("parameters, data and compute,", 26, FG),
+                   self.T("loss falls as a smooth power law in parameters, data and compute,", 26, FG),
                    self.T("across many orders of magnitude", 26, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
         c = VGroup(self.T("Hoffmann et al., 2022 (Chinchilla)", 32, TEAL, BOLD),
-                   self.T("for a fixed compute budget, grow parameters", 26, FG),
-                   self.T("and training tokens in roughly equal proportion", 26, FG),
+                   self.T("for a fixed compute budget, grow parameters and training tokens", 26, FG),
+                   self.T("in roughly equal proportion", 26, FG),
                    self.T("70B params on 1.4T tokens ≈ 20 tokens / param", 26, YELLOW)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
-        pk = VGroup(panel(k.width + 0.8, k.height + 0.7, BLUE), k)
-        pc_ = VGroup(panel(c.width + 0.8, c.height + 0.7, TEAL), c)
-        k.move_to(pk[0]); c.move_to(pc_[0])
-        VGroup(pk, pc_).arrange(RIGHT, buff=0.5).move_to(DOWN * 0.2)
+        W_ = max(k.width, c.width) + 0.9
+        pk = VGroup(panel(W_, k.height + 0.6, BLUE), k)
+        pc_ = VGroup(panel(W_, c.height + 0.6, TEAL), c)
+        k.move_to(pk[0]).align_to(pk[0], LEFT).shift(RIGHT * 0.45); c.move_to(pc_[0]).align_to(pc_[0], LEFT).shift(RIGHT * 0.45)
+        VGroup(pk, pc_).arrange(DOWN, buff=0.45).move_to(DOWN * 0.2)
         with self.say("Big labs found the same shape at vastly larger scale. Kaplan and colleagues, 2020: loss follows "
                       "smooth power laws in parameters, data and compute. Then Chinchilla, 2022: for a fixed budget, grow "
                       "the model and the training data together. Their 70 billion parameter model saw 1.4 trillion tokens, "

@@ -218,7 +218,10 @@ class TrainYourOwn(VScene):
             g = r["final_val"] - r["final_train"]
             gl_ = self.M(f"gap {g:.2f}", 26, PINK if g > 0.1 else TEAL).next_to(p.xl, DOWN, buff=0.2)
             mini.add(VGroup(p, l1, l2, ttl, gl_))
-        mini.arrange(RIGHT, buff=0.85).move_to(DOWN * 0.2)
+        mini.arrange(RIGHT, buff=0.85)
+        if mini.width > 12.6:
+            mini.scale(12.6 / mini.width)
+        mini.move_to(DOWN * 0.2)
         lg3 = legend([("train", YELLOW, False), ("validation", PINK, False)]).to_edge(DOWN, buff=0.45)
         gaps = ", ".join(f"{r['final_val'] - r['final_train']:.2f}" for r in RUNS)
         with self.say(f"Give it more data and the gap closes. From {RUNS[0]['final_val'] - RUNS[0]['final_train']:.1f} "
@@ -256,7 +259,7 @@ class TrainYourOwn(VScene):
                       "a slow grind. Validation following training. And no spikes.",
                       scene=f"Checklist: 1) step-0 loss ≈ ln(256) = {math.log(256):.2f} (ours {FULL['curve']['val'][0]:.2f}); "
                             "2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / "
-                            "early stop); 4) no spikes or NaN (else lower the learning rate).", chapter="What to watch"):
+                            "early stop); 4) no spikes or NaN (else lower the learning rate).", chapter="What to watch", gap=1.4):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(mini, lg3)), ReplacementTransform(hdr5, hdr6), run_time=0.4)
             for k, ph in enumerate(["First loss", "A fast drop", "Validation following", "no spikes"]):

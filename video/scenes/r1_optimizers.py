@@ -26,7 +26,7 @@ def spk(lr):
 
 
 def fv(r):
-    return "diverged" if r["final_val"] is None else f"{r['final_val']:.2f}"
+    return "NaN" if (r["final_val"] is None or (r["diverged"] and len(r["curve"]["step"]) < 3)) else f"{r['final_val']:.2f}"
 
 
 A_BEST, S_BEST, M_BEST = best(ADAM), best(SGD), best(MOM)
@@ -44,7 +44,7 @@ class Optimizers(VScene):
 
     def construct(self):
         # ------------------------------------------------------------ hook: real fan of curves
-        pl = self.lr_plot().move_to(DOWN * 0.35 + LEFT * 1.3)
+        pl = self.lr_plot(w=8.6).move_to(DOWN * 0.35 + LEFT * 1.9)
         curves = VGroup(*[pl.line(r["curve"]["step"], r["curve"]["val"], c, 3.5) for r, c in zip(ADAM, LR_COLS)])
         labs = VGroup()
         for r, c in zip(ADAM, LR_COLS):
@@ -108,14 +108,14 @@ class Optimizers(VScene):
         # ------------------------------------------------------------ too small / right / too big (toy)
         hdr2 = self.header("Too small, too big")
         panels = VGroup()
-        cfgs = [("too small", 0.05, "#5fd0ff"), ("just right", 0.7, TEAL), ("too big", 2.15, PINK)]
+        cfgs = [("too small", 0.05, "#5fd0ff"), ("just right", 0.7, TEAL), ("too big", 2.1, PINK)]
         balls, paths = [], []
         for name, klr, col in cfgs:
-            a = Axes(x_range=[-2.2, 2.2, 1], y_range=[0, 3.2, 1], x_length=3.7, y_length=2.6, tips=False,
+            a = Axes(x_range=[-2.7, 2.7, 1], y_range=[0, 3.7, 1], x_length=3.7, y_length=2.6, tips=False,
                      axis_config={"color": LINE, "stroke_width": 2})
-            bowl = a.plot(lambda x: 0.5 * x * x, x_range=[-2.2, 2.2, 0.02], color=BLUE, stroke_width=3)
+            bowl = a.plot(lambda x: 0.5 * x * x, x_range=[-2.7, 2.7, 0.02], color=BLUE, stroke_width=3)
             ttl = self.T(name, 30, col, BOLD).next_to(a, UP, buff=0.2)
-            sub = self.M(f"lr × curvature = {klr:g}", 22, MUTED).next_to(a, DOWN, buff=0.15)
+            sub = self.M(f"lr × curvature = {klr:g}", 22, MUTED).next_to(a, DOWN, buff=0.3)
             xs_ = [-1.6]
             for _ in range(7):
                 xs_.append(xs_[-1] * (1 - klr))
@@ -133,9 +133,9 @@ class Optimizers(VScene):
         for (name, klr, col), pnl in zip(cfgs, panels):
             a = pnl[0]
             xs_ = [-1.6]
-            for _ in range(7):
-                xs_.append(max(-2.2, min(2.2, xs_[-1] * (1 - klr))))
-            pts = [a.c2p(x, min(3.2, 0.5 * x * x)) for x in xs_]
+            for _ in range(5):
+                xs_.append(xs_[-1] * (1 - klr))
+            pts = [a.c2p(x, 0.5 * x * x) for x in xs_]
             paths.append(VMobject(stroke_color=col, stroke_width=3).set_points_as_corners(pts))
             balls.append((Dot(pts[0], radius=0.12, color=col), pts))
         tag2 = illus("toy bowl · illustration").to_edge(DOWN, buff=0.5)
@@ -152,14 +152,14 @@ class Optimizers(VScene):
                 self.play(Create(paths[k]), MoveAlongPath(b, paths[k].copy()), run_time=1.1, rate_func=linear)
                 self.mark(f"toy-{k}", panels[k], f"toy illustration: learning rate {cfgs[k][0]}")
 
-        pl2 = self.lr_plot(w=10.5).move_to(DOWN * 0.35)
+        pl2 = self.lr_plot(w=8.6).move_to(DOWN * 0.35 + LEFT * 2.0)
         trio = [(A_LO, "#5fd0ff", "too small"), (A_BEST, TEAL, "just right"), (A_HI, PINK, "too big")]
         cs = VGroup(*[pl2.line(r["curve"]["step"], r["curve"]["val"], c, 4) for r, c, _ in trio])
         tl = VGroup()
         for (r, c, name) in trio:
-            tl.add(VGroup(self.T(name, 24, c, BOLD), self.M(f"lr {fmt_lr(r['lr'])} → {fv(r)}", 22, c))
-                   .arrange(RIGHT, buff=0.2))
-        tl.arrange(DOWN, aligned_edge=LEFT, buff=0.15).move_to(pl2.p(620, 4.6)).align_to(pl2.p(430, 0), LEFT)
+            tl.add(VGroup(self.T(name, 26, c, BOLD), self.M(f"lr {fmt_lr(r['lr'])} → {fv(r)}", 24, c))
+                   .arrange(DOWN, aligned_edge=LEFT, buff=0.08))
+        tl.arrange(DOWN, aligned_edge=LEFT, buff=0.3).next_to(pl2.ax, RIGHT, buff=0.45)
         hi_note = ("its loss blew up" if A_HI["diverged"] else f"it thrashes around and ends at {fv(A_HI)}")
         with self.say(f"The real runs agree. Learning rate {spk(A_LO['lr'])} is still crawling at {fv(A_LO)}. "
                       f"{spk(A_BEST['lr'])} reaches {fv(A_BEST)}. At {spk(A_HI['lr'])}, {hi_note}.",
@@ -177,30 +177,29 @@ class Optimizers(VScene):
 
         # ------------------------------------------------------------ momentum (toy 2-D valley)
         hdr3 = self.header("Momentum")
-        A_, B_ = 0.1, 10.0
+        A_, B_, SY = 0.2, 10.0, 1.6
         def run(lr, beta, n=30):
-            p = np.array([-4.5, 1.5]); v = np.zeros(2); P = [p.copy()]
+            p = np.array([-4.5, 0.5]); v = np.zeros(2); P = [p.copy()]
             for _ in range(n):
                 g = np.array([A_ * p[0], B_ * p[1]]); v = beta * v + g; p = p - lr * v; P.append(p.copy())
             return P
-        sc = np.array([1.15, 1.15, 0])
         def c2(p, y0):
-            return np.array([p[0] * 1.15, p[1] * 1.15 + y0, 0])
+            return np.array([p[0] + 0.9, p[1] * SY + y0, 0])
         def ell(level, y0, col):
-            a = math.sqrt(2 * level / A_) * 1.15; b = math.sqrt(2 * level / B_) * 1.15
-            return Ellipse(width=2 * a, height=2 * b, color=col, stroke_width=1.5, stroke_opacity=0.6).move_to([0, y0, 0])
+            a = math.sqrt(2 * level / A_); b = math.sqrt(2 * level / B_) * SY
+            return Ellipse(width=2 * a, height=2 * b, color=col, stroke_width=1.5, stroke_opacity=0.7).move_to([0.9, y0, 0])
         rows = VGroup()
         trails = []
-        for name, lr, beta, col, y0 in [("plain gradient descent", 0.17, 0.0, ORANGE, 1.25),
-                                        ("with momentum (β = 0.8)", 0.1, 0.8, TEAL, -2.05)]:
-            cont = VGroup(*[ell(l, y0, LINE if l > 0.3 else BLUE) for l in (0.05, 0.3, 0.8, 1.4)])
+        for name, lr, beta, col, y0 in [("plain gradient descent", 0.17, 0.0, ORANGE, 1.15),
+                                        ("with momentum (β = 0.8)", 0.1, 0.8, TEAL, -2.0)]:
+            cont = VGroup(*[ell(l, y0, BLUE if l < 0.3 else LINE) for l in (0.08, 0.6, 1.6, 3.4)])
             P = run(lr, beta)
             pts = [c2(p, y0) for p in P]
             tr = VMobject(stroke_color=col, stroke_width=3.5).set_points_as_corners(pts)
-            dots = VGroup(*[Dot(p, radius=0.045, color=col) for p in pts])
-            star = Star(5, outer_radius=0.14, color=YELLOW, fill_opacity=1).move_to([0, y0, 0])
-            lab = self.T(name, 26, col, BOLD).move_to([-4.1, y0 + 1.15, 0]).align_to([-6.6, 0, 0], LEFT)
-            res = self.M(f"30 steps → {abs(P[-1][0]) / 4.5 * 100:.0f}% of the way left", 22, col)
+            dots = VGroup(*[Dot(p, radius=0.05, color=col) for p in pts])
+            star = Star(5, outer_radius=0.14, color=YELLOW, fill_opacity=1).move_to([0.9, y0, 0])
+            lab = self.T(name, 26, col, BOLD).move_to([0, y0 + 1.25, 0]).align_to([-6.6, 0, 0], LEFT)
+            res = self.M(f"after 30 steps: {np.linalg.norm(P[-1]):.2f} from the ★", 22, col)
             res.next_to(lab, RIGHT, buff=0.5)
             rows.add(VGroup(cont, star, lab, res)); trails.append((tr, dots))
         tag3 = illus("toy valley · illustration").to_corner(DR, buff=0.4)
@@ -222,13 +221,12 @@ class Optimizers(VScene):
             self.play(FadeIn(rows[1][2]), Create(trails[1][0]), FadeIn(trails[1][1], lag_ratio=0.1), run_time=1.6)
             self.play(FadeIn(rows[1][3]), run_time=0.3)
             self.mark("mom-path", VGroup(trails[1][0], rows[1][2]), "toy: momentum averages steps and speeds along the floor")
-
         pl3 = self.lr_plot(w=10.5).move_to(DOWN * 0.35)
         pair = [(S_BEST, ORANGE, "SGD"), (M_BEST, TEAL, "SGD + momentum 0.9")]
         cs3 = VGroup(*[pl3.line(r["curve"]["step"], r["curve"]["val"], c, 4) for r, c, _ in pair])
         lg3 = VGroup(*[VGroup(self.T(n, 24, c, BOLD), self.M(f"best lr {fmt_lr(r['lr'])} → {fv(r)}", 22, c))
                        .arrange(RIGHT, buff=0.2) for r, c, n in pair]).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
-        lg3.move_to(pl3.p(600, 4.8)).align_to(pl3.p(400, 0), LEFT)
+        lg3.next_to(pl3.ax, UP, buff=0.12).align_to(pl3.ax, RIGHT)
         with self.say(f"On the real model, the best plain SGD run ends at {fv(S_BEST)}. With momentum, {fv(M_BEST)}.",
                       scene=f"Real runs, best learning rate of each: SGD (lr {fmt_lr(S_BEST['lr'])}) → {fv(S_BEST)}, "
                             f"SGD + momentum 0.9 (lr {fmt_lr(M_BEST['lr'])}) → {fv(M_BEST)}."):
@@ -311,7 +309,7 @@ class Optimizers(VScene):
             cells = VGroup()
             for r in runs:
                 ok = (not r["diverged"]) and r["final_val"] <= good
-                c = RoundedRectangle(corner_radius=0.08, width=1.25, height=0.95, stroke_color=TEAL if ok else LINE,
+                c = RoundedRectangle(corner_radius=0.08, width=1.18, height=0.95, stroke_color=TEAL if ok else LINE,
                                      stroke_width=2.5, fill_color=TEAL if ok else PANEL, fill_opacity=0.25 if ok else 0.8)
                 t = VGroup(self.M(fmt_lr(r["lr"]), 22, MUTED), self.M(fv(r), 24, FG if ok else (PINK if r["diverged"] else MUTED)))
                 t.arrange(DOWN, buff=0.08).move_to(c)
@@ -326,9 +324,9 @@ class Optimizers(VScene):
             row[1].next_to(LEFT * 3.0, RIGHT, buff=0)
             row[0].next_to(row[1], LEFT, buff=0.35)
             rows_.add(row)
-        rows_.arrange(DOWN, buff=0.35, aligned_edge=RIGHT).move_to(DOWN * 0.1 + RIGHT * 0.4)
+        rows_.arrange(DOWN, buff=0.35, aligned_edge=RIGHT).move_to(DOWN * 0.1)
         for row in rows_:
-            row[1].align_to(rows_[0][1], LEFT)
+            row[1].move_to([-3.25, row[1].get_y(), 0], aligned_edge=LEFT)
             row[0].next_to(row[1], LEFT, buff=0.35)
         n_ok = {name: sum(1 for r in runs if not r["diverged"] and r["final_val"] <= good) for name, runs, _ in groups}
         cap = self.T(f"each box: learning rate → final val loss after {STEPS:,} steps · teal = within 25% of the best "

@@ -55,7 +55,7 @@ class MLP(VScene):
             b = Rectangle(width=6.5 * n / tot, height=0.5, fill_color=c, fill_opacity=0.8, stroke_width=0)
             bars.add(b)
         bars.arrange(RIGHT, buff=0.04).move_to(DOWN * 2.4)
-        bl = VGroup(self.M(f"{n_attn:,}", 26, BLUE).move_to(bars[0]), self.M(f"{n_mlp:,}", 26, BG).move_to(bars[1]))
+        bl = VGroup(self.M(f"{n_attn:,}", 26, FG).move_to(bars[0]), self.M(f"{n_mlp:,}", 26, BG).move_to(bars[1]))
         bt = self.T(f"weights in each layer: the MLP holds {n_mlp / tot * 100:.0f}%", 28, FG).next_to(bars, UP, buff=0.25)
         with self.say(f"Attention lets tokens share information. Then every token goes off alone, through a small network "
                       f"called the MLP. It holds two thirds of each layer's weights.",
@@ -73,13 +73,13 @@ class MLP(VScene):
 
         # ------------------------------------------------------------ anatomy
         hdr = self.header("1 · Anatomy")
-        xs = [-5.2, -1.6, 2.0]
+        xs = [-5.4, -2.3, 0.8]
         hgt = 5.4
 
         def column(n, x, col, r):
             return VGroup(*[Dot([x, hgt / 2 - hgt * (i + 0.5) / n - 0.3, 0], radius=r, color=col) for i in range(n)])
         c_in = column(64, xs[0], BLUE, 0.035)
-        c_hid = column(128, xs[1], YELLOW, 0.02)       # 256 neurons drawn as 128 dots (2 per dot), labelled below
+        c_hid = column(128, xs[1], YELLOW, 0.026)      # 256 neurons drawn as 128 dots (2 per dot), labelled below
         c_out = column(64, xs[2], TEAL, 0.035)
         rng = np.random.default_rng(0)
         w1 = VGroup(*[Line(c_in[i].get_center(), c_hid[j].get_center(), stroke_width=0.6, stroke_opacity=0.25, color=BLUE)
@@ -92,12 +92,13 @@ class MLP(VScene):
         t1 = self.T("expand", 28, BLUE).move_to([(xs[0] + xs[1]) / 2, 3.0, 0])
         t2 = self.T("project back", 28, TEAL).move_to([(xs[1] + xs[2]) / 2, 3.0, 0])
         ax = Axes(x_range=[-3, 3, 1], y_range=[-0.5, 3, 1], x_length=3.4, y_length=2.4, tips=False,
-                  axis_config={"color": MUTED, "stroke_width": 2}).move_to(RIGHT * 5.3 + UP * 1.2)
+                  axis_config={"color": MUTED, "stroke_width": 2}).move_to(RIGHT * 4.6 + UP * 1.0)
         gcurve = ax.plot(gelu, x_range=[-3, 3, 0.02], color=YELLOW, stroke_width=4)
         gl = self.T("GELU", 30, YELLOW, BOLD).next_to(ax, UP, buff=0.15)
         gn = VGroup(self.T("negative in → ~0 out", 24, MUTED), self.T("positive in → passes", 24, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
         gn.next_to(ax, DOWN, buff=0.25)
-        plus = self.T("+ add back to the token's vector", 26, FG).next_to(c_out, RIGHT, buff=0.35).shift(DOWN * 1.6)
+        plus = VGroup(self.T("+ add the result back", 28, FG), self.T("to the token's vector", 28, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+        plus.next_to(gn, DOWN, buff=0.6).align_to(gn, LEFT)
         with self.say("Inside, it's three steps. Expand the token's 64 numbers into 256 neurons. Pass each one through GELU, "
                       "which lets positive signals through and squashes negative ones to nearly zero. "
                       "Then project back down to 64, and add the result to the token's vector.",
@@ -117,6 +118,7 @@ class MLP(VScene):
             self.mark("gelu", VGroup(ax, gcurve, gl, gn), f"GELU(x) ≈ x for large positive x, ≈ 0 for negative x; GELU(-1) = {gelu(-1):.3f}, GELU(1) = {gelu(1):.3f}")
             self.sync("Then project", 0.1)
             self.play(Create(w2, lag_ratio=0.002), FadeIn(c_out), FadeIn(l_out), FadeIn(t2), run_time=1.0)
+            self.bring_to_front(c_hid)
             self.mark("w-out", VGroup(w2, t2), "W_out: 256 × 64 weights (+64 biases) project back to 64 numbers")
             self.play(FadeIn(plus, shift=LEFT * 0.2), run_time=0.4)
 
@@ -124,17 +126,17 @@ class MLP(VScene):
         a3 = acts[2][-1].numpy()
         frac = float((a3 > 0.1).mean())
         bw = 11.5 / 256
-        base_y = -1.6
-        abars = VGroup(*[Rectangle(width=bw * 0.8, height=max(0.01, abs(v) * 1.9), stroke_width=0,
+        base_y = -2.2
+        abars = VGroup(*[Rectangle(width=bw * 0.8, height=max(0.01, abs(v) * 1.5), stroke_width=0,
                                    fill_color=YELLOW if v > 0.1 else MUTED, fill_opacity=0.9 if v > 0.1 else 0.5)
-                         .move_to([-5.75 + bw * (i + 0.5), base_y + (abs(v) * 1.9 / 2) * (1 if v >= 0 else -1), 0])
+                         .move_to([-5.75 + bw * (i + 0.5), base_y + (abs(v) * 1.5 / 2) * (1 if v >= 0 else -1), 0])
                          for i, v in enumerate(a3)])
         axis = Line([-5.9, base_y, 0], [5.9, base_y, 0], color=LINE, stroke_width=2)
-        atitle = self.T("layer 3's 256 neurons, on the final \"the\" of our story (real values)", 26, MUTED).move_to(UP * 2.9)
+        atitle = self.T("layer 3's 256 neurons, on the final \"the\" of our story (real values)", 26, MUTED).move_to(UP * 2.75)
         story = self.M('"…now tom has the"', 26, FG).next_to(atitle, DOWN, buff=0.2)
         imax = int(a3.argmax())
         tag_max = self.M(f"#{imax}: {a3[imax]:.2f}", 26, YELLOW).next_to(abars[imax], UP, buff=0.12)
-        stat = self.T(f"only {frac * 100:.0f}% fire above 0.1", 34, YELLOW, BOLD).move_to(DOWN * 2.9)
+        stat = self.T(f"only {frac * 100:.0f}% fire above 0.1", 34, YELLOW, BOLD).move_to(DOWN * 3.05)
         with self.say(f"Here are the real 256 neuron values in layer 3, for the last word of our story. "
                       f"Most stay quiet. Only {frac * 100:.0f} percent fire above 0.1.",
                       scene=f"Bar chart of the 256 real post-GELU activations in layer 3 at the final ' the' of 'mia has a red "
@@ -158,13 +160,13 @@ class MLP(VScene):
         amax = float(a_det.max())
         chips = [self.chip(t, MUTED, 28) for t in toks]
         rows = VGroup(*[VGroup(*chips[a:b]).arrange(RIGHT, buff=0.14) for a, b in ROWS]).arrange(DOWN, buff=0.55, aligned_edge=LEFT)
-        rows.move_to(UP * 0.1)
+        rows.move_to(DOWN * 0.45)
         vals = VGroup()
         for c, v in zip(chips, a_det):
             if v > 0.3:
                 vals.add(self.M(f"{v:.1f}", 24, YELLOW).next_to(c, DOWN, buff=0.08))
         ntitle = VGroup(self.T(f"layer {L + 1} · neuron #{N}", 34, YELLOW, BOLD),
-                        self.T("brightness = how strongly it fires on each token", 24, MUTED)).arrange(DOWN, buff=0.15).move_to(UP * 2.9)
+                        self.T("brightness = how strongly it fires on each token", 24, MUTED)).arrange(DOWN, buff=0.15).move_to(UP * 2.45)
         hits = [k for k, v in enumerate(a_det) if v > 0.8]
         with self.say(f"Each neuron's input weights are a pattern it's looking for. Take neuron {N} in layer {L + 1}. "
                       f"On our story, it fires on 'a', both times. Right before a color.",
@@ -200,7 +202,12 @@ class MLP(VScene):
         exs, seen = [], set()
         for i in top:
             r_, p_ = i // (Tn - 1), i % (Tn - 1)
-            ctx = "".join(VOCAB[j] for j in X[r_, max(0, p_ - 3):p_].tolist()).lstrip()
+            back = []
+            for j in range(p_ - 1, max(-1, p_ - 6), -1):
+                if VOCAB[int(X[r_, j])] in (".", "\n", "?", "!", ","):
+                    break
+                back.insert(0, VOCAB[int(X[r_, j])])
+            ctx = "".join(back).lstrip()
             cur = VOCAB[int(X[r_, p_])]
             nx = VOCAB[int(X[r_, p_ + 1])]
             if (ctx + cur) in seen:
@@ -211,7 +218,7 @@ class MLP(VScene):
                 break
         ex_rows = VGroup()
         for ctx, cur, nx, v in exs:
-            mk = (f'<span foreground="{MUTED}">…{ctx}</span><span foreground="{YELLOW}" weight="bold">{cur}</span>'
+            mk = (f'<span foreground="{MUTED}">{ctx}</span><span foreground="{YELLOW}" weight="bold">{cur}</span>'
                   f'<span foreground="{MUTED}">  →</span><span foreground="{PINK}">{nx}</span>')
             ex_rows.add(MarkupText(mk, font=MONO, font_size=26))
         ex_rows.arrange(DOWN, aligned_edge=LEFT, buff=0.22)
@@ -232,7 +239,7 @@ class MLP(VScene):
                               f"push toward (projected through the unembedding, roughly): "
                             + ", ".join(f"{t.strip()}" for t, _ in push) + "."):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(rows, vals, nxt)), ntitle.animate.scale(0.85).move_to(UP * 3.0), run_time=0.5)
+            self.play(FadeOut(VGroup(rows, vals, nxt)), ntitle.animate.scale(0.85).to_corner(UR, buff=0.4), run_time=0.5)
             self.play(FadeIn(ex_t), LaggedStart(*[FadeIn(r, shift=RIGHT * 0.2) for r in ex_rows], lag_ratio=0.2), run_time=1.0)
             self.mark("examples", ex_rows, f"top-activating contexts of L{L + 1} #{N} in fresh text: " +
                       "; ".join(f"…{c}[{u}] → {n_} (act {v:.2f})" for c, u, n_, v in exs))
@@ -246,7 +253,7 @@ class MLP(VScene):
             self.mark("note", p_note, "approximation: W_out column → final-LN gain → unembedding; ignores LayerNorm's 1/std")
 
         # ------------------------------------------------------------ top neurons at the final 'the'
-        hdr3 = self.header("3 · The final \"the\"")
+        hdr3 = self.header("3 · Layer 3 at the final \"the\"")
         topn = torch.topk(acts[2][-1], 5)
         n_rows = VGroup()
         tops = []
@@ -264,14 +271,14 @@ class MLP(VScene):
             r[1].move_to([-4.5, y, 0], aligned_edge=LEFT)
             r[2].next_to(r[1], RIGHT, buff=0.2)
             r[3].move_to([0.6, y, 0], aligned_edge=LEFT)
-        hd = VGroup(self.T("layer 3 neuron", 24, MUTED).move_to([-5.6, 2.45, 0], aligned_edge=LEFT),
-                    self.T("activation", 24, MUTED).move_to([-3.3, 2.45, 0], aligned_edge=LEFT),
+        hd = VGroup(self.T("neuron", 24, MUTED).move_to([-5.6, 2.45, 0], aligned_edge=LEFT),
+                    self.T("activation", 24, MUTED).move_to([-3.4, 2.45, 0]),
                     self.T("pushes (roughly) toward", 24, MUTED).move_to([0.6, 2.45, 0], aligned_edge=LEFT))
         n0, v0, p0 = tops[0]
         n1, v1, p1 = tops[1]
         with self.say(f"Now the five neurons that fire hardest in layer 3, on the final 'the'. "
                       f"Number {n0} pushes toward {p0[0][0].strip()}, {p0[1][0].strip()} and {p0[3][0].strip()}. "
-                      f"Number {n1}, toward {p1[0][0].strip()} and word fragments. Most neurons mix several jobs. "
+                      f"Number {n1}, toward {p1[0][0].strip()} and word fragments. Most of them mix several jobs. "
                       f"Researchers call that polysemantic.",
                       scene="The five most active real layer-3 neurons at the final ' the', each with its activation bar and the "
                             "4 tokens its output weights push toward (roughly): "
@@ -313,7 +320,7 @@ class MLP(VScene):
             r[2].next_to(r[1], RIGHT, buff=0.25)
         btitle = self.T('probability of " red" (read out with the logit lens)', 28, MUTED).move_to(UP * 1.9)
         bnote = self.T(f'before the MLP, the top guess was "{VOCAB[jb].strip() or VOCAB[jb]}" at {float(pb[jb]) * 100:.0f}%', 24, MUTED).move_to(DOWN * 2.4)
-        with self.say(f"Add up all 256 pushes, and the answer appears. Just before this MLP, red had {rb * 100:.0f} percent. "
+        with self.say(f"Add up all 256 pushes, and the answer appears. Just before this MLP, red had {rb * 100:.1f} percent. "
                       f"Right after it, {ra * 100:.0f}.",
                       scene=f"Two bars for P(' red') read out with the logit lens: {rb * 100:.1f}% just before layer 3's MLP vs "
                             f"{ra * 100:.1f}% right after it. Note: before the MLP the top guess was '{VOCAB[jb]}' at "
@@ -339,8 +346,7 @@ class MLP(VScene):
         kv_ar = Arrow(keyb.get_right(), valb.get_left(), buff=0.15, color=MUTED, stroke_width=4)
         ex = VGroup(self.M('"… has a"', 26, BLUE), self.T("→", 28, MUTED), self.T("push toward colors", 26, TEAL),
                     self.T(f"(layer {L + 1}, #{N}, as seen above)", 24, MUTED)).arrange(RIGHT, buff=0.25).next_to(VGroup(keyb, valb), DOWN, buff=0.5)
-        cite = self.T("one leading view: Geva et al. 2021 (MLPs as key–value memories) · Meng et al. 2022 (editing facts)",
-                      22, MUTED).to_edge(DOWN, buff=0.3)
+        cite = self.T("one leading view · Geva et al. 2021 · Meng et al. 2022", 24, MUTED).to_edge(DOWN, buff=0.35)
         with self.say("So where do facts live? One leading view: an MLP works like a key-value memory. Input weights are "
                       "keys that recognize a situation. Output weights are values that write an answer. Researchers can "
                       "edit a few MLP weights and change a fact a model states. Strong evidence, but not the whole story.",

@@ -12,11 +12,11 @@ The encoded corpus is cached in `train/experiments/.cache/tokens.npy` (delete it
 
 ```bash
 cd train/experiments
-python3 ablations.py    # ~3 min  → public/research/ablations.json
-python3 overfit.py      # ~2 min  → public/research/overfit.json
-python3 lr_sweep.py     # ~4 min  → public/research/lr_sweep.json
-python3 scaling.py      # ~15 min → public/research/scaling.json
-python3 depth.py        # ~5 min  → public/research/depth.json
+python3 ablations.py    # ~30 min → public/research/ablations.json   (8 runs × 3000 steps × 64×64 tokens)
+python3 overfit.py      # ~4 min  → public/research/overfit.json     (4 runs × 1500 steps × 32×64)
+python3 lr_sweep.py     # ~6 min  → public/research/lr_sweep.json    (15 runs × 1000 steps × 32×64)
+python3 scaling.py      # ~15 min → public/research/scaling.json     (7 sizes × 1500 steps × 32×64; the 1.8M model dominates)
+python3 depth.py        # ~15 min → public/research/depth.json       (init probe + 4 runs of a 12-layer model)
 python3 gradients.py    # seconds → public/research/gradients.json
 ```
 
@@ -40,6 +40,9 @@ shared 4-core CPU.
 
 Default training recipe (unless a file's `note` says otherwise): batch 32 × 64 tokens (2,048 tokens/step),
 AdamW lr 3e-3, 100 warmup steps, cosine decay to 0, weight decay 0.05, grad-norm clip 1.0.
+The ablations use the shipped model's full recipe instead (3000 steps × 64 × 64 tokens): with only 1500 × 32 × 64
+tokens even the baseline has not yet learned the color-copying behaviour the probe prompt tests (p(" red") ≈ 0.12, a
+uniform guess over the colors); it appears at roughly step 1000 of the 64-batch schedule.
 
 ## JSON schemas
 
@@ -50,7 +53,7 @@ Every file also has a free-text `note` describing the exact setup.
 
 ```jsonc
 {
-  "steps": 1500, "batch": 32, "tokens_per_step": 2048, "note": "...",
+  "steps": 3000, "batch": 64, "tokens_per_step": 4096, "note": "...",
   "probe_prompt": "mia has a red ball. tom has a blue kite. mia gives the ball to tom. now tom has the",
   "runs": [{
     "id": "baseline" | "no-attention" | "no-mlp" | "no-positions" | "no-residual" | "no-layernorm" | "1-layer" | "6-layer",
@@ -104,7 +107,7 @@ Constant LR, no warmup, no clipping, 1000 steps, eval every 25 steps.
 
 ```jsonc
 {
-  "steps": 1500, "batch": 32, "note": "...",
+  "steps": 1500, "batch": 32, "train_tokens": 1602516, "val_tokens": 84342, "corpus_chars": 5177530, "note": "...",
   "runs": [{"label": "4k tokens", "data_tokens": 4096, "epochs": 750.0,
             "curve": {"step": [...], "train": [...], "val": [...]},
             "final_train": 0.1, "final_val": 2.0, "best_val": 1.5, "best_val_step": 300}]

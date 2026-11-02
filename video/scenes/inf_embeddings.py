@@ -175,7 +175,7 @@ class Embeddings(VScene):
         Y, var = pca2(En)
         Y = Y / np.abs(Y).max()
         pw, ph = 6.6, 5.6
-        ctr = RIGHT * 2.3 + DOWN * 0.45
+        ctr = RIGHT * 2.1 + DOWN * 0.45
         frame = RoundedRectangle(corner_radius=0.2, width=pw + 0.7, height=ph + 0.6, stroke_color=LINE, stroke_width=2,
                                  fill_color=PANEL, fill_opacity=0.6).move_to(ctr)
 
@@ -188,7 +188,7 @@ class Embeddings(VScene):
         key = VGroup(*[VGroup(Dot(radius=0.09, color=GCOL[g]), self.T(f"{g} ({len(GROUPS[g])})", 26, GCOL[g])).arrange(RIGHT, buff=0.18)
                        for g in GROUPS], VGroup(Dot(radius=0.06, color=MUTED), self.T("other tokens", 26, MUTED)).arrange(RIGHT, buff=0.2))
         key.arrange(DOWN, aligned_edge=LEFT, buff=0.3).to_edge(LEFT, buff=0.8).shift(DOWN * 0.3)
-        ttl = self.T("all 256 embeddings, squashed from 64-D to 2-D (PCA)", 26, MUTED).next_to(frame, UP, buff=0.15)
+        ttl = self.T("all 256 embeddings, squashed from 64-D to 2-D (PCA)", 24, MUTED).next_to(frame, UP, buff=0.15)
         vlab = self.T(f"these 2 axes keep {100 * (var[0] + var[1]):.0f}% of the spread", 24, MUTED).next_to(frame, DOWN, buff=0.15)
         names_c = Y[[tid(w) for w in GROUPS["names"]]].mean(0)
         with self.say("Squash all 256 rows from 64 dimensions down to two, with PCA, and plot them. "

@@ -28,6 +28,14 @@ def human(n):
 class TinyToChatGPT(CScene):
     VIDEO_ID = "tiny-to-chatgpt"
 
+    def special(self, s, color, size=24, pad=0.1):
+        """A special-token chip; ligatures disabled so '<|' and '|>' stay literal in JetBrains Mono."""
+        esc = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        lab = MarkupText(f'<span font_features="calt=0,liga=0">{esc}</span>', font=MONO, font_size=size, color=FG)
+        box = RoundedRectangle(corner_radius=0.08, width=lab.width + 2 * pad + 0.04, height=lab.height + 2 * pad + 0.06,
+                               stroke_color=color, stroke_width=2.2, fill_color=color, fill_opacity=0.18)
+        return VGroup(box, lab.move_to(box))
+
     def construct(self):
         cfg = META["config"]
         n_tiny = TRAIN["params"]
@@ -39,8 +47,8 @@ class TinyToChatGPT(CScene):
         pipe, parts = pipeline(self)
         pipe.move_to(UP * 0.3)
         name = self.T("TinyGPT", 34, FG, BOLD).next_to(pipe, UP, buff=0.55)
-        with self.say("ChatGPT and TinyGPT run the same loop: read the tokens, score every possible next token, "
-                      "pick one, append it, repeat. Same building blocks too: embeddings, then attention and MLP layers, stacked.",
+        with self.say("ChatGPT runs the same loop as TinyGPT: read the tokens, score every possible next one, "
+                      "pick, append, repeat. Same building blocks too: embeddings, attention, MLPs.",
                       scene="TinyGPT's loop as boxes: tokens → embed → [attention → MLP] × 3 layers → probabilities → pick "
                             "one, with an arrow looping back ('append it & repeat'). ChatGPT-style models use the same loop.",
                       chapter="Same engine"):
@@ -75,8 +83,8 @@ class TinyToChatGPT(CScene):
         ratio = GPT3["params"] / n_tiny
         rt = self.T(f"GPT-3 ≈ {ratio / 1e6:.2f} million × TinyGPT", 32, YELLOW, BOLD).to_edge(DOWN, buff=0.35)
         unpub = self.T("published sizes only: many newer models don't disclose theirs", 22, MUTED).move_to(UP * 2.75)
-        with self.say(f"The big difference is scale. GPT-2, in 2019, came in sizes from 124 million to 1.5 billion "
-                      f"parameters. GPT-3, in 2020: 175 billion, 96 layers, every vector 12,288 numbers wide. "
+        with self.say(f"The big difference is scale. GPT-2, in 2019, ranged from 124 million to 1.5 billion "
+                      f"parameters. GPT-3, in 2020: 175 billion, 96 layers, vectors 12,288 wide. "
                       f"That's about a million TinyGPTs.",
                       scene=f"Log-scale bar chart of published parameter counts: TinyGPT {n_tiny:,} (3 layers, width 64), "
                             f"GPT-2 small 124M (12 layers, width 768), GPT-2 XL 1.5B (48 layers, width 1,600), GPT-3 175B "
@@ -102,7 +110,7 @@ class TinyToChatGPT(CScene):
 
         # ============================================================ pretraining
         hdr2 = self.header("Stage 1 · Pretraining")
-        ax2, x2 = log_axis(self, 6, 12, x0=-2.6, x1=6.3, y_top=1.9, y_bot=-0.3,
+        ax2, x2 = log_axis(self, 6, 12, x0=-2.6, x1=5.4, y_top=1.9, y_bot=-0.3,
                            labels={6: "1M", 7: "10M", 8: "100M", 9: "1B", 10: "10B", 11: "100B", 12: "1T"})
         trows = [("TinyGPT's corpus", tiny_tokens, BLUE), ("GPT-3 training", GPT3["tokens"], ORANGE)]
         tb = VGroup()
@@ -120,10 +128,10 @@ class TinyToChatGPT(CScene):
                      self.M("Q: What is the capital of Italy? …", 26, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
         doc_l = self.T("a base model may just continue the document (illustration)", 22, MUTED)
         docg = VGroup(doc, doc_l).arrange(DOWN, aligned_edge=LEFT, buff=0.18).move_to(DOWN * 2.55)
-        with self.say(f"Stage one, pretraining, is TinyGPT's exact game, predict the next token, but on a huge pile of "
-                      f"web text and books. GPT-3 trained on about 300 billion tokens. TinyGPT's entire world is "
-                      f"{tiny_tokens / 1e6:.1f} million. The result is a base model: a superb autocomplete, not an assistant. "
-                      f"Ask it a question, and it may just continue the document.",
+        with self.say(f"Stage one, pretraining: TinyGPT's exact game, on a huge pile of web text. "
+                      f"GPT-3 saw about 300 billion tokens; TinyGPT's world is {tiny_tokens / 1e6:.1f} million. "
+                      f"The result is a base model: an autocomplete, not an assistant. Ask it something, "
+                      f"and it may just continue the document.",
                       scene=f"Log-scale bars of training tokens: TinyGPT's corpus {tiny_tokens:,} tokens vs GPT-3 ≈ 300 "
                             f"billion tokens (published). Caption: same game, predict the next token. Illustration: a base "
                             f"model continuing 'Q: What is the capital of France?' with more questions instead of answering.",
@@ -131,14 +139,14 @@ class TinyToChatGPT(CScene):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(ax, axl, bars, rt, unpub)), ReplacementTransform(hdr, hdr2), run_time=0.5)
             self.play(FadeIn(ax2), FadeIn(axl2), FadeIn(same), run_time=0.5)
-            self.sync("GPT-3 trained", 0.1)
+            self.sync("GPT-3 saw", 0.1)
             self.play(FadeIn(tb[1][0]), GrowFromEdge(tb[1][1], LEFT), FadeIn(tb[1][2]), run_time=0.7)
             self.mark("tok-gpt3", tb[1], "GPT-3 was trained on about 300 billion tokens (Brown et al. 2020)")
-            self.sync("TinyGPT's entire", 0.1)
+            self.sync("TinyGPT's world", 0.1)
             self.play(FadeIn(tb[0][0]), GrowFromEdge(tb[0][1], LEFT), FadeIn(tb[0][2]), run_time=0.6)
             self.mark("tok-tiny", tb[0], f"TinyGPT's whole training corpus: {tiny_tokens:,} tokens")
             self.mark("same-game", same, "pretraining objective = next-token prediction, same cross-entropy loss")
-            self.sync("Ask it", 0.1)
+            self.sync("Ask it something", 0.1)
             self.play(FadeOut(same), FadeIn(docg, shift=UP * 0.2), run_time=0.6)
             self.mark("base-doc", docg, "illustration: a base model may continue a question with more questions")
 
@@ -160,8 +168,8 @@ class TinyToChatGPT(CScene):
                      color=YELLOW, stroke_width=5)
         ul = self.T("loss is usually computed on the reply tokens only", 24, YELLOW).next_to(under, DOWN, buff=0.15)
         ex_l = self.T("example written by a person (illustration)", 22, MUTED).next_to(conv, UP, buff=0.2).align_to(conv, LEFT)
-        with self.say("Stage two: supervised fine-tuning. Same loss again, but now on many example conversations written "
-                      "by people: a request, and a good response. The model learns to play the helpful assistant.",
+        with self.say("Stage two: supervised fine-tuning. Same loss, now on example conversations written by people: "
+                      "a request, and a good response. The model learns to play the assistant.",
                       scene="Illustrative training example: PERSON 'Explain photosynthesis to a ten-year-old.' / ASSISTANT "
                             "'Plants catch sunlight…'. The reply is underlined: the loss is usually computed on the reply "
                             "tokens only.", chapter="Instruction tuning"):
@@ -179,26 +187,27 @@ class TinyToChatGPT(CScene):
         hdr4 = self.header("Stage 3 · Preference tuning (RLHF)")
 
         def card(title, text, col):
-            t = VGroup(self.T(title, 24, col, BOLD), self.T(text, 24, FG)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+            t = VGroup(self.T(title, 26, col, BOLD), *[self.T(x, 24, FG) for x in text.split("\n")]
+                       ).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
             b = RoundedRectangle(corner_radius=0.14, width=t.width + 0.5, height=t.height + 0.4, stroke_color=col,
                                  stroke_width=2.5, fill_color=col, fill_opacity=0.08)
             return VGroup(b, t.move_to(b))
         cA = card("answer A", "clear, correct, kind", TEAL)
         cB = card("answer B", "rambling, partly wrong", MUTED)
-        ab = VGroup(cA, cB).arrange(DOWN, buff=0.35).move_to([-4.6, 0.6, 0])
+        ab = VGroup(cA, cB).arrange(DOWN, buff=0.35).move_to([-5.0, 0.7, 0])
         tick = self.T("✓ person prefers A", 26, TEAL, BOLD).next_to(ab, DOWN, buff=0.3)
-        rm = card("reward model", "learns to predict the picks", YELLOW).move_to([0.0, 0.6, 0])
-        pol = card("the chat model", "nudged toward high reward", PINK).move_to([4.6, 0.6, 0])
+        rm = card("reward model", "learns to predict\nthe picks", YELLOW).move_to([-0.7, 0.7, 0])
+        pol = card("the chat model", "nudged toward\nhigh reward", PINK).move_to([4.4, 0.7, 0])
         a1 = Arrow(ab.get_right(), rm.get_left(), buff=0.15, color=MUTED, stroke_width=3)
         a2 = Arrow(rm.get_right(), pol.get_left(), buff=0.15, color=MUTED, stroke_width=3)
-        a2l = self.T("reinforcement learning", 22, MUTED).next_to(a2, UP, buff=0.1)
-        leash = self.T("+ a penalty for drifting far from the SFT model", 24, PINK).next_to(pol, DOWN, buff=0.3)
-        leash.align_to(pol, RIGHT)
+        a2l = VGroup(self.T("reinforcement", 22, MUTED), self.T("learning", 22, MUTED)).arrange(DOWN, buff=0.06)
+        a2l.next_to(a2, UP, buff=0.12)
+        leash = VGroup(self.T("+ a penalty for drifting", 24, PINK), self.T("far from the SFT model", 24, PINK)
+                       ).arrange(DOWN, aligned_edge=LEFT, buff=0.06).next_to(pol, DOWN, buff=0.3).align_to(pol, LEFT)
         cite = self.T("RLHF recipe as in InstructGPT (Ouyang et al., 2022)", 22, MUTED).to_edge(DOWN, buff=1.25)
-        with self.say("Stage three: preference tuning. The model writes two answers, and a person picks the better one. "
-                      "A reward model learns to predict those picks, then reinforcement learning nudges the chat model "
-                      "toward high-reward answers, with a penalty for drifting too far. That's RLHF, the recipe behind "
-                      "OpenAI's InstructGPT in 2022.",
+        with self.say("Stage three, preference tuning. A person picks the better of two answers. A reward model learns "
+                      "those picks, and reinforcement learning nudges the chat model toward high reward, "
+                      "with a penalty for drifting too far. That's RLHF, as in InstructGPT, 2022.",
                       scene="RLHF diagram: two answers A and B, a person prefers A → a reward model learns to predict "
                             "preferences → reinforcement learning nudges the chat model toward high reward, plus a penalty "
                             "(KL) for drifting far from the SFT model. Citation: InstructGPT, Ouyang et al. 2022.",
@@ -208,13 +217,13 @@ class TinyToChatGPT(CScene):
             self.play(FadeIn(ab, shift=RIGHT * 0.2), run_time=0.6)
             self.mark("ans-a", cA, "candidate answer A (illustration)")
             self.mark("ans-b", cB, "candidate answer B (illustration)")
-            self.sync("a person picks", 0.1)
+            self.sync("A person picks", 0.1)
             self.play(FadeIn(tick, scale=1.2), run_time=0.4)
             self.mark("pref", tick, "human preference label: A is better than B")
             self.sync("A reward model", 0.1)
             self.play(GrowArrow(a1), FadeIn(rm), run_time=0.6)
             self.mark("rm", rm, "reward model trained on human comparisons")
-            self.sync("then reinforcement", 0.1)
+            self.sync("and reinforcement", 0.1)
             self.play(GrowArrow(a2), FadeIn(a2l), FadeIn(pol), run_time=0.6)
             self.mark("policy", pol, "the chat model (policy), optimised with RL (PPO in InstructGPT)")
             self.sync("with a penalty", 0.1)
@@ -227,17 +236,16 @@ class TinyToChatGPT(CScene):
             VGroup(self.T("1.3B InstructGPT", 30, PINK, BOLD), self.T("preferred by labelers over", 26, FG),
                    self.T("175B GPT-3", 30, ORANGE, BOLD)).arrange(RIGHT, buff=0.3),
             self.T("despite having over 100× fewer parameters", 26, MUTED)).arrange(DOWN, buff=0.2).move_to(DOWN * 2.05)
-        dpo = self.T("newer variants (e.g. DPO, 2023) learn from the same kind of preference pairs without a separate reward model",
-                     22, MUTED).to_edge(DOWN, buff=0.3)
+        dpo = self.T("newer variants such as DPO (2023) skip the separate reward model", 24, MUTED).to_edge(DOWN, buff=0.3)
         self.fitw(dpo, 13.0)
-        with self.say("In that paper, labelers preferred a 1.3 billion parameter InstructGPT over the 175 billion GPT-3. "
-                      "On that measure, tuning beat a hundred times the size.",
+        with self.say("In that paper, labelers preferred answers from a 1.3 billion parameter InstructGPT over the "
+                      "175 billion GPT-3.",
                       scene="InstructGPT result (Ouyang et al. 2022): outputs of the 1.3B InstructGPT were preferred by "
                             "labelers over the 175B GPT-3, despite over 100× fewer parameters. Footnote: newer methods such "
                             "as DPO (2023) skip the separate reward model."):
             self.play(FadeOut(cite), FadeIn(res[0], shift=UP * 0.2), run_time=0.6)
             self.mark("result", res, "InstructGPT paper: 1.3B InstructGPT outputs preferred over 175B GPT-3 outputs")
-            self.sync("On that measure", 0.1)
+            self.sync("175 billion", 0.1)
             self.play(FadeIn(res[1]), FadeIn(dpo), run_time=0.5)
             self.mark("dpo", dpo, "Direct Preference Optimization (Rafailov et al. 2023) skips the reward model")
 
@@ -252,7 +260,7 @@ class TinyToChatGPT(CScene):
             parts_ = VGroup()
             for s, kind in ln:
                 if kind.startswith("sp"):
-                    parts_.add(self.chip(s, PINK if kind == "sp" else TEAL, 24, font=MONO, fill=0.18))
+                    parts_.add(self.special(s, PINK if kind == "sp" else TEAL))
                 elif kind == "role":
                     parts_.add(self.M(s, 26, YELLOW))
                 else:
@@ -264,8 +272,8 @@ class TinyToChatGPT(CScene):
         fmt_l.to_edge(DOWN, buff=0.45)
         gen_l = self.T("the model writes this part, token by token, until it predicts the end-of-turn token", 24, TEAL)
         gen_l.next_to(rows_, DOWN, buff=0.4)
-        with self.say("And a chat? Under the hood, it's still one long document. Special tokens mark who's speaking. "
-                      "The model keeps predicting next tokens until it predicts the end-of-turn token itself.",
+        with self.say("And a chat is still one long document. Special tokens mark who's speaking, and the model keeps "
+                      "predicting next tokens until it predicts the end-of-turn token itself.",
                       scene="A conversation laid out as one token stream in a ChatML-style template: <|im_start|>system … "
                             "<|im_end|> <|im_start|>user What color is the sky?<|im_end|> <|im_start|>assistant, then the "
                             "model's reply (teal) generated until it emits <|im_end|>.", chapter="Chat format"):
@@ -276,7 +284,7 @@ class TinyToChatGPT(CScene):
                       run_time=1.2)
             for k, r in enumerate(rows_[:5]):
                 self.mark(f"chat-{k}", r, "chat template line: special tokens (pink) mark turns and roles")
-            self.sync("The model keeps", 0.1)
+            self.sync("and the model keeps", 0.1)
             gen = rows_[5]
             self.play(LaggedStart(*[FadeIn(c) for c in gen[0]], lag_ratio=0.03), run_time=1.2)
             self.play(FadeIn(gen[1], scale=1.3), FadeIn(gen_l), run_time=0.5)
@@ -313,9 +321,16 @@ class TinyToChatGPT(CScene):
         rows_l.to_corner(UR, buff=0.45)
         same_l = self.T(f"same logits either way (max difference {kv['max_diff']:.0e}) · real TinyGPT check", 24, MUTED)
         same_l.to_edge(DOWN, buff=0.35)
-        with self.say(f"Generation gets a speed trick, the KV cache. Earlier tokens' keys and values never change, so keep "
-                      f"them, and only compute the newest token. On TinyGPT, writing {n_new} tokens after our prompt takes "
-                      f"{kv['with_cache']} position passes instead of {kv['no_cache']}, with the same result.",
+
+        def sw(fill, op, stroke):
+            return Square(0.22, fill_color=fill, fill_opacity=op, stroke_color=BLUE, stroke_width=stroke)
+        legend = VGroup(VGroup(sw(YELLOW, 0.9, 0), self.T("new token", 22, MUTED)).arrange(RIGHT, buff=0.12),
+                        VGroup(sw(FG, 0.45, 0), self.T("computed", 22, MUTED)).arrange(RIGHT, buff=0.12),
+                        VGroup(sw(BLUE, 0.12, 1.5), self.T("cached keys & values, reused", 22, MUTED)).arrange(RIGHT, buff=0.12)
+                        ).arrange(RIGHT, buff=0.6).next_to(same_l, UP, buff=0.35)
+        with self.say(f"Generation has a speed trick: the KV cache. Earlier tokens' keys and values never change, so keep "
+                      f"them, and compute only the new token. For {n_new} tokens after our prompt, that's "
+                      f"{kv['with_cache']} positions instead of {kv['no_cache']}, same result.",
                       scene=f"Two grids, one row per generation step ({n_new} new tokens after the {n0}-token probe prompt). "
                             f"Without cache every step recomputes all positions ({kv['no_cache']} total); with the KV cache "
                             f"earlier keys/values are reused (blue outlines) and only the new token is computed "
@@ -324,14 +339,14 @@ class TinyToChatGPT(CScene):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(rows_, fmt_l, gen_l)), ReplacementTransform(hdr5, hdr6), run_time=0.5)
             self.play(FadeIn(t1), FadeIn(rows_l), LaggedStart(*[FadeIn(r) for r in g1], lag_ratio=0.15), run_time=1.0)
-            self.play(FadeIn(c1), run_time=0.3)
+            self.play(FadeIn(c1), FadeIn(legend), run_time=0.3)
             self.mark("nocache", VGroup(g1, c1), f"without a cache: {kv['no_cache']} token positions pushed through the network")
             self.sync("so keep", 0.1)
             self.play(FadeIn(t2), LaggedStart(*[FadeIn(r) for r in g2], lag_ratio=0.15), run_time=1.0)
             self.mark("cache", VGroup(g2, c2), f"with a KV cache: {kv['with_cache']} positions (prompt once, then 1 per new token)")
-            self.sync("On TinyGPT", 0.1)
+            self.sync("For 8", 0.1)
             self.play(FadeIn(c2, scale=1.2), run_time=0.4)
-            self.sync("with the same", 0.1)
+            self.sync("same result", 0.1)
             self.play(FadeIn(same_l), run_time=0.4)
             self.mark("same", same_l, f"cached and uncached generation give the same tokens ('{kv['text'].strip()[:20]}…'), "
                                       f"max logit difference {kv['max_diff']:.1e}")
@@ -369,14 +384,14 @@ class TinyToChatGPT(CScene):
         nuc = self.T(f"top-p 0.9 keeps the fewest tokens covering ≥ 90%: {' + '.join(t.strip() for t in keep)} = "
                      f"{100 * cum[k_keep - 1]:.1f}%", 28, TEAL).to_edge(DOWN, buff=0.5)
         self.fitw(nuc, 12.8)
-        with self.say(f"Finally, the knobs in every chat API. Temperature sharpens or flattens the odds. Top-p keeps only "
-                      f"the most likely tokens that together cover, say, 90 percent. Here that's just red and white.",
+        with self.say(f"Then the sampling knobs. Temperature sharpens or flattens the odds. Top-p keeps the fewest "
+                      f"tokens that together cover, say, 90 percent: here, just red and white.",
                       scene=f"Real TinyGPT probabilities after the probe prompt as temperature changes: at T = 0.7 ' red' "
                             f"{100 * probs(0.7)[ids_[0]]:.1f}%, at T = 1.0 {100 * p1[ids_[0]]:.1f}%, at T = 1.3 "
                             f"{100 * probs(1.3)[ids_[0]]:.1f}%. Top-p 0.9 keeps ' red' + ' white' = {100 * cum[k_keep - 1]:.1f}%.",
                       chapter="Sampling"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(g1, g2, t1, t2, c1, c2, rows_l, same_l)), ReplacementTransform(hdr6, hdr7), run_time=0.5)
+            self.play(FadeOut(VGroup(g1, g2, t1, t2, c1, c2, rows_l, same_l, legend)), ReplacementTransform(hdr6, hdr7), run_time=0.5)
             self.play(FadeIn(labs), FadeIn(live_bars), FadeIn(tl), run_time=0.6)
             for t, l in zip(show, labs):
                 self.mark("samp-" + t.strip(), l, f'"{t}": {100 * p1[VOCAB.index(t)]:.1f}% at temperature 1')
@@ -388,19 +403,19 @@ class TinyToChatGPT(CScene):
             self.sync("Top-p", 0.1)
             self.play(FadeIn(nuc, shift=UP * 0.2), run_time=0.5)
             self.mark("topp", nuc, f"nucleus (top-p 0.9) set: {keep}, cumulative {cum[k_keep - 1]:.4f}")
-            self.sync("Here that's", 0.1)
+            self.sync("here, just", 0.1)
             self.play(*[labs[k].animate.set_opacity(0.3) for k in range(k_keep, len(show))], run_time=0.4)
         live_bars.clear_updaters()
         tl.clear_updaters()
 
         # ============================================================ outro
         pipe2, parts2 = pipeline(self, n_layers="× 96 layers")
-        pipe2.scale(0.9).move_to(UP * 0.9)
+        pipe2.scale(0.9).move_to(UP * 1.7)
         recap = VGroup(self.T("+ a million times the weights", 28, FG), self.T("+ web-scale pretraining", 28, FG),
                        self.T("+ instruction & preference tuning", 28, FG), self.T("+ chat tokens, KV cache, sampling knobs", 28, FG)
-                       ).arrange(DOWN, aligned_edge=LEFT, buff=0.15).next_to(pipe2, DOWN, buff=1.0)
+                       ).arrange(DOWN, aligned_edge=LEFT, buff=0.15).next_to(pipe2, DOWN, buff=0.45)
         cta = self.T("open the X-ray: the engine is all there →", 36, YELLOW, BOLD).to_edge(DOWN, buff=0.4)
-        with self.say("So: same engine, about a million times bigger, fed far more text, then taught to be an assistant. "
+        with self.say("Same engine: a million times bigger, fed far more text, then taught to be an assistant. "
                       "Everything inside, you've already seen in TinyGPT.",
                       scene="Recap: the same pipeline (tokens → embed → [attention → MLP] × 96 layers for GPT-3 → "
                             "probabilities → pick one) plus: a million times the weights, web-scale pretraining, instruction "

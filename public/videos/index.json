@@ -4652,5 +4652,493 @@
     ]
    }
   ]
+ },
+ {
+  "id": "train-your-own",
+  "title": "Train your own: data, batches, epochs & overfitting",
+  "subtitle": "The whole training recipe, and what to watch, with real overfitting runs",
+  "duration": 109.97,
+  "track": "training",
+  "order": 50,
+  "src": "/videos/train-your-own.mp4",
+  "poster": "/videos/train-your-own.jpg",
+  "relates": "train",
+  "voice": "orion",
+  "chapters": [
+   {
+    "t": 0.0,
+    "title": "The recipe"
+   },
+   {
+    "t": 9.2,
+    "title": "Data"
+   },
+   {
+    "t": 22.6,
+    "title": "Batches & steps"
+   },
+   {
+    "t": 44.03,
+    "title": "Train vs validation"
+   },
+   {
+    "t": 58.67,
+    "title": "Overfitting"
+   },
+   {
+    "t": 84.73,
+    "title": "More data closes the gap"
+   },
+   {
+    "t": 93.1,
+    "title": "What to watch"
+   },
+   {
+    "t": 105.57,
+    "title": "Your turn"
+   }
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 9.2,
+    "text": "Training your own model sounds hard. The whole recipe fits on one screen: data, batches, steps, and two numbers to watch.",
+    "scene": "Title 'training your own model' and four pills joined by arrows: data → batches → steps → watch the loss.",
+    "objects": [
+     {
+      "id": "recipe-data",
+      "label": "recipe step: data",
+      "box": [
+       0.1216,
+       0.4207,
+       0.0939,
+       0.0837
+      ]
+     },
+     {
+      "id": "recipe-batches",
+      "label": "recipe step: batches",
+      "box": [
+       0.2647,
+       0.4207,
+       0.1506,
+       0.0837
+      ]
+     },
+     {
+      "id": "recipe-steps",
+      "label": "recipe step: steps",
+      "box": [
+       0.4646,
+       0.4166,
+       0.1114,
+       0.0919
+      ]
+     },
+     {
+      "id": "recipe-watch",
+      "label": "recipe step: watch the loss",
+      "box": [
+       0.6252,
+       0.4207,
+       0.2532,
+       0.0837
+      ]
+     }
+    ]
+   },
+   {
+    "start": 9.2,
+    "end": 22.6,
+    "text": "Start with text. Ours is 5.2 million characters, which the tokenizer turns into 1.69 million tokens. Lock away the last five percent. The model never trains on it. That's your validation set.",
+    "scene": "A long bar of 1,686,858 tokens split into train (1,602,516, blue, 95%) and validation (84,342, teal, 5%) from 5,177,530 characters of corpus.",
+    "objects": [
+     {
+      "id": "chars",
+      "label": "corpus: 5,177,530 characters (synthetic tiny-world stories)",
+      "box": [
+       0.1715,
+       0.1813,
+       0.6571,
+       0.0625
+      ]
+     },
+     {
+      "id": "tokens",
+      "label": "1,686,858 BPE tokens after tokenizing",
+      "box": [
+       0.3418,
+       0.3,
+       0.3163,
+       0.0625
+      ]
+     },
+     {
+      "id": "train-split",
+      "label": "training split: 1,602,516 tokens",
+      "box": [
+       0.0781,
+       0.4062,
+       0.8016,
+       0.2294
+      ]
+     },
+     {
+      "id": "val-split",
+      "label": "validation split: 84,342 tokens, never trained on",
+      "box": [
+       0.7606,
+       0.4062,
+       0.1788,
+       0.2294
+      ]
+     }
+    ]
+   },
+   {
+    "start": 22.6,
+    "end": 32.6,
+    "text": "Each step grabs 32 random windows of 64 tokens, predicts the next token at every position, averages the loss, and nudges every weight once.",
+    "scene": "32 yellow windows light up at random spots of the training bar and drop into a 32×64 grid (2,048 predictions); then average loss → gradient → nudge every weight = one step.",
+    "objects": [
+     {
+      "id": "windows",
+      "label": "32 random 64-token windows from the training split",
+      "box": [
+       0.0886,
+       0.2062,
+       0.7863,
+       0.0875
+      ]
+     },
+     {
+      "id": "batch",
+      "label": "one batch: 32 × 64 = 2,048 next-token predictions",
+      "box": [
+       0.1148,
+       0.5205,
+       0.3907,
+       0.3465
+      ]
+     },
+     {
+      "id": "step",
+      "label": "one training step: average loss → gradient → update every weight",
+      "box": [
+       0.6419,
+       0.5126,
+       0.2646,
+       0.4519
+      ]
+     }
+    ]
+   },
+   {
+    "start": 32.6,
+    "end": 44.03,
+    "text": "An epoch is one full pass over the training data: about 782 steps here. Our 1,500-step runs see each token about twice.",
+    "scene": "Equation: 1,602,516 training tokens ÷ 2,048 tokens per step ≈ 782 steps per epoch; 1,500 steps ≈ 1.9 epochs.",
+    "objects": [
+     {
+      "id": "epoch",
+      "label": "epoch = 1,602,516 / 2,048 ≈ 782.5 steps",
+      "box": [
+       0.1319,
+       0.3638,
+       0.7361,
+       0.1932
+      ]
+     },
+     {
+      "id": "ours",
+      "label": "1500 steps ≈ 1.92 epochs",
+      "box": [
+       0.2484,
+       0.6319,
+       0.5032,
+       0.0523
+      ]
+     }
+    ]
+   },
+   {
+    "start": 44.03,
+    "end": 58.67,
+    "text": "Now watch two numbers. Training loss: how well it does on text it studies. Validation loss: text it has never seen. With all the data, they move together. That's real learning.",
+    "scene": "Real curves, all 1,602,516 training tokens, 1500 steps: train loss (yellow) and validation loss (dashed teal) fall together from 5.56 to 0.483 / 0.488 (gap +0.005).",
+    "objects": [
+     {
+      "id": "full-train",
+      "label": "training loss with all data: 5.56 → 0.483",
+      "box": [
+       0.1286,
+       0.231,
+       0.7383,
+       0.4824
+      ]
+     },
+     {
+      "id": "full-val",
+      "label": "validation loss with all data: 5.56 → 0.488",
+      "box": [
+       0.1286,
+       0.231,
+       0.7383,
+       0.4815
+      ]
+     },
+     {
+      "id": "full-end",
+      "label": "final: train 0.483, val 0.488, gap +0.005",
+      "box": [
+       0.6953,
+       0.4583,
+       0.1646,
+       0.0819
+      ]
+     }
+    ]
+   },
+   {
+    "start": 58.67,
+    "end": 78.4,
+    "text": "Now the same model and the same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs. Training loss dives to 0.07. Validation loss bottoms out around step 200, then climbs.",
+    "scene": "Real overfitting run: 4,096 training tokens (750 epochs). Train loss (yellow) → 0.067; validation loss (pink) is best (1.156) at step 200 and ends at 1.728.",
+    "objects": [
+     {
+      "id": "tiny-tag",
+      "label": "4,096 training tokens, 750.0 epochs",
+      "box": [
+       0.4043,
+       0.2638,
+       0.3732,
+       0.1067
+      ]
+     },
+     {
+      "id": "tiny-train",
+      "label": "train loss on the tiny set: → 0.067",
+      "box": [
+       0.1286,
+       0.231,
+       0.7383,
+       0.5623
+      ]
+     },
+     {
+      "id": "tiny-val",
+      "label": "validation loss: best 1.156 at step 200, final 1.728",
+      "box": [
+       0.1286,
+       0.231,
+       0.7383,
+       0.3534
+      ]
+     },
+     {
+      "id": "best",
+      "label": "best validation loss 1.156 at step 200: the place to stop",
+      "box": [
+       0.2208,
+       0.5731,
+       0.3112,
+       0.0833
+      ]
+     },
+     {
+      "id": "tiny-end",
+      "label": "final train 0.067 vs val 1.728",
+      "box": [
+       0.6925,
+       0.5736,
+       0.1498,
+       0.0814
+      ]
+     }
+    ]
+   },
+   {
+    "start": 78.4,
+    "end": 84.73,
+    "text": "It memorized those few thousand tokens instead of learning the language. That widening gap is overfitting.",
+    "scene": "A pink arrow spans the gap between train 0.07 and validation 1.73 at step 1500: overfitting (memorizing, not generalizing).",
+    "objects": [
+     {
+      "id": "tiny-tag",
+      "label": "4,096 training tokens, 750.0 epochs",
+      "box": [
+       0.4043,
+       0.2638,
+       0.3732,
+       0.1067
+      ]
+     },
+     {
+      "id": "tiny-train",
+      "label": "train loss on the tiny set: → 0.067",
+      "box": [
+       0.1286,
+       0.231,
+       0.7383,
+       0.5623
+      ]
+     },
+     {
+      "id": "tiny-val",
+      "label": "validation loss: best 1.156 at step 200, final 1.728",
+      "box": [
+       0.1286,
+       0.231,
+       0.7383,
+       0.3534
+      ]
+     },
+     {
+      "id": "best",
+      "label": "best validation loss 1.156 at step 200: the place to stop",
+      "box": [
+       0.2208,
+       0.5731,
+       0.3112,
+       0.0833
+      ]
+     },
+     {
+      "id": "tiny-end",
+      "label": "final train 0.067 vs val 1.728",
+      "box": [
+       0.6925,
+       0.5736,
+       0.1498,
+       0.0814
+      ]
+     },
+     {
+      "id": "gap",
+      "label": "generalization gap: 1.66 nats",
+      "box": [
+       0.8369,
+       0.4809,
+       0.0207,
+       0.306
+      ]
+     }
+    ]
+   },
+   {
+    "start": 84.73,
+    "end": 93.1,
+    "text": "Give it more data and the gap closes. From 1.7 with four thousand tokens, to almost nothing with all of it.",
+    "scene": "Four real runs side by side (4k tokens, 32k tokens, 256k tokens, all 1.6M tokens), each with train (yellow) and validation (pink) curves; final gaps (val − train): 1.66, 0.18, 0.01, 0.00.",
+    "objects": [
+     {
+      "id": "mini-4096",
+      "label": "4k tokens (750.0 epochs): final train 0.067, val 1.728, gap 1.662",
+      "box": [
+       0.0,
+       0.3036,
+       0.2049,
+       0.4429
+      ]
+     },
+     {
+      "id": "mini-32768",
+      "label": "32k tokens (93.75 epochs): final train 0.368, val 0.553, gap 0.185",
+      "box": [
+       0.2646,
+       0.3031,
+       0.2055,
+       0.4439
+      ]
+     },
+     {
+      "id": "mini-262144",
+      "label": "256k tokens (11.72 epochs): final train 0.486, val 0.491, gap 0.005",
+      "box": [
+       0.5299,
+       0.3031,
+       0.2055,
+       0.4439
+      ]
+     },
+     {
+      "id": "mini-1602516",
+      "label": "all 1.6M tokens (1.92 epochs): final train 0.483, val 0.488, gap 0.005",
+      "box": [
+       0.7951,
+       0.3031,
+       0.2049,
+       0.4439
+      ]
+     }
+    ]
+   },
+   {
+    "start": 93.1,
+    "end": 105.57,
+    "text": "While yours trains, check four things. First loss near log of the vocab size. A fast drop, then a slow grind. Validation following training. And no spikes.",
+    "scene": "Checklist: 1) step-0 loss ≈ ln(256) = 5.55 (ours 5.56); 2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / early stop); 4) no spikes or NaN (else lower the learning rate).",
+    "objects": [
+     {
+      "id": "check-0",
+      "label": "step 0 loss ≈ ln(vocab) = 5.55: ours started at 5.56. If not: bug.",
+      "box": [
+       0.1413,
+       0.2185,
+       0.507,
+       0.1074
+      ]
+     },
+     {
+      "id": "check-1",
+      "label": "fast drop, then a slow grind: flat from the start: learning rate too low, or a bug",
+      "box": [
+       0.1413,
+       0.3784,
+       0.591,
+       0.1079
+      ]
+     },
+     {
+      "id": "check-2",
+      "label": "validation follows training: a growing gap: more data, smaller model, or stop at best val",
+      "box": [
+       0.1413,
+       0.5388,
+       0.7173,
+       0.1075
+      ]
+     },
+     {
+      "id": "check-3",
+      "label": "no spikes, no NaN: spikes or NaN: learning rate too high (see Optimizers)",
+      "box": [
+       0.1413,
+       0.6988,
+       0.6477,
+       0.1077
+      ]
+     }
+    ]
+   },
+   {
+    "start": 105.57,
+    "end": 109.17,
+    "text": "That's the whole recipe. Now train one in your browser.",
+    "scene": "Final card: 'now train one in your browser →'.",
+    "objects": [
+     {
+      "id": "cta",
+      "label": "open the Train lab to train a model in your browser",
+      "box": [
+       0.0913,
+       0.4167,
+       0.8173,
+       0.0915
+      ]
+     }
+    ]
+   }
+  ]
  }
 ]

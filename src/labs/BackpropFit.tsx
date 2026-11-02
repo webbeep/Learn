@@ -90,8 +90,7 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
             </div>
             {curve.length > 1 ? (
               <LineChart series={[{ id: "loss", label: "loss", color: "var(--viz-a)", points: curve }]} yLog xLabel="step" yLabel="loss" height={170}
-                yFmt={(v) => (v >= 0.1 ? v.toFixed(1) : v.toPrecision(1))} xFmt={(v) => String(Math.round(v))}
-                askId="fit-loss-curve" ask={`training loss curve over ${losses.length} steps: ${losses[0]?.toFixed(3)} → ${cur.toFixed(4)}`} />
+                tipFmt={(v) => v.toPrecision(3)} yFmt={(v) => (v >= 0.01 ? String(+v.toPrecision(1)) : `1e${Math.round(Math.log10(v))}`)} xFmt={(v) => String(Math.round(v))} />
             ) : <div className="flex h-[170px] items-center justify-center rounded-lg border border-dashed text-xs text-muted-foreground">Loss curve appears when you press Train</div>}
             <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2">
               <div className="space-y-2">
@@ -158,7 +157,7 @@ function FitPlot({ t, version }: { t: Trainer; version: number }) {
     <div ref={ref} className="flex w-full justify-center">
       <div className="relative overflow-hidden rounded-xl border bg-[var(--viz-stage)]" style={{ width: S, height: S }}
         data-ask-id="fit-plot" data-ask={ds.dim === 2 ? `decision boundary of the MLP on the ${ds.name} dataset; orange = class +1, blue = class −1` : "the MLP's fitted curve versus the noisy sine data"}>
-        {ds.dim === 2 && <canvas ref={canvas} className="absolute inset-0 size-full opacity-80" style={{ imageRendering: "auto" }} />}
+        {ds.dim === 2 && <canvas ref={canvas} className="absolute inset-0 size-full opacity-60" style={{ imageRendering: "auto" }} />}
         <svg width={S} height={S} className="absolute inset-0">
           {ds.dim === 1 && <>
             <line x1={0} x2={S} y1={yPx(0)} y2={yPx(0)} stroke="var(--viz-grid)" />

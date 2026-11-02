@@ -181,7 +181,7 @@ function TensorBars({ tensors }: { tensors: Tensor[] }) {
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">Bars use a log scale from {fmtV(lo)} to {fmtV(hi)}, so a bar twice as long is many times bigger. Biggest right now: <b className="text-foreground">{pretty(top.name)}</b> ({groupOf(top)}).</p>
+        <p className="text-xs text-muted-foreground">Bars use a log scale from {fmtV(lo)} to {fmtV(hi)}. Biggest right now: <b className="text-foreground">{pretty(top.name)}</b> ({groupOf(top)}).</p>
       </CardContent>
     </Card>
   );

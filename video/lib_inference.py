@@ -134,7 +134,7 @@ def corpus_chunks(n_docs=400, seed=7, T=64):
         ids = tok(text)
         n = len(ids) // T
         X = torch.tensor(ids[: n * T]).view(n, T)
-        _CORPUS_CACHE[key] = (X, run(X))
+        _CORPUS_CACHE[key] = (X, run(X[:, : C["n_ctx"]]))   # T = 65 → 64 inputs, 64 shifted targets
     return _CORPUS_CACHE[key]
 
 

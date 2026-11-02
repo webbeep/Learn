@@ -153,6 +153,7 @@ export function simulate(root: Value, topo: Value[]): Sim {
 export function fmt(x: number, d = 2) {
   if (!Number.isFinite(x)) return "–";
   const a = Math.abs(x);
+  if (a < 1e-6) return (0).toFixed(d);
   if (a !== 0 && (a < 0.01 || a >= 1000)) return x.toExponential(1).replace("e", "e").replace("-", "−");
   return x.toFixed(d).replace("-", "−");
 }

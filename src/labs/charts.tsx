@@ -1,5 +1,5 @@
 // Small shared chart + data helpers for the Backprop / Scaling / Invent labs.
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FlaskConical, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
@@ -126,22 +126,26 @@ export interface ChartProps {
   height?: number;
   /** Extra SVG drawn on top, given the scales. */
   overlay?: (x: Scale, y: Scale) => ReactNode;
+  /** Number format inside the tooltip (defaults to yFmt). */
+  tipFmt?: (v: number) => string;
   /** Show crosshair + tooltip (hover on desktop, tap/drag on touch). */
   crosshair?: boolean;
   askId?: string; ask?: string;
   className?: string;
 }
 
-export function LineChart({ series, xLog, yLog, xDomain, yDomain, xLabel, yLabel, xFmt = human, yFmt = (v) => v.toFixed(2), height = 280, overlay, crosshair = true, askId, ask, className }: ChartProps) {
+export function LineChart({ series, xLog, yLog, xDomain, yDomain, xLabel, yLabel, xFmt = human, yFmt = (v) => v.toFixed(2), height = 280, overlay, crosshair = true, tipFmt, askId, ask, className }: ChartProps) {
   const [ref, W] = useWidth<HTMLDivElement>();
   const [hx, setHx] = useState<number | null>(null);
+  const clipId = useId().replace(/:/g, "");
   const all = series.flatMap((s) => s.points).filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y) && (!xLog || x > 0) && (!yLog || y > 0));
   if (!all.length) return <div ref={ref} className={className} />;
   const xd = xDomain ?? (xLog ? logExtent(all.map((p) => p[0]), 0.02) : extent(all.map((p) => p[0])));
   const yd = yDomain ?? (yLog ? logExtent(all.map((p) => p[1]), 0.05) : extent(all.map((p) => p[1]), 0.06));
   const narrow = W < 480;
-  const m = { l: narrow ? 38 : 48, r: 12, t: 10, b: 38 };
   const H = height;
+  const yTicks0 = scale(yd, [H - 38, 10], yLog, 5).ticks;
+  const m = { l: 22 + 6.2 * Math.max(...yTicks0.map((t) => yFmt(t).length)), r: 12, t: 10, b: 38 };
   const x = scale(xd, [m.l, W - m.r], xLog, narrow ? 4 : 6), y = scale(yd, [H - m.b, m.t], yLog, 5);
   const path = (pts: [number, number][]) => pts.filter(([a, b]) => (!xLog || a > 0) && (!yLog || b > 0) && Number.isFinite(b))
     .map(([a, b], i) => `${i ? "L" : "M"}${x(a).toFixed(1)},${y(b).toFixed(1)}`).join("");
@@ -174,9 +178,10 @@ export function LineChart({ series, xLog, yLog, xDomain, yDomain, xLabel, yLabel
         ))}
         <text x={(m.l + W - m.r) / 2} y={H - 4} fontSize={11} textAnchor="middle" className="fill-muted-foreground">{xLabel}{xLog ? " (log)" : ""}</text>
         <text transform={`translate(11 ${(m.t + H - m.b) / 2}) rotate(-90)`} fontSize={11} textAnchor="middle" className="fill-muted-foreground">{yLabel}{yLog ? " (log)" : ""}</text>
-        {series.map((s) => (
+        <defs><clipPath id={clipId}><rect x={m.l} y={m.t - 2} width={W - m.l - m.r} height={H - m.t - m.b + 4} /></clipPath></defs>
+        <g clipPath={`url(#${clipId})`}>{series.map((s) => (
           <path key={s.id} d={path(s.points)} fill="none" stroke={s.color} strokeWidth={s.width ?? 2} strokeDasharray={s.dashed ? "5 4" : undefined} strokeLinejoin="round" strokeLinecap="round" />
-        ))}
+        ))}</g>
         {overlay?.(x, y)}
         {hx != null && (
           <g pointerEvents="none">
@@ -192,7 +197,7 @@ export function LineChart({ series, xLog, yLog, xDomain, yDomain, xLabel, yLabel
           {hits.map(({ s, p }) => (
             <div key={s.id} className="flex items-center gap-1.5 tabular-nums">
               <span className="size-2 shrink-0 rounded-full" style={{ background: s.color }} />
-              <span className="flex-1 text-muted-foreground">{s.label}</span><span>{yFmt(p![1])}</span>
+              <span className="flex-1 text-muted-foreground">{s.label}</span><span>{(tipFmt ?? yFmt)(p![1])}</span>
             </div>
           ))}
         </div>

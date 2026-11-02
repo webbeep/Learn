@@ -78,16 +78,29 @@ class Plot(VGroup):
         return min(max(y, self.yr[0]), self.yr[1])
 
     def line(self, xs, ys, color, width=4, dashed=False, clip=True, opacity=1.0):
-        pts = []
+        data = []
         for x, y in zip(xs, ys):
             if y is None or (isinstance(y, float) and not math.isfinite(y)):
                 break
             if (self.xlog and x <= 0):
                 continue
-            pts.append(self.p(x, self.clampy(y) if clip else y))
+            data.append((self.tx(x), y))
+        top = self.yr[1]
+        pts = []
+        for i, (x, y) in enumerate(data):
+            if clip and y > top:
+                # enter/leave the plot through the top edge instead of drawing a flat line along it
+                if i > 0 and data[i - 1][1] <= top:
+                    x0, y0 = data[i - 1]
+                    pts.append(self.ax.c2p(x0 + (x - x0) * (top - y0) / (y - y0), self.ty(top)))
+                if i + 1 < len(data) and data[i + 1][1] <= top:
+                    x1, y1 = data[i + 1]
+                    pts.append(self.ax.c2p(x + (x1 - x) * (y - top) / (y - y1), self.ty(top)))
+                continue
+            pts.append(self.ax.c2p(x, self.ty(self.clampy(y) if clip else y)))
         m = VMobject(stroke_color=color, stroke_width=width, stroke_opacity=opacity)
         if len(pts) < 2:
-            pts = pts * 2 if pts else [self.p(xs[0], self.yr[1])] * 2
+            pts = pts * 2 if pts else [self.ax.c2p(self.tx(xs[0]), self.ty(self.yr[1]))] * 2
         m.set_points_as_corners(pts)
         if dashed:
             m = DashedVMobject(m, num_dashes=max(20, len(pts) * 2))
