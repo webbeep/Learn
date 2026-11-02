@@ -115,7 +115,7 @@ function LossCurves({ runs, onSummary }: { runs: Run[]; onSummary: (s: string) =
         </div>
         <p className="text-sm text-muted-foreground">
           {xMode === "tokens"
-            ? <>Read it vertically: at any amount of data, the bigger model (stronger color) has lower loss. They see the same tokens; they just squeeze more out of each one.{tied && <> But look at the right edge: the {tied.n} biggest models finish within {tied.spread.toFixed(3)} of each other. With only {human(runs[0].tokens_seen)} tokens, data, not size, has become the limit.</>}</>
+            ? <>Read it vertically: at any amount of data, the bigger model (stronger color) has lower loss. They see the same tokens; they just squeeze more out of each one.{tied && <> But look at the right edge: the {tied.n} biggest models finish within {tied.spread.toFixed(3)} of each other. With only {human(runs[0].tokens_seen)} training tokens each, the training budget, not model size, has become the limit: bigger models need more tokens before their extra capacity pays off.</>}</>
             : atBudget ? <>Same x-axis now means same <i>cost</i>. Big models cost more per token, so their curves shift right. With the budget of the whole smallest run ({budget.toExponential(1).replace("e+", "e")} FLOPs), the best choice here was <b className="text-foreground">{human(atBudget.r.params)} params</b> (loss {atBudget.v.toFixed(2)}): neither the smallest nor necessarily the biggest.</> : null}
         </p>
       </CardContent>
