@@ -13,6 +13,29 @@ def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def fresh_story_check():
+    """Honesty check for the 'held-out' curve, computed at render time:
+    - share of validation lines that also appear verbatim in the training split;
+    - loss on freshly generated stories (corpus generator, new seed)."""
+    import random, torch
+    import torch.nn.functional as F
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "train"))
+    from corpus import make_corpus
+    from model import forward
+    full = make_corpus()                      # same call as train.py (seed 0)
+    cut = int(len(full) * 19 / 20)            # train.py holds out the last 1/20 (by tokens; ~ by chars)
+    tr_lines = set(full[:cut].split("\n"))
+    va = [l for l in full[cut:].split("\n") if l.strip()]
+    overlap = sum(l in tr_lines for l in va) / len(va)
+    ids = tok(make_corpus(n_docs=600, seed=12345))
+    tot = cnt = 0
+    with torch.no_grad():
+        for i in range(0, min(len(ids) - 65, 64 * 120), 64):
+            lg = forward(ids[i:i + 64])
+            tot += F.cross_entropy(lg, torch.tensor(ids[i + 1:i + 65]), reduction="sum").item(); cnt += 64
+    return overlap, tot / cnt
+
+
 class Training(VScene):
     VIDEO_ID = "training"
 
@@ -243,7 +266,7 @@ class Training(VScene):
         chance_l.align_to(C(3000, 1), RIGHT)
         legend = VGroup(VGroup(Line(ORIGIN, RIGHT * 0.5, color=YELLOW, stroke_width=4), self.T("train", 22, YELLOW)).arrange(RIGHT, buff=0.15),
                         VGroup(DashedLine(ORIGIN, RIGHT * 0.5, color=TEAL, stroke_width=2.5, dash_length=0.08),
-                               self.T("validation", 22, TEAL)).arrange(RIGHT, buff=0.15)).arrange(RIGHT, buff=0.5)
+                               self.T("held-out text", 22, TEAL)).arrange(RIGHT, buff=0.15)).arrange(RIGHT, buff=0.5)
         legend.next_to(ax3, UP, buff=0.15).align_to(ax3, RIGHT)
         i150 = STEPS.index(150)
         a150 = VGroup(Dot(C(150, LOSS[i150]), color=ORANGE, radius=0.08),
@@ -252,13 +275,21 @@ class Training(VScene):
         aend = VGroup(Dot(C(3000, LOSS[-1]), color=YELLOW, radius=0.08),
                       self.T(f"step 3000: {LOSS[-1]:.2f}", 24, YELLOW))
         aend[1].next_to(aend[0], UP, buff=0.25).shift(LEFT * 0.9)
+        overlap, fresh = fresh_story_check()
+        fresh_l = VGroup(self.T(f"fresh stories (new seed): loss {fresh:.2f}", 24, TEAL),
+                         self.T(f"{overlap * 100:.0f}% of held-out lines also appear in training", 22, MUTED)).arrange(
+            DOWN, aligned_edge=RIGHT, buff=0.1)
+        fresh_l.next_to(C(3000, 0.6), UP, buff=0.9).align_to(C(3000, 1), RIGHT)
         with self.say(f"Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 "
-                      f"by step 150, then keeps grinding down to about {LOSS[-1]:.2f}. The dashed line is validation, text "
-                      f"it never trained on. It tracks training, so it's learning patterns, not memorizing.",
+                      f"by step 150, then keeps grinding down to about {LOSS[-1]:.2f}. The dashed line is held-out text it "
+                      f"doesn't train on. The tiny world reuses sentence templates, so that isn't all new, but freshly "
+                      f"generated stories score {fresh:.2f}, so it learned patterns, not pages.",
                       scene=f"The real training curve from training.json (121 points every 25 steps), log-scale loss axis: "
-                            f"train loss (yellow) and validation loss on held-out text (dashed teal) start at 5.56 next to "
+                            f"train loss (yellow) and held-out loss (dashed teal; {overlap * 100:.1f}% of held-out lines also "
+                            f"occur verbatim in training, since the tiny world reuses templates) start at 5.56 next to "
                             f"the 'pure guessing' line (5.55), drop to {LOSS[i150]:.2f} by step 150 and keep falling to "
-                            f"{LOSS[-1]:.2f} (val {VAL[-1]:.2f}) at step 3000.",
+                            f"{LOSS[-1]:.2f} (held-out {VAL[-1]:.2f}) at step 3000. Note: freshly generated stories (new "
+                            f"seed) score {fresh:.2f}.",
                       chapter="The loss curve"):
             self.unmark(*list(self._marks))
             self.play(FadeOut(VGroup(sq, rr)), ReplacementTransform(hdr3, hdr4), run_time=0.4)
@@ -267,14 +298,18 @@ class Training(VScene):
             self.mark("chance", VGroup(chance, chance_l), "uniform-guessing loss ln(256) = 5.55")
             self.play(Create(tr_curve), Create(va_curve), run_time=3.0, rate_func=linear)
             self.mark("loss-curve", tr_curve, f"training loss: {LOSS[0]:.2f} at step 0 → {LOSS[-1]:.2f} at step 3000")
-            self.mark("val-curve", va_curve, f"validation loss on held-out text (never trained on): {VAL[0]:.2f} → {VAL[-1]:.2f}")
-            self.mark("legend", legend, "yellow = training loss, dashed teal = validation loss")
+            self.mark("val-curve", va_curve, f"held-out loss (text not trained on, but the tiny world reuses templates): {VAL[0]:.2f} → {VAL[-1]:.2f}")
+            self.mark("legend", legend, "yellow = training loss, dashed teal = loss on held-out text")
             self.play(FadeIn(a150), run_time=0.3)
             self.mark("pt-150", a150, f"step 150: train loss {LOSS[i150]:.3f}")
             self.sync("grinding", 0.1)
             self.play(FadeIn(aend), run_time=0.4)
             self.sync("The dashed line", 0.1)
             self.play(Indicate(legend[1], color=TEAL, scale_factor=1.2), va_curve.animate.set_stroke(width=4), run_time=0.8)
+            self.sync("freshly", 0.1)
+            self.play(FadeIn(fresh_l, shift=UP * 0.15), run_time=0.5)
+            self.mark("fresh", fresh_l, f"loss on freshly generated stories (corpus seed 12345): {fresh:.3f}; "
+                                        f"{overlap * 100:.1f}% of held-out lines appear verbatim in the training text")
             self.mark("pt-3000", aend, f"step 3000: train loss {LOSS[-1]:.3f}, val {VAL[-1]:.3f}")
 
         # ------------------------------------------------------------ samples morph
@@ -296,7 +331,7 @@ class Training(VScene):
                             "(loss 0.69) well-formed sentences.",
                       chapter="What it wrote"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ax3, xl3, yl3, xt3, yt3, tr_curve, va_curve, chance, chance_l, legend, a150, aend)),
+            self.play(FadeOut(VGroup(ax3, xl3, yl3, xt3, yt3, tr_curve, va_curve, chance, chance_l, legend, a150, aend, fresh_l)),
                       ReplacementTransform(hdr4, hdr5), run_time=0.5)
             self.play(FadeIn(tags[0]), FadeIn(blocks[0], shift=UP * 0.2), FadeIn(pr), run_time=0.6)
             cur_t, cur_b = tags[0], blocks[0]

@@ -6521,7 +6521,7 @@
   "id": "training",
   "title": "How it learned",
   "subtitle": "Training in under 2 minutes: loss, gradient descent, and real samples from step 0 to step 3000",
-  "duration": 136.63,
+  "duration": 142.07,
   "track": "training",
   "order": 10,
   "src": "/videos/training.mp4",
@@ -6550,11 +6550,11 @@
     "title": "The loss curve"
    },
    {
-    "t": 100.27,
+    "t": 105.7,
     "title": "What it wrote"
    },
    {
-    "t": 128.3,
+    "t": 133.73,
     "title": "Recap"
    }
   ],
@@ -6809,9 +6809,9 @@
    },
    {
     "start": 78.2,
-    "end": 100.27,
-    "text": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is validation, text it never trained on. It tracks training, so it's learning patterns, not memorizing.",
-    "scene": "The real training curve from training.json (121 points every 25 steps), log-scale loss axis: train loss (yellow) and validation loss on held-out text (dashed teal) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and keep falling to 0.46 (val 0.46) at step 3000.",
+    "end": 105.7,
+    "text": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is held-out text it doesn't train on. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45, so it learned patterns, not pages.",
+    "scene": "The real training curve from training.json (121 points every 25 steps), log-scale loss axis: train loss (yellow) and held-out loss (dashed teal; 54.7% of held-out lines also occur verbatim in training, since the tiny world reuses templates) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and keep falling to 0.46 (held-out 0.46) at step 3000. Note: freshly generated stories (new seed) score 0.45.",
     "objects": [
      {
       "id": "chance",
@@ -6835,7 +6835,7 @@
      },
      {
       "id": "val-curve",
-      "label": "validation loss on held-out text (never trained on): 5.55 → 0.46",
+      "label": "held-out loss (text not trained on, but the tiny world reuses templates): 5.55 → 0.46",
       "box": [
        0.159,
        0.2671,
@@ -6845,11 +6845,11 @@
      },
      {
       "id": "legend",
-      "label": "yellow = training loss, dashed teal = validation loss",
+      "label": "yellow = training loss, dashed teal = loss on held-out text",
       "box": [
-       0.6323,
+       0.5994,
        0.1708,
-       0.265,
+       0.2978,
        0.0292
       ]
      },
@@ -6861,6 +6861,16 @@
        0.5759,
        0.1788,
        0.0609
+      ]
+     },
+     {
+      "id": "fresh",
+      "label": "loss on freshly generated stories (corpus seed 12345): 0.447; 54.7% of held-out lines appear verbatim in the training text",
+      "box": [
+       0.4504,
+       0.5311,
+       0.4469,
+       0.0877
       ]
      },
      {
@@ -6876,8 +6886,8 @@
     ]
    },
    {
-    "start": 100.27,
-    "end": 117.3,
+    "start": 105.7,
+    "end": 122.73,
     "text": "And here's what it wrote along the way, one sample each from the same prompt. Step zero is word salad, though it's made of real words, because many tokens are whole words. Step 100, broken grammar. Step 300, actual sentences.",
     "scene": "One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 (loss 0.69) well-formed sentences.",
     "objects": [
@@ -6904,8 +6914,8 @@
     ]
    },
    {
-    "start": 117.3,
-    "end": 128.3,
+    "start": 122.73,
+    "end": 133.73,
     "text": "At step 1000, it still handed Tom the yellow ball. Wrong. By step 3000, it's the red ball. Correct, and nobody told it why.",
     "scene": "Step 1000 sample ends 'now tom has the yellow ball' (highlighted pink — wrong, mia gave him the red ball); step 3000 sample ends 'now tom has the red ball' (highlighted teal — correct).",
     "objects": [
@@ -6942,8 +6952,8 @@
     ]
    },
    {
-    "start": 128.3,
-    "end": 136.03,
+    "start": 133.73,
+    "end": 141.47,
     "text": "Nobody wrote a single rule. Predict, measure the miss, nudge, repeat. Next up, train your own.",
     "scene": "The training loop as pills: predict → measure the miss → nudge the weights → repeat, with an arrow looping back. Final card: 'next: train your own'.",
     "objects": [
@@ -9986,7 +9996,7 @@
       "label": "one batch: 32 × 64 = 2,048 next-token predictions",
       "box": [
        0.1148,
-       0.5205,
+       0.4892,
        0.3907,
        0.3465
       ]
@@ -9996,7 +10006,7 @@
       "label": "one training step: average loss → gradient → update every weight",
       "box": [
        0.6419,
-       0.5126,
+       0.4751,
        0.2646,
        0.4519
       ]
