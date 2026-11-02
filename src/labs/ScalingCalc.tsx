@@ -1,8 +1,9 @@
 // "Train your own" compute + memory calculator for the Scaling page.
 import { useEffect, useState } from "react";
-import { Calculator, Clock, Cpu, MemoryStick, Scale } from "lucide-react";
+import { Calculator, ChevronDown, Clock, Cpu, MemoryStick, Scale } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,7 +27,7 @@ const HW = [
 ] as const;
 const PREC = {
   fp32: { name: "fp32", parts: [["weights", 4], ["gradients", 4], ["Adam m + v", 8]] },
-  mixed: { name: "bf16 mixed (fp32 master copy)", parts: [["weights (bf16)", 2], ["gradients (bf16)", 2], ["fp32 master weights", 4], ["Adam m + v (fp32)", 8]] },
+  mixed: { name: "bf16 mixed", parts: [["weights (bf16)", 2], ["gradients (bf16)", 2], ["fp32 master weights", 4], ["Adam m + v (fp32)", 8]] },
   bf16: { name: "pure bf16", parts: [["weights", 2], ["gradients", 2], ["Adam m + v", 4]] },
 } as const;
 type PrecId = keyof typeof PREC;
@@ -96,17 +97,17 @@ export function ComputeCalc({ onSummary }: { onSummary: (s: string) => void }) {
   }, [N, D, C, gpus, tflops, util, secs, prec, total, perGpu, ratio, nOpt, dOpt, onSummary]);
 
   return (
-    <Card className="@container">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Calculator className="size-4" />Plan your own training run</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
+    <Collapsible asChild>
+    <Card className="@container gap-0 py-0">
+      <CollapsibleTrigger className="flex w-full items-center gap-2 px-4 py-3.5 text-left text-base font-medium [&[data-state=open]>svg:last-child]:rotate-180">
+        <Calculator className="size-4 text-muted-foreground" />Plan a training run<ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-5 px-4 pb-5">
         <div className="space-y-2">
-          <Label>Model preset</Label>
+          <Label>Model</Label>
           <ToggleGroup type="single" variant="outline" value={model} onValueChange={(v) => v && pickModel(v)} className="grid w-full grid-cols-3">
             {MODELS.map((m) => <ToggleGroupItem key={m.id} value={m.id} className="h-auto min-h-9 flex-col gap-0 py-1.5 leading-tight"><span>{m.name}</span><span className="text-[11px] text-muted-foreground">{human(m.N)}</span></ToggleGroupItem>)}
           </ToggleGroup>
-          <p className="text-xs text-muted-foreground">{MODELS.find((m) => m.id === model)?.note ?? "custom"}</p>
         </div>
         <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-2 [&>*]:min-w-0">
           <div className="space-y-4">
@@ -117,14 +118,13 @@ export function ComputeCalc({ onSummary }: { onSummary: (s: string) => void }) {
               <ToggleGroup type="single" variant="outline" value={hw} onValueChange={(v) => v && pickHw(v)} className="grid w-full grid-cols-2 @xl:grid-cols-4">
                 {HW.map((h) => <ToggleGroupItem key={h.id} value={h.id} className="h-9">{h.name}</ToggleGroupItem>)}
               </ToggleGroup>
-              <p className="text-xs text-muted-foreground">{HW.find((h) => h.id === hw)?.note ?? "custom"}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label htmlFor="calc-tf" className="text-xs">Peak TFLOP/s per device</Label>
+              <div className="space-y-1.5"><Label htmlFor="calc-tf" className="text-xs">TFLOP/s</Label>
                 <Input id="calc-tf" type="number" inputMode="decimal" min={0.01} step="any" value={tflops} className="h-9 font-mono" onChange={(e) => { setTflops(Math.max(0.01, +e.target.value || 0.01)); setHw(""); }} /></div>
               <div className="space-y-1.5"><Label htmlFor="calc-g" className="text-xs">Devices</Label>
                 <Input id="calc-g" type="number" inputMode="numeric" min={1} step={1} value={gpus} className="h-9 font-mono" onChange={(e) => { setGpus(Math.max(1, Math.round(+e.target.value || 1))); setHw(""); }} /></div>
-              <div className="space-y-1.5"><Label htmlFor="calc-mem" className="text-xs">Memory per device (GB)</Label>
+              <div className="space-y-1.5"><Label htmlFor="calc-mem" className="text-xs">GB per device</Label>
                 <Input id="calc-mem" type="number" inputMode="numeric" min={1} value={gpuMem} className="h-9 font-mono" onChange={(e) => { setGpuMem(Math.max(1, +e.target.value || 1)); setHw(""); }} /></div>
               <div className="space-y-1.5"><Label className="text-xs">Precision</Label>
                 <Select value={prec} onValueChange={(v) => setPrec(v as PrecId)}>
@@ -133,21 +133,20 @@ export function ComputeCalc({ onSummary }: { onSummary: (s: string) => void }) {
                 </Select></div>
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm"><Label>Utilization (MFU)</Label><span className="font-mono tabular-nums">{util}%</span></div>
+              <div className="flex justify-between text-sm"><Label>Utilization</Label><span className="font-mono tabular-nums">{util}%</span></div>
               <Slider min={5} max={80} step={1} value={[util]} onValueChange={([v]) => { setUtil(v); }} aria-label="utilization" />
-              <p className="text-xs text-muted-foreground">Real runs rarely hit peak: data loading, communication and memory traffic eat into it. 30–50% is a common ballpark.</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <Result icon={Cpu} k="Training compute" v={`${C.toExponential(1).replace("e+", "e")} FLOPs`} sub={<span className="font-mono">6 × {human(N)} × {human(D)}</span>}
+              <Result icon={Cpu} k="Compute" v={`${C.toExponential(1).replace("e+", "e")} FLOPs`}
                 ask={`training compute 6·N·D = 6 × ${N} × ${D} = ${C.toExponential(3)} FLOPs`} />
-              <Result icon={Clock} k="Wall-clock time" v={duration(secs)} sub={`${gpus} × ${tflops} TFLOP/s × ${util}%`}
+              <Result icon={Clock} k="Time" v={duration(secs)}
                 ask={`estimated time ${duration(secs)} on ${gpus} devices at ${tflops} TFLOP/s peak and ${util}% utilization`} />
             </div>
             <div className="space-y-2 rounded-xl border p-3" data-ask-id="calc-memory" data-ask={`training memory (excluding activations): ${parts.map((p) => `${p.k} ${bytes(p.b)}`).join(", ")}; total ${bytes(total)}, per device ${bytes(perGpu)} if sharded over ${gpus}`}>
-              <div className="flex items-center gap-2 text-sm font-medium"><MemoryStick className="size-4" />Memory for training state <Badge variant="secondary" className="ml-auto">{total / N} bytes / param</Badge></div>
+              <div className="flex items-center gap-2 text-sm font-medium"><MemoryStick className="size-4" />Memory <Badge variant="secondary" className="ml-auto">{total / N} bytes / param</Badge></div>
               <div className="flex h-6 w-full gap-0.5 overflow-hidden rounded-md">
                 {parts.map((p, i) => <div key={p.k} style={{ width: `${(p.b / total) * 100}%`, background: PART_COLORS[i] }} title={`${p.k}: ${bytes(p.b)}`} />)}
               </div>
@@ -155,36 +154,34 @@ export function ComputeCalc({ onSummary }: { onSummary: (s: string) => void }) {
                 {parts.map((p, i) => <div key={p.k} className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: PART_COLORS[i] }} /><span className="text-muted-foreground">{p.k}</span><span className="ml-auto font-mono tabular-nums">{bytes(p.b)}</span></div>)}
               </div>
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-t pt-2 text-sm">
-                <span>Total <b className="font-mono">{bytes(total)}</b>{gpus > 1 && <> · <b className="font-mono">{bytes(perGpu)}</b> per device if sharded</>}</span>
-                <Badge variant="outline" className={cn(fits ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400" : "border-amber-500/40 text-amber-600 dark:text-amber-400")}>{fits ? `fits in ${gpuMem} GB` : `over ${gpuMem} GB per device`}</Badge>
+                <span>Total <b className="font-mono">{bytes(total)}</b>{gpus > 1 && <> · <b className="font-mono">{bytes(perGpu)}</b> per device</>}</span>
+                <Badge variant="outline" className={cn(fits ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400" : "border-amber-500/40 text-amber-600 dark:text-amber-400")}>{fits ? `fits in ${gpuMem} GB` : `over ${gpuMem} GB`}</Badge>
               </div>
-              <p className="text-xs text-muted-foreground">Activations not included: they grow with batch size × context length and often dominate. Tricks like activation checkpointing trade compute for memory.</p>
             </div>
-            <Chinchilla N={N} D={D} ratio={ratio} nOpt={nOpt} dOpt={dOpt} />
+            <Chinchilla ratio={ratio} nOpt={nOpt} dOpt={dOpt} />
           </div>
         </div>
-      </CardContent>
+      </CollapsibleContent>
     </Card>
+    </Collapsible>
   );
 }
 
-function Result({ icon: Icon, k, v, sub, ask }: { icon: typeof Cpu; k: string; v: string; sub: React.ReactNode; ask: string }) {
+function Result({ icon: Icon, k, v, ask }: { icon: typeof Cpu; k: string; v: string; ask: string }) {
   return (
     <div className="rounded-xl border bg-card p-3" data-ask-id={`calc-${k}`} data-ask={ask}>
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Icon className="size-3.5" />{k}</div>
       <div className="mt-0.5 text-xl font-semibold tabular-nums">{v}</div>
-      <div className="truncate text-xs text-muted-foreground">{sub}</div>
     </div>
   );
 }
 
-function Chinchilla({ N, D, ratio, nOpt, dOpt }: { N: number; D: number; ratio: number; nOpt: number; dOpt: number }) {
+function Chinchilla({ ratio, nOpt, dOpt }: { ratio: number; nOpt: number; dOpt: number }) {
   const lo = -1, hi = 4; // 0.1 … 10,000 tokens per param, log scale
   const pos = (r: number) => `${Math.max(0, Math.min(100, ((Math.log10(r) - lo) / (hi - lo)) * 100))}%`;
-  const verdict = ratio < 10 ? "fewer tokens than the heuristic suggests: likely under-trained for its size" : ratio > 40 ? "more tokens than the heuristic: a smaller model is being trained longer (common when cheap inference matters)" : "close to the compute-optimal heuristic";
   return (
     <div className="space-y-2 rounded-xl border p-3" data-ask-id="calc-chinchilla" data-ask={`tokens per parameter ${ratio.toFixed(1)} vs Chinchilla heuristic ≈ 20; compute-optimal for same compute ≈ ${human(nOpt)} params, ${human(dOpt)} tokens`}>
-      <div className="flex items-center gap-2 text-sm font-medium"><Scale className="size-4" />Tokens per parameter: <span className="font-mono tabular-nums">{ratio < 10 ? ratio.toFixed(1) : Math.round(ratio).toLocaleString()}</span></div>
+      <div className="flex items-center gap-2 text-sm font-medium"><Scale className="size-4" />Tokens per param: <span className="font-mono tabular-nums">{ratio < 10 ? ratio.toFixed(1) : Math.round(ratio).toLocaleString()}</span></div>
       <div className="relative h-8">
         <div className="absolute inset-x-0 top-3 h-2 rounded-full bg-muted" />
         <div className="absolute top-2 h-4 w-px bg-foreground/60" style={{ left: pos(20) }} />
@@ -192,8 +189,7 @@ function Chinchilla({ N, D, ratio, nOpt, dOpt }: { N: number; D: number; ratio: 
         <div className="absolute top-2 size-4 -translate-x-1/2 rounded-full border-2 border-background bg-viz-a" style={{ left: pos(ratio) }} />
         <div className="absolute inset-x-0 top-6 flex justify-between text-[10px] text-muted-foreground"><span>0.1</span><span>10,000</span></div>
       </div>
-      <p className="text-xs text-muted-foreground">{N && D ? <>Yours is {verdict}. For the same compute, the rule of thumb points at ≈ <b className="text-foreground">{human(nOpt)}</b> params on <b className="text-foreground">{human(dOpt)}</b> tokens.</> : null}</p>
-      <p className="text-[11px] text-muted-foreground">A rough heuristic from Hoffmann et al. 2022 (<a className="underline" href="https://arxiv.org/abs/2203.15556" target="_blank" rel="noreferrer">"Chinchilla"</a>): for a fixed compute budget, scale parameters and tokens together, about 20 tokens per parameter. The exact ratio depends on data, architecture and setup.</p>
+      <p className="text-xs text-muted-foreground">Best for this compute: ≈ <b className="text-foreground">{human(nOpt)}</b> params on <b className="text-foreground">{human(dOpt)}</b> tokens</p>
     </div>
   );
 }

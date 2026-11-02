@@ -15,7 +15,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { setScreen, useStore } from "../lib/store";
 import { pct, seq, show } from "../lib/viz";
@@ -51,7 +50,7 @@ export function TrainLab() {
       if (q && key !== trainer.get().appliedQuery) {
         trainer.set({ appliedQuery: key });
         reset(applyParams(DEFAULT_CONFIG, q));
-        toast("Loaded that setup", { description: "Press Start to train it from scratch." });
+        toast("Setup loaded. Press Start.");
       } else ensureStarted();
     };
     apply();
@@ -77,10 +76,8 @@ export function TrainLab() {
   }, [s.status, Math.floor(s.step / 10), s.cfg, s.params, s.samples, s.dataKind]); // eslint-disable-line
 
   return (
-    <div className="@container space-y-5 pb-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Train a GPT yourself</h1>
-      </div>
+    <div className="@container space-y-4 pb-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Train a GPT yourself</h1>
       <ControlBar s={s} lossNow={lossNow} valNow={valNow} />
       {s.status === "error" && (
         <Alert variant="destructive"><CircleAlert /><AlertTitle>Training stopped</AlertTitle><AlertDescription>{s.error}</AlertDescription></Alert>
@@ -89,22 +86,22 @@ export function TrainLab() {
         <Alert className="border-destructive/50" data-ask-id="train-diverged" data-ask={`The run diverged at step ${s.step}: the loss exploded to ${s.train[s.train.length - 1]?.toFixed(1)} with learning rate ${s.cfg.lr}.`}>
           <CircleAlert className="text-destructive!" /><AlertTitle>It diverged at step {s.step}</AlertTitle>
           <AlertDescription>
-            <p>The learning rate ({fmtLr(s.cfg.lr)}) made the updates so big that the loss exploded. Once the weights blow up there is no way back.</p>
+            <p>Learning rate {fmtLr(s.cfg.lr)} was too high.</p>
             <Button size="sm" className="mt-2" onClick={() => reset({ ...s.cfg, lr: DEFAULT_LR[s.cfg.optimizer] })}><RotateCcw />Reset with lr {fmtLr(DEFAULT_LR[s.cfg.optimizer])}</Button>
           </AlertDescription>
         </Alert>
       )}
-      <div className="grid gap-4 @5xl:grid-cols-[300px_minmax(0,1fr)]">
-        <Settings s={s} />
-        <div className="@container/viz min-w-0 space-y-4">
-          <LossCard s={s} smooth={smooth} />
-          <div className="grid gap-4 @3xl/viz:grid-cols-2">
-            <SamplesCard s={s} />
-            <AttnCard s={s} />
-            <GradCard s={s} />
-            <WeightsCard viz={s.viz} />
-          </div>
-          <TryCard s={s} />
+      <Settings s={s} />
+      <div className="grid gap-4 @4xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] [&>*]:min-w-0">
+        <LossCard s={s} smooth={smooth} />
+        <SamplesCard s={s} />
+      </div>
+      <TryCard />
+      <div className="grid gap-4 @3xl:grid-cols-2 [&>*]:min-w-0">
+        <AttnCard s={s} />
+        <div className="space-y-4">
+          <GradCard s={s} />
+          <WeightsCard viz={s.viz} />
         </div>
       </div>
     </div>
@@ -114,12 +111,12 @@ export function TrainLab() {
 // ---------------------------------------------------------------- control bar
 function ControlBar({ s, lossNow, valNow }: { s: TrainState; lossNow: number; valNow: number }) {
   const running = s.status === "running", busy = s.status === "loading";
-  const stats: [string, string, string][] = [
+  const stats: [string, string, string, boolean?][] = [
     ["Step", s.step.toLocaleString(), `training step ${s.step}`],
     ["Loss", isFinite(lossNow) ? lossNow.toFixed(3) : "—", `smoothed training loss ${lossNow.toFixed(3)} (chance is 5.55)`],
     ["Val loss", isFinite(valNow) ? valNow.toFixed(3) : "—", `validation loss on held-out text: ${valNow.toFixed(3)}`],
-    ["Steps/s", running || s.sps ? s.sps.toFixed(1) : "—", `${s.sps.toFixed(1)} training steps per second in this browser`],
-    ["Tokens", fmtNum(s.tokensSeen), `${s.tokensSeen.toLocaleString()} training tokens seen so far`],
+    ["Steps/s", running || s.sps ? s.sps.toFixed(1) : "—", `${s.sps.toFixed(1)} training steps per second in this browser`, true],
+    ["Tokens", fmtNum(s.tokensSeen), `${s.tokensSeen.toLocaleString()} training tokens seen so far`, true],
     ["Time", fmtTime(s.elapsed), `${s.elapsed.toFixed(1)} seconds of training`],
   ];
   return (
@@ -131,9 +128,9 @@ function ControlBar({ s, lossNow, valNow }: { s: TrainState; lossNow: number; va
         <Button variant="outline" size="icon" onClick={stepOnce} disabled={running || busy || s.status === "diverged"} title="One training step" aria-label="One training step"><StepForward /></Button>
         <Button variant="outline" size="icon" onClick={() => reset()} title="Reset to random weights (step 0)" aria-label="Reset"><RotateCcw /></Button>
       </div>
-      <div className="grid min-w-0 flex-1 grid-cols-3 gap-x-3 gap-y-1 @xl:grid-cols-6">
-        {stats.map(([k, v, a]) => (
-          <div key={k} className="min-w-0" data-ask-id={`train-stat-${k}`} data-ask={a}>
+      <div className="grid min-w-0 flex-1 basis-56 grid-cols-4 gap-x-3 gap-y-1 @3xl:grid-cols-6">
+        {stats.map(([k, v, a, extra]) => (
+          <div key={k} className={cn("min-w-0", extra && "hidden @3xl:block")} data-ask-id={`train-stat-${k}`} data-ask={a}>
             <div className="text-[11px] leading-tight text-muted-foreground">{k}</div>
             <div className="truncate text-sm font-semibold tabular-nums">{v}</div>
           </div>
@@ -145,43 +142,42 @@ function ControlBar({ s, lossNow, valNow }: { s: TrainState; lossNow: number; va
 
 // ---------------------------------------------------------------- settings
 function Settings({ s }: { s: TrainState }) {
-  const isMobile = useIsMobile();
-  const [open, setOpen] = useState<boolean | null>(null);
-  const c = s.cfg, isOpen = open ?? !isMobile;
+  const [isOpen, setOpen] = useState(false);
+  const c = s.cfg;
   useEffect(() => { const f = () => setOpen(true); window.addEventListener("trainlab-open-setup", f); return () => window.removeEventListener("trainlab-open-setup", f); }, []);
   return (
     <Collapsible open={isOpen} onOpenChange={setOpen} asChild>
-      <Card className="gap-0 self-start py-0 @5xl:sticky @5xl:top-[8.5rem] @5xl:max-h-[calc(100svh-9.5rem)] @5xl:overflow-y-auto">
+      <Card className="gap-0 py-0">
         <CollapsibleTrigger asChild>
           <button className="flex w-full items-center gap-2 px-4 py-3 text-left">
             <Settings2 className="size-4 text-muted-foreground" />
-            <span className="flex-1"><span className="font-medium">Setup</span>
-              <span className="block truncate text-xs text-muted-foreground">{s.params ? `${s.params.toLocaleString()} params` : `~${paramCount(c).toLocaleString()} params`} · {OPTIM_LABEL[c.optimizer]} lr {fmtLr(c.lr)} · {partsText(c)}</span></span>
-            <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+            <span className="font-medium">Setup</span>
+            <span className="ml-auto min-w-0 truncate text-xs text-muted-foreground tabular-nums">{fmtNum(s.params || paramCount(c))} params · {OPTIM_LABEL[c.optimizer]} · lr {fmtLr(c.lr)}</span>
+            <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="space-y-5 border-t px-4 pt-4 pb-5">
+          <div className="grid gap-x-8 gap-y-6 border-t px-4 pt-4 pb-5 @3xl:grid-cols-2 @5xl:grid-cols-4">
             <Section title="Model size">
               <ToggleGroup type="single" variant="outline" className="w-full" value={c.preset} onValueChange={(v) => v && setCfg(withPreset(c, v as PresetId))}>
                 {(Object.keys(PRESETS) as PresetId[]).map((id) => <ToggleGroupItem key={id} value={id} className="h-9 flex-1">{PRESETS[id].label}</ToggleGroupItem>)}
               </ToggleGroup>
-              <p className="text-xs text-muted-foreground" data-ask-id="train-size" data-ask={`model: ${c.nLayer} layers, d_model ${c.dModel}, ${c.nHead} heads, context ${c.nCtx}, ${paramCount(c).toLocaleString()} parameters`}>
-                {c.nLayer} layer{c.nLayer > 1 ? "s" : ""} · d {c.dModel} · {c.nHead} heads · {paramCount(c).toLocaleString()} params{c.preset === "medium" ? " · slow (a few steps/s)" : ""}
+              <p className="text-xs text-muted-foreground tabular-nums" data-ask-id="train-size" data-ask={`model: ${c.nLayer} layers, d_model ${c.dModel}, ${c.nHead} heads, context ${c.nCtx}, ${paramCount(c).toLocaleString()} parameters`}>
+                {paramCount(c).toLocaleString()} params{c.preset === "medium" ? " · slow" : ""}
               </p>
               <CommitSlider label="Layers" value={c.nLayer} min={1} max={4} step={1} fmt={(v) => String(v)} onCommit={(v) => setCfg({ nLayer: v, preset: v === PRESETS[c.preset as PresetId]?.nLayer ? c.preset : "custom" })} />
               <CommitSlider label="Context length" value={c.nCtx} min={8} max={64} step={8} fmt={(v) => `${v} tokens`} onCommit={(v) => setCfg({ nCtx: v })} />
             </Section>
             <Section title="Parts of the model">
               {([
-                ["attention", "Attention", "tokens look at earlier tokens"],
-                ["mlp", "MLP", "per-token processing & memory"],
-                ["pos", "Positions", "learned position embeddings"],
-                ["residual", "Residual", "x + f(x) instead of f(x)"],
-                ["layernorm", "LayerNorm", "re-scale before each part"],
-              ] as const).map(([k, label, hint]) => (
+                ["attention", "Attention"],
+                ["mlp", "MLP"],
+                ["pos", "Positions"],
+                ["residual", "Residual"],
+                ["layernorm", "LayerNorm"],
+              ] as const).map(([k, label]) => (
                 <label key={k} className="flex min-h-9 cursor-pointer items-center gap-3">
-                  <span className="flex-1 text-sm leading-tight">{label}<span className="block text-xs text-muted-foreground">{hint}</span></span>
+                  <span className="flex-1 text-sm">{label}</span>
                   <Switch checked={c[k]} onCheckedChange={(v) => setCfg({ [k]: v })} />
                 </label>
               ))}
@@ -189,7 +185,7 @@ function Settings({ s }: { s: TrainState }) {
             <Section title="Optimizer">
               <ToggleGroup type="single" variant="outline" className="w-full" value={c.optimizer} onValueChange={(v) => {
                 if (!v) return; const o = v as Optim; setCfg({ optimizer: o, lr: DEFAULT_LR[o] });
-                toast(`${OPTIM_LABEL[o]}: learning rate set to ${fmtLr(DEFAULT_LR[o])}`, { description: "A sensible start for this optimizer. Applies right away; no restart." });
+                toast(`${OPTIM_LABEL[o]} · lr ${fmtLr(DEFAULT_LR[o])}`);
               }}>
                 <ToggleGroupItem value="sgd" className="h-9 flex-1">SGD</ToggleGroupItem>
                 <ToggleGroupItem value="momentum" className="h-9 flex-1">Momentum</ToggleGroupItem>
@@ -201,17 +197,16 @@ function Settings({ s }: { s: TrainState }) {
                 <Slider min={0} max={5} step={1} value={[Math.round(Math.log2(c.batch))]} onValueChange={([v]) => setCfg({ batch: 2 ** v })} />
               </div>
               <label className="flex min-h-9 cursor-pointer items-center gap-3">
-                <span className="flex-1 text-sm leading-tight">Gradient clipping<span className="block text-xs text-muted-foreground">cap the total gradient length at 1</span></span>
+                <span className="flex-1 text-sm">Gradient clipping</span>
                 <Switch checked={c.clip} onCheckedChange={(v) => setCfg({ clip: v })} />
               </label>
               <div className="flex items-center gap-2">
-                <Label htmlFor="train-seed" className="flex-1 font-normal">Seed <span className="text-xs text-muted-foreground">(the random start)</span></Label>
+                <Label htmlFor="train-seed" className="flex-1 font-normal">Seed</Label>
                 <Input id="train-seed" type="number" min={1} className="h-9 w-20 tabular-nums" value={c.seed} onChange={(e) => { const v = Math.max(1, Math.floor(+e.target.value || 1)); setCfg({ seed: v }); }} />
                 <Button variant="outline" size="icon" aria-label="Random seed" title="Random seed" onClick={() => setCfg({ seed: 1 + Math.floor(Math.random() * 9999) })}><Dices /></Button>
               </div>
             </Section>
             <DataSection s={s} />
-            <p className="text-xs text-muted-foreground">Size, parts, context and seed rebuild the model from step 0. Learning rate, batch, optimizer and clipping change live.</p>
           </div>
         </CollapsibleContent>
       </Card>
@@ -249,18 +244,17 @@ function DataSection({ s }: { s: TrainState }) {
   const enough = norm.trim().length >= 3000;
   return (
     <Section title="Training text">
-      <ToggleGroup type="single" variant="outline" className="w-full" value={s.dataKind} onValueChange={(v) => { if (v === "tiny") setData("tiny"); else if (v === "custom" && s.customText) setData("custom"); else if (v === "custom") toast("Paste some text below, then press Train on this"); }}>
+      <ToggleGroup type="single" variant="outline" className="w-full" value={s.dataKind} onValueChange={(v) => { if (v === "tiny") setData("tiny"); else if (v === "custom" && s.customText) setData("custom"); else if (v === "custom") toast("Paste some text first"); }}>
         <ToggleGroupItem value="tiny" className="h-9 flex-1">Tiny world</ToggleGroupItem>
         <ToggleGroupItem value="custom" className="h-9 flex-1">Your text</ToggleGroupItem>
       </ToggleGroup>
       <p className="text-xs text-muted-foreground" data-ask-id="train-data" data-ask={`training text: ${s.dataKind === "tiny" ? "tiny-world sample generated by train/corpus.py" : "the learner's own text"}, ${s.chars.toLocaleString()} characters, ${s.tokens.train.toLocaleString()} training tokens and ${s.tokens.val.toLocaleString()} held-out validation tokens (last 10%)`}>
-        {s.dataKind === "tiny" ? <>Synthetic stories from <code>train/corpus.py</code>, {(s.chars / 1000).toFixed(0)} KB · </> : <>Your text · </>}
-        {s.tokens.train.toLocaleString()} train + {s.tokens.val.toLocaleString()} held-out tokens. <a className="underline underline-offset-2" href="/train-data/tiny-world.txt" target="_blank" rel="noreferrer"><FileText className="mb-0.5 inline size-3" /> view</a>
+        {(s.tokens.train + s.tokens.val).toLocaleString()} tokens{s.dataKind === "tiny" && <> · <a className="underline underline-offset-2" href="/train-data/tiny-world.txt" target="_blank" rel="noreferrer"><FileText className="mb-0.5 inline size-3" /> view</a></>}
       </p>
-      <Textarea id="train-text" value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="Paste a few pages of any text (a story, song lyrics, code…). It is lowercased and squeezed into the tokenizer's alphabet: a–z, space, newline and . , ? ! : '" className="max-h-48 text-xs" />
+      <Textarea id="train-text" value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="Paste any text (3,000+ characters)" className="max-h-48 text-xs" />
       <div className="flex items-center gap-2">
-        <span className="flex-1 text-xs text-muted-foreground tabular-nums">{norm.trim().length.toLocaleString()} chars{text && !enough ? " · need 3,000+" : ""}</span>
-        <Button size="sm" variant="secondary" disabled={!enough} onClick={() => { setData("custom", norm); toast("Training on your text", { description: "Same 256-token vocabulary, so unusual words get split into small pieces." }); }}>Train on this</Button>
+        <span className="flex-1 text-xs text-muted-foreground tabular-nums">{norm.trim().length.toLocaleString()} chars{text && !enough ? " / 3,000" : ""}</span>
+        <Button size="sm" variant="secondary" disabled={!enough} onClick={() => { setData("custom", norm); toast("Training on your text"); }}>Train on this</Button>
       </div>
     </Section>
   );
@@ -277,19 +271,19 @@ function LossCard({ s, smooth }: { s: TrainState; smooth: number[] }) {
   return (
     <Card className="gap-3">
       <CardHeader>
-        <CardTitle>Loss, live</CardTitle>
+        <CardTitle>Loss</CardTitle>
       </CardHeader>
       <CardContent>
-        <LineChart askId="train-loss" ask={ask} xMax={xMax} yMax={yMax} height={250}
-          refs={[{ y: LN256, label: "random guessing (ln 256)" }, { y: 0.46, label: "real TinyGPT, 3,000 steps" }]}
+        <LineChart askId="train-loss" ask={ask} xMax={xMax} yMax={yMax} height={340}
+          refs={[{ y: LN256, label: "random guess" }, { y: 0.46, label: "real TinyGPT" }]}
           series={[
             { id: "raw", label: "train (per step)", color: "var(--viz-a)", x: raw.x, y: raw.y, width: 1, opacity: 0.3, hideInTip: true },
             { id: "train", label: "train", color: "var(--viz-a)", x: sm.x, y: sm.y, width: 2.2 },
             { id: "val", label: "validation", color: "var(--viz-b)", x: s.val.map((v) => v.step), y: s.val.map((v) => v.loss), dashed: true, dots: s.val.length < 40 },
           ]} />
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-viz-a" />training loss (smoothed; faint = every step)</span>
-          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-viz-b" />validation loss</span>
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-viz-a" />train</span>
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-viz-b" />validation</span>
         </div>
       </CardContent>
     </Card>
@@ -304,8 +298,8 @@ function SamplesCard({ s }: { s: TrainState }) {
   return (
     <Card className="gap-3">
       <CardHeader>
-        <CardTitle>What it writes {cur ? <>at step {cur.step}</> : "now"}</CardTitle>
-        {s.status === "running" && pick === "now" && <CardAction><Badge variant="secondary" className="gap-1.5"><span className="size-1.5 animate-pulse rounded-full bg-viz-b" />live</Badge></CardAction>}
+        <CardTitle>What it writes</CardTitle>
+        {cur && <CardAction><Badge variant="secondary" className="gap-1.5 tabular-nums">{s.status === "running" && pick === "now" && <span className="size-1.5 animate-pulse rounded-full bg-viz-b" />}step {cur.step}</Badge></CardAction>}
       </CardHeader>
       <CardContent className="space-y-2">
         {hist.length > 0 && (
@@ -334,12 +328,12 @@ function GradCard({ s }: { s: TrainState }) {
   return (
     <Card className="gap-3">
       <CardHeader>
-        <CardTitle>Gradients flowing back</CardTitle>
+        <CardTitle>Gradients</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {!v ? <div className="h-40 animate-pulse rounded-lg bg-muted/50" /> : <>
           <div className="space-y-1.5">
-            <div className="text-xs text-muted-foreground">Per part: ‖∂loss/∂weights‖ at step {v.step}</div>
+            <div className="text-xs text-muted-foreground">By part</div>
             {groups.map((g) => (
               <div key={g.name} className="grid grid-cols-[5.5rem_1fr_3.5rem] items-center gap-2 text-xs" data-ask-id={`train-grad-${g.name}`}
                 data-ask={`Gradient norm of the "${g.name}" parameters at step ${v.step}: ${g.grad.toExponential(2)}. Their weight norm is ${g.weight.toFixed(2)}; between the last two snapshots the weights changed by ${(g.update * 100).toFixed(2)}% of their size.`}>
@@ -352,8 +346,8 @@ function GradCard({ s }: { s: TrainState }) {
           </div>
           <Separator />
           <div className="space-y-1.5">
-            <div className="text-xs text-muted-foreground">Along the residual stream: ‖∂loss/∂x‖ arriving at each depth</div>
-            {v.step === 0 && <div className="text-xs text-muted-foreground italic">Press Start or ⏵ step once: gradients exist only after a backward pass.</div>}
+            <div className="text-xs text-muted-foreground">By depth</div>
+            {v.step === 0 && <div className="text-xs text-muted-foreground">Press Start</div>}
             {stream.map((g, i) => (
               <div key={g.name} className="grid grid-cols-[5.5rem_1fr_3.5rem] items-center gap-2 text-xs" data-ask-id={`train-stream-${g.name}`}
                 data-ask={`Gradient reaching the residual stream ${g.name === "embed" ? "right after the embeddings" : g.name}: norm ${g.grad.toExponential(2)} (summed over the batch). ${s.cfg.residual ? "Residual connections let it pass straight through." : "Residual connections are OFF, so each layer must pass it on through its own weights."}`}>
@@ -381,11 +375,11 @@ function AttnCard({ s }: { s: TrainState }) {
   return (
     <Card className="gap-3">
       <CardHeader>
-        <CardTitle>Attention on a test sentence</CardTitle>
+        <CardTitle>Attention</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {!s.cfg.attention ? (
-          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">Attention is switched off: every token only sees itself, so the model can't copy {own ? "anything" : "“red”"} from earlier in the sentence.</div>
+          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">Attention is off.</div>
         ) : (
           <>
             <div className="flex flex-wrap gap-2">
@@ -415,7 +409,7 @@ function AttnCard({ s }: { s: TrainState }) {
         {v && (
           <div className="@container"><div className={cn("grid gap-3", !own && "@md:grid-cols-2")}>
             <div className="space-y-1" data-ask-id="train-probe" data-ask={`After "${s.probe || PROBE}" the live model (step ${v.step}) predicts: ${v.probe.map((p) => `"${p.token}" ${pct(p.p)}`).join(", ")}.${own ? "" : ` The right answer is " red"; the real TinyGPT gives it 87%.`}`}>
-              <div className="truncate text-xs text-muted-foreground">Next token after “…{(s.probe || PROBE).split(" ").slice(-4).join(" ")}”</div>
+              <div className="truncate text-xs text-muted-foreground">Next after “…{(s.probe || PROBE).split(" ").slice(-3).join(" ")}”</div>
               {v.probe.map((p) => (
                 <div key={p.token} className="grid grid-cols-[4.5rem_1fr_2.6rem] items-center gap-2 text-xs">
                   <span className={cn("truncate font-mono", !own && p.token === " red" && "font-semibold text-pin")}>{show(p.token)}</span>
@@ -425,10 +419,10 @@ function AttnCard({ s }: { s: TrainState }) {
               ))}
             </div>
             {!own && <div className="min-w-0">
-              <div className="text-xs text-muted-foreground">Chance of “red” over training</div>
+              <div className="text-xs text-muted-foreground">Chance of “red”</div>
               <LineChart askId="train-pred" ask={`Probability of the correct next token " red" on the probe sentence over training; now ${pct(v.pRed)} at step ${v.step} (real TinyGPT: 87%).`}
                 height={110} xMax={Math.max(50, redP[redP.length - 1]?.step ?? 50)} yMax={1} fmtY={(x) => pct(x)}
-                refs={[{ y: 0.871, label: "real model 87%" }]}
+                refs={[{ y: 0.871, label: "real 87%" }]}
                 series={[{ id: "red", label: "p(red)", color: "var(--viz-pin)", x: redP.map((p) => p.step), y: redP.map((p) => p.p) }]} />
             </div>}
           </div></div>
@@ -462,8 +456,8 @@ function WeightsCard({ viz }: { viz: Viz | null }) {
           </svg>
         </div>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-viz-a" />now, spread {hst.std.toFixed(3)}</span>
-          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-pin" />random start, spread {hst.initStd.toFixed(3)}</span>
+          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-viz-a" />now</span>
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-pin" />at start</span>
         </div>
       </CardContent>
     </Card>
@@ -473,33 +467,30 @@ function WeightsCard({ viz }: { viz: Viz | null }) {
 // ---------------------------------------------------------------- what to try
 const TRIED = "topdown-trainlab-tried-v1";
 const TRIES: { id: string; title: string; watch: string; run: (s: TrainState) => void; stay?: boolean }[] = [
-  { id: "learn", title: "Watch it learn from nothing", watch: "Loss starts at 5.55 (pure guessing) and the samples go from gibberish to real words within ~200 steps.", run: () => reset(DEFAULT_CONFIG, true) },
-  { id: "diverge", title: "Set the learning rate to 1", watch: "Steps get so big the loss shoots up instead of down, then explodes.", run: (s) => { setCfg({ lr: 1 }); if (s.status !== "running") start(); } },
-  { id: "tiny-lr", title: "Set the learning rate to 0.0001", watch: "Nothing is wrong, it is just painfully slow. The curve barely moves.", run: (s) => { reset({ ...s.cfg, optimizer: "adamw", lr: 1e-4 }, true); } },
-  { id: "no-attn", title: "Turn attention off", watch: "Tokens can no longer share information. On Tiny, 400 steps end near 1.8 instead of about 1.0, and it can't copy “red”.", run: (s) => reset({ ...s.cfg, attention: false }, true) },
-  { id: "no-pos", title: "Turn positions off", watch: "The model no longer knows word order directly. Surprise: on this data it costs only a little (≈1.1 vs ≈1.0 at step 400). Why?", run: (s) => reset({ ...s.cfg, pos: false }, true) },
-  { id: "no-resid", title: "Small model, no residual", watch: "Watch the gradient bars: without x + f(x), the push reaching layer 1 shrinks ~100,000× and the loss stalls near 4.5.", run: () => reset({ ...withPreset(DEFAULT_CONFIG, "small"), residual: false }, true) },
-  { id: "sgd", title: "Plain SGD instead of AdamW", watch: "Same model, simpler update rule. Which gets lower after 300 steps?", run: (s) => { reset({ ...s.cfg, optimizer: "sgd", lr: DEFAULT_LR.sgd }, true); } },
+  { id: "learn", title: "Learn from scratch", watch: "Loss starts at 5.55 (pure guessing) and the samples go from gibberish to real words within ~200 steps.", run: () => reset(DEFAULT_CONFIG, true) },
+  { id: "diverge", title: "Learning rate 1", watch: "Steps get so big the loss shoots up instead of down, then explodes.", run: (s) => { setCfg({ lr: 1 }); if (s.status !== "running") start(); } },
+  { id: "tiny-lr", title: "Learning rate 0.0001", watch: "Nothing is wrong, it is just painfully slow. The curve barely moves.", run: (s) => { reset({ ...s.cfg, optimizer: "adamw", lr: 1e-4 }, true); } },
+  { id: "no-attn", title: "Attention off", watch: "Tokens can no longer share information. On Tiny, 400 steps end near 1.8 instead of about 1.0, and it can't copy “red”.", run: (s) => reset({ ...s.cfg, attention: false }, true) },
+  { id: "no-pos", title: "Positions off", watch: "The model no longer knows word order directly. Surprise: on this data it costs only a little (≈1.1 vs ≈1.0 at step 400). Why?", run: (s) => reset({ ...s.cfg, pos: false }, true) },
+  { id: "no-resid", title: "No residual", watch: "Small model without residual connections. Watch the gradient bars: without x + f(x), the push reaching layer 1 shrinks ~100,000× and the loss stalls near 4.5.", run: () => reset({ ...withPreset(DEFAULT_CONFIG, "small"), residual: false }, true) },
+  { id: "sgd", title: "Plain SGD", watch: "Plain SGD instead of AdamW. Same model, simpler update rule. Which gets lower after 300 steps?", run: (s) => { reset({ ...s.cfg, optimizer: "sgd", lr: DEFAULT_LR.sgd }, true); } },
   { id: "batch1", title: "Batch size 1", watch: "Each step sees one 32-token snippet: the per-step loss gets very noisy.", run: (s) => { setCfg({ batch: 1 }); if (s.status !== "running") start(); } },
-  { id: "own", title: "Train on your own text", watch: "Paste a few pages of anything into Setup → Training text.", run: () => { window.dispatchEvent(new Event("trainlab-open-setup")); setTimeout(() => document.getElementById("train-text")?.scrollIntoView({ behavior: "smooth", block: "center" }), 150); }, stay: true },
+  { id: "own", title: "Your own text", watch: "Paste a few pages of anything into Setup → Training text.", run: () => { window.dispatchEvent(new Event("trainlab-open-setup")); setTimeout(() => document.getElementById("train-text")?.scrollIntoView({ behavior: "smooth", block: "center" }), 150); }, stay: true },
 ];
-function TryCard({ s }: { s: TrainState }) {
+function TryCard() {
   const [done, setDone] = useState<Record<string, boolean>>(() => { try { return JSON.parse(localStorage.getItem(TRIED) || "{}"); } catch { return {}; } });
   const mark = (id: string, v: boolean) => { const d = { ...done, [id]: v }; setDone(d); try { localStorage.setItem(TRIED, JSON.stringify(d)); } catch { /* private mode */ } };
   return (
-    <Card className="gap-3">
+    <Card className="gap-2">
       <CardHeader>
         <CardTitle>What to try</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2 @3xl/viz:grid-cols-2">
+      <CardContent className="grid gap-x-6 gap-y-0.5 @3xl:grid-cols-2 @5xl:grid-cols-3">
         {TRIES.map((t) => (
-          <div key={t.id} className={cn("flex items-start gap-3 rounded-lg border p-3", done[t.id] && "bg-muted/40")} data-ask-id={`train-try-${t.id}`} data-ask={`Experiment idea: ${t.title}. What to watch: ${t.watch}`}>
-            <Checkbox className="mt-1" checked={!!done[t.id]} onCheckedChange={(v) => mark(t.id, !!v)} aria-label={`Mark "${t.title}" as tried`} />
-            <div className="min-w-0 flex-1">
-              <div className={cn("text-sm font-medium", done[t.id] && "text-muted-foreground line-through decoration-muted-foreground/50")}>{t.title}</div>
-              <div className="text-xs text-muted-foreground">{t.watch}</div>
-            </div>
-            <Button size="sm" variant="outline" className="shrink-0" onClick={() => { t.run(trainer.get()); mark(t.id, true); if (!t.stay) window.scrollTo({ top: 0, behavior: "smooth" }); }}><Play />Try</Button>
+          <div key={t.id} className="flex min-h-10 items-center gap-3 rounded-lg px-1.5 hover:bg-muted/40" data-ask-id={`train-try-${t.id}`} data-ask={`Experiment idea: ${t.title}. What to watch: ${t.watch}`}>
+            <Checkbox checked={!!done[t.id]} onCheckedChange={(v) => mark(t.id, !!v)} aria-label={`Mark "${t.title}" as tried`} />
+            <span className={cn("min-w-0 flex-1 truncate text-sm", done[t.id] && "text-muted-foreground")}>{t.title}</span>
+            <Button size="sm" variant="ghost" className="h-8 shrink-0" onClick={() => { t.run(trainer.get()); mark(t.id, true); if (!t.stay) window.scrollTo({ top: 0, behavior: "smooth" }); }}><Play />Try</Button>
           </div>
         ))}
       </CardContent>

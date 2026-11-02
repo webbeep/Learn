@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Cpu, FlaskConical, TriangleAlert } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Cpu, FlaskConical, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -78,11 +79,7 @@ export function ArchLab() {
     ].filter(Boolean).join("\n"));
   }, [data, failed, on.join(), a, b]); // eslint-disable-line
 
-  const header = (
-    <div>
-      <h1 className="text-3xl font-semibold tracking-tight">What does each part do?</h1>
-    </div>
-  );
+  const header = <h1 className="text-3xl font-semibold tracking-tight">What does each part do?</h1>;
   if (!data) return (
     <div className="space-y-6 pb-10">
       {header}
@@ -90,8 +87,8 @@ export function ArchLab() {
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon"><FlaskConical /></EmptyMedia>
-            <EmptyTitle>The experiments are still running</EmptyTitle>
-            <EmptyDescription>Results appear here as soon as <code>train/experiments/ablations.py</code> publishes them. This page checks again every 30 seconds. Meanwhile, run your own ablations live.</EmptyDescription>
+            <EmptyTitle>Results coming soon</EmptyTitle>
+            <EmptyDescription>Meanwhile, try it yourself.</EmptyDescription>
           </EmptyHeader>
           <Button asChild><a href="#/train"><Cpu />Train it yourself</a></Button>
         </Empty>
@@ -105,7 +102,6 @@ export function ArchLab() {
   const zMin = late.length ? Math.max(0, Math.floor((Math.min(...late) - 0.05) * 10) / 10) : 0;
   const zMax = late.length ? Math.ceil((Math.max(...late) + 0.05) * 10) / 10 : 6;
   const zoomed = zoom === "zoom" && late.length > 0;
-  const ra = runs.find((r) => r.id === a), rb = runs.find((r) => r.id === b);
   const pMax = Math.max(0.05, ...runs.flatMap((r) => r.probe_top.map((t) => t.p))); // one shared scale so runs compare honestly
   const sortBtn = (key: typeof sort.key, label: string, cls = "") => (
     <button className={cn("inline-flex items-center gap-1 font-medium hover:text-foreground", sort.key === key && "text-foreground", cls)}
@@ -115,12 +111,12 @@ export function ArchLab() {
   );
 
   return (
-    <div className="@container space-y-6 pb-10">
+    <div className="@container space-y-4 pb-10">
       {header}
 
       <Card className="gap-3">
         <CardHeader>
-          <CardTitle>Validation loss while training</CardTitle>
+          <CardTitle>Loss by run</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-1.5">
@@ -138,22 +134,21 @@ export function ArchLab() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-1.5">
               <Button size="sm" variant="ghost" className="h-8" onClick={() => setOn(runs.map((r) => r.id))}>All</Button>
-              <Button size="sm" variant="ghost" className="h-8" onClick={() => setOn(base ? [base.id] : [])}>Baseline only</Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setOn(base ? [base.id] : [])}>Baseline</Button>
             </div>
             <ToggleGroup type="single" size="sm" variant="outline" value={zoom} onValueChange={(v) => v && setZoom(v as "all" | "zoom")}>
-              <ToggleGroupItem value="zoom" className="h-8 px-3">Zoom on the finish</ToggleGroupItem>
-              <ToggleGroupItem value="all" className="h-8 px-3">Whole run</ToggleGroupItem>
+              <ToggleGroupItem value="zoom" className="h-8 px-3">Zoom</ToggleGroupItem>
+              <ToggleGroupItem value="all" className="h-8 px-3">Full</ToggleGroupItem>
             </ToggleGroup>
           </div>
           {sel.length ? (
             <LineChart askId="lab-curves" height={300}
               ask={`Validation loss curves of the ablation runs shown: ${sel.map((r) => `${r.label} final ${lossTxt(r.final_val)}`).join(", ")}${zoomed ? ` (zoomed to steps ≥ ${Math.round(data.steps * 0.33)}, loss ${zMin}–${zMax})` : ""}.`}
               xMin={zoomed ? Math.round(data.steps * 0.33 / 50) * 50 : 0} xMax={data.steps} yMin={zoomed ? zMin : 0} yMax={zoomed ? zMax : 6}
-              refs={zoomed ? [] : [{ y: Math.log(256), label: "random guessing (ln 256)" }]}
+              refs={zoomed ? [] : [{ y: Math.log(256), label: "random guess" }]}
               series={sel.map((r) => ({ id: r.id, label: r.label, color: color(r.id), x: r.curve.step, y: r.curve.val, width: r.id === "baseline" ? 2.6 : 1.8, dashed: r.id === "baseline" }))}
               fmtY={(v) => v.toFixed(3)} endLabels />
-          ) : <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">Pick at least one run above</div>}
-          {zoomed && sel.some((r) => (r.final_val ?? 0) > zMax) && <p className="text-xs text-muted-foreground">Some curves end above the zoomed window. Switch to “Whole run” to see them.</p>}
+          ) : <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">Pick a run</div>}
         </CardContent>
       </Card>
 
@@ -163,13 +158,13 @@ export function ArchLab() {
         </CardHeader>
         <CardContent className="px-0 sm:px-6">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[22rem] text-sm">
+            <table className="w-full text-sm">
               <thead className="text-xs text-muted-foreground">
                 <tr className="border-b">
                   <th className="py-2 pr-2 pl-4 text-left sm:pl-0">{sortBtn("label", "Run")}</th>
                   <th className="px-2 py-2 text-right">{sortBtn("final_val", "Val loss", "justify-end whitespace-nowrap")}</th>
                   <th className="px-2 py-2 text-right">{sortBtn("delta", "vs full", "justify-end whitespace-nowrap")}</th>
-                  <th className="px-2 py-2 text-right" title="On 100 freshly generated trade stories: how often the right color is the top guess">Copies color</th>
+                  <th className="hidden px-2 py-2 text-right @md:table-cell" title="Right color as top guess, 100 test stories">Copies color</th>
                   <th className="hidden px-2 py-2 text-right @lg:table-cell">{sortBtn("params", "Params", "justify-end")}</th>
                   <th className="py-2 pr-4 pl-2 text-right sm:pr-0"><span className="sr-only">Retrain</span></th>
                 </tr>
@@ -182,7 +177,6 @@ export function ArchLab() {
                       data-ask={`Ablation "${r.label}": ${r.what} Final validation loss ${lossTxt(r.final_val)} (train ${lossTxt(r.final_train)}), ${d == null ? "" : `${d >= 0 ? "+" : ""}${d.toFixed(3)} vs the full model, `}${r.params.toLocaleString()} parameters${r.diverged ? ", DIVERGED" : ""}${r.seconds ? `, trained in ${r.seconds}s on CPU` : ""}${r.probe_set ? `; on ${r.probe_set.n} fresh trade stories it picks the right color first ${Math.round(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1))}% of the time` : ""}.`}>
                       <td className="py-2.5 pr-2 pl-4 sm:pl-0">
                         <div className="flex items-center gap-2 font-medium"><span className="size-2.5 shrink-0 rounded-full" style={{ background: color(r.id) }} />{r.label}{r.diverged && <Badge variant="destructive" className="h-5">diverged</Badge>}</div>
-                        <div className="mt-0.5 max-w-md pl-[18px] text-xs text-muted-foreground">{r.what}</div>
                       </td>
                       <td className="px-2 py-2.5 text-right font-semibold tabular-nums">{lossTxt(r.final_val)}</td>
                       <td className="px-2 py-2.5 text-right tabular-nums">
@@ -193,10 +187,10 @@ export function ArchLab() {
                           </div>
                         )}
                       </td>
-                      <td className="px-2 py-2.5 text-right tabular-nums">{r.probe_set ? <span className={cn(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1) >= 90 ? "text-foreground" : "text-muted-foreground")}>{Math.round(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1))}%</span> : "—"}</td>
+                      <td className="hidden px-2 py-2.5 text-right tabular-nums @md:table-cell">{r.probe_set ? <span className={cn(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1) >= 90 ? "text-foreground" : "text-muted-foreground")}>{Math.round(r.probe_set.top1_acc * (r.probe_set.top1_acc <= 1 ? 100 : 1))}%</span> : "—"}</td>
                       <td className="hidden px-2 py-2.5 text-right text-muted-foreground tabular-nums @lg:table-cell">{fmtP(r.params)}</td>
                       <td className="py-2 pr-4 pl-2 text-right sm:pr-0">
-                        <Button size="sm" variant="outline" asChild title="Open this setup in the Train lab (a smaller, browser-sized model)">
+                        <Button size="sm" variant="outline" asChild title="Retrain in your browser">
                           <a href={retrainLink(r)}><Cpu /><span className="hidden @md:inline">Retrain</span></a>
                         </Button>
                       </td>
@@ -206,15 +200,10 @@ export function ArchLab() {
               </tbody>
             </table>
           </div>
-          <p className="mt-3 px-4 text-xs text-muted-foreground sm:px-0">“Retrain” opens the same switch in the Train lab on a smaller model (d 48, up to 4 layers) so it trains in seconds in your browser.</p>
         </CardContent>
       </Card>
 
-      <Card className="gap-3">
-        <CardHeader>
-          <CardTitle>Side by side</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <Fold title="Side by side">
           <div className="grid gap-4 @3xl:grid-cols-2">
             {([[a, setA], [b, setB]] as const).map(([id, set], k) => {
               const r = runs.find((x) => x.id === id);
@@ -225,7 +214,7 @@ export function ArchLab() {
                     <SelectContent>{runs.map((x) => <SelectItem key={x.id} value={x.id}><span className="size-2.5 rounded-full" style={{ background: color(x.id) }} />{x.label}</SelectItem>)}</SelectContent>
                   </Select>
                   {r && <>
-                    <p className="text-xs text-muted-foreground">{r.what} <span className="font-medium text-foreground tabular-nums">Val loss {lossTxt(r.final_val)}.</span></p>
+                    <p className="text-xs text-muted-foreground tabular-nums">Val loss <span className="font-medium text-foreground">{lossTxt(r.final_val)}</span></p>
                     <ProbeBars r={r} prompt={data.probe_prompt} color={color(r.id)} max={pMax} />
                     <div className="space-y-2">
                       {r.samples.map((s, i) => (
@@ -240,26 +229,32 @@ export function ArchLab() {
               );
             })}
           </div>
-          {ra && rb && <p className="text-xs text-muted-foreground">Showing <b className="text-foreground">{ra.label}</b> vs <b className="text-foreground">{rb.label}</b>.</p>}
-        </CardContent>
-      </Card>
+      </Fold>
 
-      <Card className="gap-3">
-        <CardHeader>
-          <CardTitle>Every run on the test sentence</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 @lg:grid-cols-2 @4xl:grid-cols-4">
+      <Fold title="Every run's next word">
+        <div className="grid gap-3 @lg:grid-cols-2 @4xl:grid-cols-4">
           {runs.map((r) => (
             <div key={r.id} className="rounded-lg border p-3">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium"><span className="size-2.5 rounded-full" style={{ background: color(r.id) }} />{r.label}</div>
               <ProbeBars r={r} prompt={data.probe_prompt} color={color(r.id)} max={pMax} compact />
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      <p className="text-xs text-muted-foreground">{data.note}</p>
+        </div>
+      </Fold>
     </div>
+  );
+}
+
+function Fold({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Collapsible asChild>
+      <Card className="gap-0 py-0">
+        <CollapsibleTrigger className="flex w-full items-center gap-2 px-4 py-3.5 text-left text-base font-medium [&[data-state=open]>svg]:rotate-180">
+          {title}<ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="px-4 pb-4">{children}</CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }
 
@@ -267,7 +262,7 @@ function ProbeBars({ r, prompt, color, compact, max }: { r: Run; prompt: string;
   return (
     <div className="space-y-1" data-ask-id={`lab-probe-${r.id}${compact ? "-grid" : ""}`}
       data-ask={`After "${prompt}", the "${r.label}" model's top-5 next tokens: ${r.probe_top.map((t) => `"${t.token}" ${pct(t.p)}`).join(", ")}. (The right answer is " red".)`}>
-      {!compact && <div className="text-xs text-muted-foreground">Next word after “…now tom has the”</div>}
+      {!compact && <div className="text-xs text-muted-foreground">Next word after “…tom has the”</div>}
       {r.probe_top.map((t) => (
         <div key={t.token} className="grid grid-cols-[4.5rem_1fr_2.75rem] items-center gap-2 text-xs">
           <span className={cn("truncate font-mono", t.token === " red" && "font-semibold text-pin")}>{show(t.token)}</span>

@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, BookOpen } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -42,28 +40,22 @@ export function Scaling() {
 
   const runs = useMemo(() => (d ? [...d.runs].sort((a, b) => a.params - b.params) : []), [d]);
   return (
-    <div className="space-y-6 pb-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Scaling</h1>
-      </div>
+    <div className="space-y-4 pb-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Scaling</h1>
       {!d ? <Waiting what="Scaling runs" file="public/research/scaling.json" load={load} /> : <>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat k="model sizes" v={runs.length} sub="same recipe, same data" />
-          <Stat k="parameters" v={`${human(runs[0].params)} → ${human(runs[runs.length - 1].params)}`} sub={`${Math.round(runs[runs.length - 1].params / runs[0].params)}× range`} />
-          <Stat k="tokens per run" v={human(runs[0].tokens_seen)} sub={`${d.steps.toLocaleString()} steps`} />
-          <Stat k="best val loss" v={Math.min(...runs.map((r) => r.final_val ?? Infinity)).toFixed(2)} sub={`biggest model · chance is 5.55`} />
-        </div>
         <LossCurves runs={runs} onSummary={onCurves} />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Stat k="model sizes" v={runs.length} />
+          <Stat k="parameters" v={`${human(runs[0].params)} → ${human(runs[runs.length - 1].params)}`} />
+          <Stat k="tokens per run" v={human(runs[0].tokens_seen)} />
+          <Stat k="best val loss" v={Math.min(...runs.map((r) => r.final_val ?? Infinity)).toFixed(2)} />
+        </div>
         <PowerLaw d={d} runs={runs} onSummary={onLaw} />
       </>}
       <ComputeCalc onSummary={onCalc} />
-      <Alert>
-        <BookOpen />
-        <AlertTitle>Where this comes from</AlertTitle>
-        <AlertDescription>
-          <p>Kaplan et al. 2020, <a className="underline" href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noreferrer">Scaling Laws for Neural Language Models</a>, found loss falls as a power law in parameters, data and compute over many orders of magnitude. Hoffmann et al. 2022, <a className="underline" href="https://arxiv.org/abs/2203.15556" target="_blank" rel="noreferrer">Training Compute-Optimal LLMs</a> ("Chinchilla"), refined how to split a budget between size and data.</p>
-        </AlertDescription>
-      </Alert>
+      <p className="text-xs text-muted-foreground">
+        Sources: <a className="underline" href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noreferrer">Kaplan et al. 2020</a> · <a className="underline" href="https://arxiv.org/abs/2203.15556" target="_blank" rel="noreferrer">Hoffmann et al. 2022</a>
+      </p>
     </div>
   );
 }
@@ -85,8 +77,6 @@ function LossCurves({ runs, onSummary }: { runs: Run[]; onSummary: (s: string) =
     return { r, v: pts.length ? pts[pts.length - 1][1] : NaN };
   }).filter((x) => Number.isFinite(x.v)).sort((a, b) => a.v - b.v)[0] : null;
 
-  const big = runs.slice(-3).map((r) => r.final_val ?? NaN);
-  const tied = big.length === 3 && big.every(Number.isFinite) && Math.max(...big) - Math.min(...big) < 0.03 ? { n: 3, spread: Math.max(...big) - Math.min(...big) } : null;
   useEffect(() => {
     onSummary(`Loss curves (validation loss vs ${xMode === "tokens" ? "tokens seen" : "training compute in FLOPs"}, ${xLog ? "log" : "linear"} x-axis). Final val loss by size: ${runs.map((r) => `${r.id} ${human(r.params)} params → ${r.final_val?.toFixed(3)}`).join("; ")}.` +
       (atBudget ? ` At ${budget.toExponential(1)} FLOPs (the smallest model's whole budget) the best curve is ${atBudget.r.id} (${human(atBudget.r.params)} params) at ${atBudget.v.toFixed(3)}.` : ""));
@@ -95,7 +85,7 @@ function LossCurves({ runs, onSummary }: { runs: Run[]; onSummary: (s: string) =
   return (
     <Card className="@container">
       <CardHeader>
-        <CardTitle>Bigger models learn faster from the same data</CardTitle>
+        <CardTitle>Bigger models learn faster</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -111,11 +101,6 @@ function LossCurves({ runs, onSummary }: { runs: Run[]; onSummary: (s: string) =
         <div data-ask-id="sc-curves" data-ask={`validation loss curves for ${runs.length} model sizes vs ${xMode}: ${runs.map((r) => `${r.id} (${r.params} params) final ${r.final_val?.toFixed(3)}`).join(", ")}`}>
           <Legend items={series.map((s) => ({ label: s.label, color: s.color }))} />
         </div>
-        <p className="text-sm text-muted-foreground">
-          {xMode === "tokens"
-            ? <>Read it vertically: at any amount of data, the bigger model (stronger color) has lower loss. They see the same tokens; they just squeeze more out of each one.{tied && <> But look at the right edge: the {tied.n} biggest models finish within {tied.spread.toFixed(3)} of each other. With only {human(runs[0].tokens_seen)} training tokens each, the training budget, not model size, has become the limit: bigger models need more tokens before their extra capacity pays off.</>}</>
-            : atBudget ? <>Same x-axis now means same <i>cost</i>. Big models cost more per token, so their curves shift right. With the budget of the whole smallest run ({budget.toExponential(1).replace("e+", "e")} FLOPs), the best choice here was <b className="text-foreground">{human(atBudget.r.params)} params</b> (loss {atBudget.v.toFixed(2)}): neither the smallest nor necessarily the biggest.</> : null}
-        </p>
       </CardContent>
     </Card>
   );
@@ -150,7 +135,7 @@ function PowerLaw({ d, runs, onSummary }: { d: ScalingData; runs: Run[]; onSumma
   return (
     <Card className="@container">
       <CardHeader>
-        <CardTitle>A straight line on log–log paper</CardTitle>
+        <CardTitle>Loss vs model size</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-6 @3xl:grid-cols-5 [&>*]:min-w-0">
         <div className="space-y-2 @3xl:col-span-3">
@@ -171,35 +156,23 @@ function PowerLaw({ d, runs, onSummary }: { d: ScalingData; runs: Run[]; onSumma
                 </g>
               )}
             </>} />
-          <Legend items={[{ label: "trained models (measured)", color: "var(--viz-a)", dot: true }, { label: "power-law fit", color: "var(--viz-pin)" }, { label: "extrapolation", color: "var(--viz-pin)", dashed: true }]} />
-          {fit && <div className="flex items-center gap-2"><Switch id="sc-sub" checked={sub} onCheckedChange={setSub} /><Label htmlFor="sc-sub" className="text-sm">Subtract the floor c = {fit.c.toFixed(2)}: the power law becomes a straight line</Label></div>}
+          <Legend items={[{ label: "trained models", color: "var(--viz-a)", dot: true }, { label: "power-law fit", color: "var(--viz-pin)" }, { label: "guess", color: "var(--viz-pin)", dashed: true }]} />
+          {fit && <div className="flex items-center gap-2"><Switch id="sc-sub" checked={sub} onCheckedChange={setSub} /><Label htmlFor="sc-sub" className="text-sm">Subtract floor c</Label></div>}
         </div>
         {fit && (
           <div className="space-y-4 @3xl:col-span-2">
             <div className="space-y-2">
-              <div className="flex items-baseline justify-between"><Label>What would a bigger model get?</Label><span className="font-mono text-sm tabular-nums">{mult}×</span></div>
+              <div className="flex items-baseline justify-between"><Label>Bigger model</Label><span className="font-mono text-sm tabular-nums">{mult}×</span></div>
               <Slider min={0} max={3} step={0.01} value={[Math.log10(mult)]} onValueChange={([v]) => setMult(+(10 ** v).toPrecision(2))} aria-label="size multiplier" />
               <div className="flex justify-between text-[11px] text-muted-foreground"><span>1×</span><span>10×</span><span>100×</span><span>1000×</span></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Stat k={`biggest trained (${best.r.id})`} v={best.l.toFixed(3)} sub={`${human(nMax)} ${nLabel}`} />
-              <Stat k={`predicted at ${mult}×`} v={lStar.toFixed(3)} sub={`${human(nStar)} ${nLabel}`} className="border-[var(--viz-pin)]/50" />
+              <Stat k={`biggest · ${human(nMax)}`} v={best.l.toFixed(3)} />
+              <Stat k={`${mult}× · ${human(nStar)}`} v={lStar.toFixed(3)} className="border-[var(--viz-pin)]/50" />
             </div>
             <div className="rounded-lg bg-muted/40 p-3 text-sm" data-ask-id="sc-fit-params" data-ask={`fit: a=${fit.a}, alpha=${fit.alpha}, c=${fit.c}`}>
               <div className="font-mono text-[13px]">α = {fit.alpha.toFixed(3)} · c = {fit.c.toFixed(3)}{fit.r2 != null && <> · R² = {fit.r2.toFixed(3)}</>}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Each 10× in size multiplies the reducible loss (L − c) by 10<sup>−α</sup> = {(10 ** -fit.alpha).toFixed(2)}. The gains shrink as you approach the floor.</p>
             </div>
-            <Alert>
-              <AlertTriangle />
-              <AlertTitle>Be honest about the dashed line</AlertTitle>
-              <AlertDescription>
-                <ul className="list-disc space-y-1 pl-4 text-xs">
-                  <li>It's fit on {pts.length} tiny models spanning {Math.round(nMax / nMin)}×. Extrapolating {mult}× past the data is a guess with growing error bars.</li>
-                  <li>Every run saw the same {human(runs[0].tokens_seen)} tokens. A much bigger model would need more data (and compute) to actually reach the prediction.</li>
-                  <li>The floor c reflects this toy corpus and recipe; it says nothing about real-world text.</li>
-                </ul>
-              </AlertDescription>
-            </Alert>
           </div>
         )}
       </CardContent>

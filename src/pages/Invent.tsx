@@ -17,10 +17,8 @@ export function Invent() {
   }, [seed, parts]);
 
   return (
-    <div className="space-y-8 pb-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Invent your own</h1>
-      </div>
+    <div className="space-y-6 pb-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Invent your own</h1>
       <ResearchLoop onSummary={onLoop} />
       <IdeaBoard onUse={(idea) => setSeed((s) => ({ idea, n: (s?.n ?? 0) + 1 }))} />
       <CardBuilder seed={seed} onSummary={onCards} />

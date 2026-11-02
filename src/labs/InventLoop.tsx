@@ -14,10 +14,10 @@ export const SEED_RUNS = { steps: 400, baseline: [0.917, 0.9793, 0.9794], nopos:
 
 const STEPS = [
   { id: "hypothesis", icon: Lightbulb, title: "Hypothesis", short: "Guess" },
-  { id: "small", icon: Minimize2, title: "Smallest experiment", short: "Shrink" },
+  { id: "small", icon: Minimize2, title: "Go small", short: "Small" },
   { id: "baseline", icon: Beaker, title: "Baseline", short: "Baseline" },
   { id: "change", icon: FlaskConical, title: "Change one thing", short: "Change" },
-  { id: "seeds", icon: GitCompare, title: "Compare across seeds", short: "Seeds" },
+  { id: "seeds", icon: GitCompare, title: "Several seeds", short: "Seeds" },
   { id: "scale", icon: TrendingUp, title: "Scale up", short: "Scale" },
 ] as const;
 
@@ -69,35 +69,35 @@ function BODY(abl: Ablations | null, base: Run, nopos: Run): Record<(typeof STEP
   const bv = base?.final_val, nv = nopos?.final_val;
   return {
     hypothesis: {
-      text: "Write down what you expect and why, before running anything. A good hypothesis predicts a direction and roughly how big the effect is, so the experiment can prove you wrong.",
-      example: "\"TinyGPT needs its position embeddings to copy the right color: without them, val loss will be clearly worse.\"",
+      text: "Write down what you expect before you run anything.",
+      example: "\"Without position embeddings, val loss gets clearly worse.\"",
       visual: <HypothesisViz />,
     },
     small: {
-      text: "Shrink the experiment until it runs in minutes. You learn from the number of experiments you finish, not the size of each one.",
-      example: "TinyGPT: 170,560 parameters, 80 seconds on a laptop CPU. Short runs show big effects fast, but some skills (like copying the right color) only appear later in training, so check more than one budget.",
+      text: "Shrink the experiment until it runs in minutes.",
+      example: "TinyGPT: 170,560 parameters, 80 seconds on a laptop.",
       visual: <ShrinkViz />,
     },
     baseline: {
-      text: "Run the unchanged recipe with exactly the same data, steps and seed. Without a baseline, a number means nothing.",
-      example: bv != null ? <>Baseline TinyGPT, {abl!.steps.toLocaleString()} steps: val loss <b className="text-foreground">{bv.toFixed(3)}</b> (real run from the Architecture lab experiments).</> : "Train the unchanged TinyGPT for 1,500 steps and record its val loss.",
+      text: "Run the unchanged recipe first, with the same data and seed.",
+      example: bv != null ? <>Baseline, {abl!.steps.toLocaleString()} steps: val loss <b className="text-foreground">{bv.toFixed(3)}</b></> : "Train the unchanged TinyGPT and record its val loss.",
       visual: <BarsViz bars={[{ label: "baseline", v: bv ?? 0.49, color: "var(--muted-foreground)" }]} max={Math.max(bv ?? 0.5, nv ?? 0.6) * 1.15} real={bv != null} />,
     },
     change: {
-      text: "Change exactly one thing. If you change two, you won't know which one mattered.",
+      text: "Change exactly one thing.",
       example: nv != null && bv != null ? (Math.abs(nv / bv - 1) < 0.02
-        ? <>positions: learned → none. Val loss <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b> ({((nv / bv - 1) * 100).toFixed(1)}%). Almost no difference: <b className="text-foreground">the hypothesis fails</b>. That's a win for science: with a causal mask, a token can work out roughly where it is from what came before it, so the model found another way. A failed prediction tells you more than a confirmed one.</>
-        : <>positions: learned → none. Val loss <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b> ({((nv / bv - 1) * 100).toFixed(0)}% worse). Hypothesis survives, for now.</>) : "positions: learned → none. Everything else identical.",
+        ? <>No positions: <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b>. Almost no difference, so the guess was wrong. That still teaches you something.</>
+        : <>No positions: <b className="text-foreground">{bv.toFixed(3)} → {nv.toFixed(3)}</b> ({((nv / bv - 1) * 100).toFixed(0)}% worse). The guess holds, for now.</>) : "Positions: learned → none. Everything else identical.",
       visual: <div className="space-y-3"><DiffViz /><BarsViz bars={[{ label: "baseline", v: bv ?? 0.49, color: "var(--muted-foreground)" }, { label: "no positions", v: nv ?? 0.61, color: "var(--viz-pin)" }]} max={Math.max(bv ?? 0.5, nv ?? 0.6) * 1.15} real={bv != null && nv != null} /></div>,
     },
     seeds: {
-      text: "Random init and batch order add noise. Rerun with 3+ seeds: an effect only counts if it's bigger than the spread between seeds.",
-      example: <>With the script this page exports (character-level, {SEED_RUNS.steps} steps): baseline {mean(SEED_RUNS.baseline).toFixed(3)} ± {spread(SEED_RUNS.baseline)}, no positions {mean(SEED_RUNS.nopos).toFixed(3)} ± {spread(SEED_RUNS.nopos)}. The gap is ~{Math.round((mean(SEED_RUNS.nopos) - mean(SEED_RUNS.baseline)) / Math.max(...[SEED_RUNS.baseline, SEED_RUNS.nopos].map((a) => Math.max(...a) - Math.min(...a))))}× the seed spread: real. Notice this short character-level run says positions matter, while the full-length TinyGPT run above says they barely do. Same question, different setup and budget, different answer. That's why you state the setup with every result.</>,
+      text: "Rerun with 3+ seeds. The effect must beat the noise.",
+      example: <>Baseline {mean(SEED_RUNS.baseline).toFixed(3)} ± {spread(SEED_RUNS.baseline)}, no positions {mean(SEED_RUNS.nopos).toFixed(3)} ± {spread(SEED_RUNS.nopos)}. A real gap.</>,
       visual: <SeedsViz />,
     },
     scale: {
-      text: "Does the win survive at 10× the size? Many tricks help tiny models and vanish at scale (or the reverse). Check the trend across sizes, not one point.",
-      example: <>Re-run baseline and variant at 3+ sizes and plot both lines, like the <a href="#/scaling" className="underline">Scaling lab</a>. Parallel lines = a constant win; converging lines = it fades with scale.</>,
+      text: "Check that the win holds at bigger sizes.",
+      example: <>Parallel lines: it keeps. Converging lines: it fades. See the <a href="#/scaling" className="underline">Scaling lab</a>.</>,
       visual: <ScaleViz />,
     },
   };
@@ -142,7 +142,7 @@ function BarsViz({ bars, max, real }: { bars: { label: string; v: number; color:
           <div className="h-4 rounded-r-md" style={{ width: `${(b.v / max) * 100}%`, background: b.color }} />
         </div>
       ))}
-      <div className="text-[11px] text-muted-foreground">val loss, lower is better{real ? " · real runs" : " · loading real numbers…"}</div>
+      <div className="text-[11px] text-muted-foreground">val loss (lower is better){real ? "" : " · loading…"}</div>
     </div>
   );
 }
@@ -152,7 +152,7 @@ function DiffViz() {
     <div className="overflow-hidden rounded-lg border bg-card font-mono text-xs">
       {rows.map(([k, a, b]) => (
         <div key={k} className={cn("flex gap-2 px-2.5 py-1", b && "bg-[color-mix(in_oklch,var(--viz-pin)_18%,transparent)]")}>
-          <span className="w-20 text-muted-foreground">{k}</span>{b ? <><span className="line-through opacity-60">{a}</span><span>→ {b}</span><Badge variant="outline" className="ml-auto h-4 px-1 text-[10px]">the one change</Badge></> : <span>{a}</span>}
+          <span className="w-20 text-muted-foreground">{k}</span>{b ? <><span className="line-through opacity-60">{a}</span><span>→ {b}</span><Badge variant="outline" className="ml-auto h-4 px-1 text-[10px]">changed</Badge></> : <span>{a}</span>}
         </div>
       ))}
     </div>
@@ -172,7 +172,7 @@ function SeedsViz() {
           <text x={X(mean(vals))} y={66 + r * 55} fontSize={10} textAnchor="middle" className="fill-foreground font-mono">{mean(vals).toFixed(3)}</text>
         </g>
       ))}
-      <text x={130} y={144} fontSize={10} textAnchor="middle" className="fill-muted-foreground">val loss, 3 seeds each (real runs)</text>
+      <text x={130} y={144} fontSize={10} textAnchor="middle" className="fill-muted-foreground">val loss, 3 seeds each</text>
     </svg>
   );
 }
@@ -188,7 +188,7 @@ function ScaleViz() {
       {xs.map((i) => <text key={i} x={X(i)} y={142} fontSize={9.5} textAnchor="middle" className="fill-muted-foreground">{["10k", "100k", "1M", "10M"][i]}</text>)}
       <text x={X(3) + 4} y={Y(0.6) + 3} fontSize={9.5} className="fill-foreground">keeps</text>
       <text x={X(3) + 4} y={Y(0.74) + 4} fontSize={9.5} className="fill-foreground">fades</text>
-      <text x={34} y={14} fontSize={9.5} className="fill-muted-foreground">illustration, not data</text>
+      <text x={34} y={14} fontSize={9.5} className="fill-muted-foreground">illustration</text>
     </svg>
   );
 }

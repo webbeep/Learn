@@ -19,9 +19,7 @@ export function Backprop() {
 
   return (
     <div className="space-y-6 pb-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Backprop, visualized</h1>
-      </div>
+      <h1 className="text-3xl font-semibold tracking-tight">Backprop, visualized</h1>
       <GraphLab onSummary={onGraph} />
       <FitLab onSummary={onFit} />
       <RealGrads onSummary={onReal} />

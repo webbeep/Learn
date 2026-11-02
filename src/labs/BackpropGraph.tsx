@@ -77,13 +77,12 @@ export function GraphLab({ onSummary }: { onSummary: (scene: string, s: string) 
   const phase = bwd > 0 ? "backward" : fwd > 0 ? "forward" : "start";
 
   let caption: React.ReactNode;
-  if (live) caption = <>All values and gradients are computed. <b>Drag any slider</b> and everything updates instantly, or <b>take a gradient step</b> below.</>;
-  else if (phase === "start") caption = <>Leaves (left) are the numbers we choose. Press <b>Forward</b> to compute each node from its inputs, one at a time.</>;
+  if (live) caption = <>Done. Drag a slider or take a gradient step.</>;
+  else if (phase === "start") caption = <>Press <b>Forward</b> to compute one node at a time.</>;
   else if (lastF) caption = <span className="font-mono text-[13px]">{forwardText(lastF)}</span>;
-  else if (bwd === 1) caption = <>Backward starts at the end: <span className="font-mono text-[13px]">∂{preset.lossLabel}/∂{preset.lossLabel} = 1</span>. Nudging the loss by ε changes the loss by ε.</>;
+  else if (bwd === 1) caption = <>Start at the end: <span className="font-mono text-[13px]">∂{preset.lossLabel}/∂{preset.lossLabel} = 1</span></>;
   else if (lastB) caption = (
     <div className="space-y-0.5">
-      <div className="text-xs text-muted-foreground">Chain rule at <b className="font-mono text-foreground">{lastB.label}</b>: local slope × gradient arriving from the right</div>
       {backwardText(lastB, preset.lossLabel).map((t) => <div key={t} className="font-mono text-[12.5px] break-words">{t}</div>)}
     </div>
   );
@@ -105,12 +104,12 @@ export function GraphLab({ onSummary }: { onSummary: (scene: string, s: string) 
   return (
     <Card className="@container">
       <CardHeader>
-        <CardTitle>The chain rule, one node at a time</CardTitle>
+        <CardTitle>The chain rule</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-center @2xl:justify-between">
           <ToggleGroup type="single" variant="outline" value={pid} onValueChange={(v) => v && switchPreset(v)} className="w-full @2xl:w-auto">
-            {PRESETS.map((p) => <ToggleGroupItem key={p.id} value={p.id} className="h-9 flex-1 px-3 @2xl:flex-none">{p.name}</ToggleGroupItem>)}
+            {PRESETS.map((p) => <ToggleGroupItem key={p.id} value={p.id} className="h-auto min-h-9 flex-1 px-2 py-1 leading-tight whitespace-normal @md:px-3 @2xl:flex-none">{p.name}</ToggleGroupItem>)}
           </ToggleGroup>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" className="h-9" onClick={stepB} disabled={fwd === 0 && bwd === 0} aria-label="Step back"><ArrowLeft /></Button>
@@ -124,7 +123,7 @@ export function GraphLab({ onSummary }: { onSummary: (scene: string, s: string) 
         </div>
 
         <PhaseBar fwd={fwd} nOps={nOps} bwd={bwd} nB={nB} />
-        <div className="-mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm"><span className="text-muted-foreground">{preset.blurb}</span><span className="font-mono text-[13px]">{preset.formula}</span></div>
+        <div className="-mb-1 font-mono text-[13px] break-words">{preset.formula}</div>
 
         <Graph g={g} grads={grads} reached={reached} known={known} gScale={gScale} lastF={lastF} lastB={lastB} rootLive={bwd === 1}
           sel={sel} onSel={(l) => setSel(sel === l ? null : l)} lossLabel={preset.lossLabel} leafKind={(k) => preset.leaves.find((l) => l.key === k)?.kind} />
@@ -135,7 +134,7 @@ export function GraphLab({ onSummary }: { onSummary: (scene: string, s: string) 
 
         <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-5 [&>*]:min-w-0">
           <div className="space-y-1 @3xl:col-span-3">
-            <div className="mb-2 flex items-baseline justify-between"><div className="text-sm font-medium">Nudge the leaves</div><div className="text-xs text-muted-foreground">gradient shown once computed</div></div>
+            <div className="mb-2 text-sm font-medium">Nudge the inputs</div>
             <div className="grid gap-x-6 gap-y-1 @xl:grid-cols-2">
               {preset.leaves.map((l) => {
                 const gr = sim.grads[bwd][l.key], has = reached.has(l.key);
@@ -154,14 +153,13 @@ export function GraphLab({ onSummary }: { onSummary: (scene: string, s: string) 
               })}
             </div>
           </div>
-          <div className="space-y-3 rounded-xl border p-3 @3xl:col-span-2">
+          <div className="space-y-3 self-start rounded-xl border p-3 @3xl:col-span-2">
             <div className="flex items-center gap-2 text-sm font-medium"><TrendingDown className="size-4" />Gradient descent</div>
-            <p className="text-xs text-muted-foreground">Move every <i>learned</i> number a little against its gradient: <span className="font-mono">w ← w − lr · ∇w</span>. Inputs and targets stay fixed.</p>
             <div className="flex items-center gap-3 text-sm"><span className="w-24 shrink-0 text-muted-foreground">learning rate</span>
               <Slider min={0.01} max={pid === "expr" ? 0.1 : 1} step={0.01} value={[Math.min(lr, pid === "expr" ? 0.1 : 1)]} onValueChange={([v]) => setLr(v)} />
               <span className="w-10 text-right font-mono tabular-nums">{Math.min(lr, pid === "expr" ? 0.1 : 1).toFixed(2)}</span></div>
             <div className="flex gap-2">
-              <Button className="h-9 flex-1" onClick={() => gradStep(1)}>Take a gradient step</Button>
+              <Button className="h-9 flex-1" onClick={() => gradStep(1)}>Step</Button>
               <Button variant="outline" className="h-9" onClick={() => gradStep(10)}>×10</Button>
             </div>
             <Sparkline values={hist} label={preset.lossLabel} />
@@ -267,9 +265,9 @@ function Graph({ g, grads, reached, known, gScale, lastF, lastB, rootLive, sel, 
         })}
       </svg>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t px-3 py-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5"><span className="size-3 rounded-sm" style={{ background: div(-1, 1) }} />∇ &lt; 0: increasing it lowers {lossLabel}</span>
-        <span className="flex items-center gap-1.5"><span className="size-3 rounded-sm" style={{ background: div(1, 1) }} />∇ &gt; 0: increasing it raises {lossLabel}</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-4 rounded-sm border border-dashed border-muted-foreground" />data (not learned)</span>
+        <span className="flex items-center gap-1.5"><span className="size-3 rounded-sm" style={{ background: div(-1, 1) }} />∇ &lt; 0</span>
+        <span className="flex items-center gap-1.5"><span className="size-3 rounded-sm" style={{ background: div(1, 1) }} />∇ &gt; 0</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-4 rounded-sm border border-dashed border-muted-foreground" />fixed data</span>
       </div>
     </div>
   );
@@ -291,7 +289,7 @@ function NodeDetail({ v, preset, vals, live, grad, hasGrad, known, onClose }: { 
       <div className="grid gap-3 @xl:grid-cols-2">
         <div>
           <div className="text-xs text-muted-foreground">Forward</div>
-          <div className="font-mono text-[13px]">{isLeaf ? `${v.label} = ${fmt(v.data, 3)} (you set this)` : known ? forwardText(v) : "not computed yet"}</div>
+          <div className="font-mono text-[13px]">{isLeaf ? `${v.label} = ${fmt(v.data, 3)}` : known ? forwardText(v) : "not computed yet"}</div>
         </div>
         <div>
           <div className="text-xs text-muted-foreground">Gradient ∂{preset.lossLabel}/∂{v.label}</div>
@@ -300,12 +298,11 @@ function NodeDetail({ v, preset, vals, live, grad, hasGrad, known, onClose }: { 
       </div>
       {isLeaf && live && (
         <div className="mt-3 rounded-lg bg-muted/50 p-2.5 text-[13px]">
-          <div className="mb-1 font-medium">Check it yourself: nudge {v.label} by +{eps}</div>
+          <div className="mb-1 font-medium">Nudge {v.label} by +{eps}</div>
           <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
             <div><div className="text-xs text-muted-foreground font-sans">gradient predicts</div>Δ{preset.lossLabel} ≈ {fmt(grad, 3)} × {eps} = {fmt(grad * eps, 4)}</div>
             <div><div className="text-xs text-muted-foreground font-sans">actually</div>Δ{preset.lossLabel} = {fmt(L1 - L0, 4)}</div>
           </div>
-          <div className="mt-1 text-xs text-muted-foreground">Close, not exact: the gradient is the slope right here, and curves bend. Smaller nudges agree better.</div>
         </div>
       )}
     </div>
@@ -313,7 +310,7 @@ function NodeDetail({ v, preset, vals, live, grad, hasGrad, known, onClose }: { 
 }
 
 function Sparkline({ values, label }: { values: number[]; label: string }) {
-  if (values.length < 2) return <div className="flex h-24 items-center justify-center rounded-lg border border-dashed text-xs text-muted-foreground">{label} history appears here</div>;
+  if (values.length < 2) return null;
   const W = 300, H = 90, lo = Math.min(...values), hi = Math.max(...values), span = hi - lo || 1;
   const X = (i: number) => 4 + (i / (values.length - 1)) * (W - 8), Y = (v: number) => 8 + (1 - (v - lo) / span) * (H - 22);
   const first = values[0], last = values[values.length - 1];

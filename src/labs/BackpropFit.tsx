@@ -19,7 +19,6 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
   const [lr, setLr] = useState(0.03);
   const [running, setRunning] = useState(false);
   const [losses, setLosses] = useState<number[]>([]);
-  const [msPerStep, setMs] = useState(0);
   const tr = useRef<Trainer>(null as unknown as Trainer);
   const [, force] = useState(0);
   const cfg = useRef({ opt, lr }); cfg.current = { opt, lr };
@@ -35,7 +34,6 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
     while (out.length < maxN && (out.length === 0 || performance.now() - t0 < budgetMs)) {
       out.push(tr.current.step(cfg.current.opt, cfg.current.lr));
     }
-    setMs((performance.now() - t0) / out.length);
     setLosses((l) => [...l, ...out]);
   }, []);
 
@@ -72,10 +70,7 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
           {DATASETS.map((d) => <ToggleGroupItem key={d.id} value={d.id} className="h-9 flex-1">{d.name}</ToggleGroupItem>)}
         </ToggleGroup>
         <div className="grid grid-cols-1 gap-5 @3xl:grid-cols-2 [&>*]:min-w-0">
-          <div className="space-y-2">
-            <FitPlot t={t} version={losses.length} />
-            <p className="text-xs text-muted-foreground">{meta.blurb}. {ds.dim === 2 ? "Background = what the net predicts at every point; dots = training data." : "Dots = training data; line = the net's current guess."}</p>
-          </div>
+          <FitPlot t={t} version={losses.length} />
           <div className="space-y-4">
             <div className="flex gap-2">
               <Button className="h-9 flex-1" onClick={() => setRunning(!running)} disabled={losses.length >= MAX_STEPS}>{running ? <><Pause />Pause</> : <><Play />{losses.length ? "Resume" : "Train"}</>}</Button>
@@ -90,16 +85,16 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
             {curve.length > 1 ? (
               <LineChart series={[{ id: "loss", label: "loss", color: "var(--viz-a)", points: curve }]} yLog xLabel="step" yLabel="loss" height={170}
                 tipFmt={(v) => v.toPrecision(3)} yFmt={(v) => (v >= 0.01 ? String(+v.toPrecision(1)) : `1e${Math.round(Math.log10(v))}`)} xFmt={(v) => String(Math.round(v))} />
-            ) : <div className="flex h-[170px] items-center justify-center rounded-lg border border-dashed text-xs text-muted-foreground">Loss curve appears when you press Train</div>}
+            ) : null}
             <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2">
               <div className="space-y-2">
-                <Label>Hidden neurons per layer</Label>
+                <Label>Neurons</Label>
                 <ToggleGroup type="single" variant="outline" value={String(hidden)} onValueChange={(v) => { if (v) { setHidden(+v); rebuild(dsId, +v); } }} className="w-full">
                   {[4, 8, 16].map((h) => <ToggleGroupItem key={h} value={String(h)} className="h-9 flex-1">{h}</ToggleGroupItem>)}
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
-                <Label>Update rule</Label>
+                <Label>Optimizer</Label>
                 <ToggleGroup type="single" variant="outline" value={opt} onValueChange={(v) => { if (v) { setOpt(v as Opt); setLr(v === "sgd" ? 0.5 : 0.03); } }} className="w-full">
                   <ToggleGroupItem value="sgd" className="h-9 flex-1">SGD</ToggleGroupItem>
                   <ToggleGroupItem value="adam" className="h-9 flex-1">Adam</ToggleGroupItem>
@@ -109,11 +104,9 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm"><Label>Learning rate</Label><span className="font-mono tabular-nums">{lr.toFixed(3)}</span></div>
               <Slider min={-3} max={0.3} step={0.01} value={[Math.log10(lr)]} onValueChange={([v]) => setLr(+(10 ** v).toPrecision(2))} />
-              <p className="text-xs text-muted-foreground">{opt === "adam" ? "Adam: a gradient step that adapts per weight (what TinyGPT used). Try 0.3 to see it thrash." : "Plain SGD: w ← w − lr·∇w, exactly the button above."}{msPerStep > 0 && ` · ${msPerStep.toFixed(1)} ms per step on your device`}</p>
             </div>
           </div>
         </div>
-        {hidden === 16 && msPerStep > 15 && <p className="text-xs text-muted-foreground">Slower? Every multiply is its own JavaScript object here. Real frameworks batch millions of them into one matrix multiply on a GPU: same math, different bookkeeping.</p>}
       </CardContent>
     </Card>
   );

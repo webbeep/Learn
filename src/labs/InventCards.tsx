@@ -30,29 +30,25 @@ function download(card: ExperimentCard) {
   const blob = new Blob([makeScript(card)], { type: "text/x-python" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = scriptName(card); a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  toast.success(`Downloaded ${scriptName(card)}`, { description: "Run: python3 train.py --data tiny_world.txt (see the header for how to make the text file)." });
+  toast.success(`Downloaded ${scriptName(card)}`, { description: "Run: python3 train.py --data tiny_world.txt" });
 }
 
 export function IdeaBoard({ onUse }: { onUse: (idea: Idea) => void }) {
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Idea board: where the frontier is moving</h2>
-      </div>
-      <div className="grid grid-cols-1 gap-4 @container md:grid-cols-2 xl:grid-cols-3">
+      <h2 className="text-2xl font-semibold tracking-tight">Ideas</h2>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {IDEAS.map((it) => (
-          <Card key={it.id} className="gap-3" data-ask-id={`idea-${it.id}`} data-ask={`frontier idea "${it.title}": ${it.idea} Problem: ${it.problem} Tiny version: ${it.tiny}`}>
+          <Card key={it.id} size="sm" className="gap-2" data-ask-id={`idea-${it.id}`} data-ask={`frontier idea "${it.title}": ${it.idea} Problem: ${it.problem} Tiny version: ${it.tiny} Papers: ${it.refs.map((r) => r.label).join(", ")}.`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><span className="flex size-8 items-center justify-center rounded-lg bg-muted"><it.icon className="size-4" /></span>{it.title}</CardTitle>
+              <CardTitle className="flex items-center gap-2"><it.icon className="size-4 shrink-0 text-muted-foreground" />{it.title}</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 space-y-3 text-sm">
-              <p className="text-pretty">{it.idea}</p>
-              <div><div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Attacks</div><p className="text-muted-foreground">{it.problem}</p></div>
-              <div className="rounded-lg border bg-muted/40 p-2.5"><div className="text-xs font-medium tracking-wide text-pin uppercase">Try a tiny version</div><p>{it.tiny}</p></div>
-            </CardContent>
-            <CardFooter className="flex-col items-stretch gap-2">
-              {it.refs.map((r) => <a key={r.url} href={r.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:underline"><ExternalLink className="size-3 shrink-0" /><span className="truncate">{r.label}</span></a>)}
-              <Button variant="outline" className="mt-1 h-9" onClick={() => onUse(it)}><Plus />Make an experiment card</Button>
+            <CardContent className="flex-1 text-sm text-pretty text-muted-foreground">{it.idea}</CardContent>
+            <CardFooter className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8" onClick={() => onUse(it)}><Plus />Try it</Button>
+              <span className="ml-auto flex gap-3">
+                {it.refs.map((r, i) => <a key={r.url} href={r.url} target="_blank" rel="noreferrer" title={r.label} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"><ExternalLink className="size-3 shrink-0" />Paper{it.refs.length > 1 ? ` ${i + 1}` : ""}</a>)}
+              </span>
             </CardFooter>
           </Card>
         ))}
@@ -65,14 +61,15 @@ export function CardBuilder({ seed, onSummary }: { seed: { idea: Idea; n: number
   const [cards, setCards] = useState<ExperimentCard[]>(loadCards);
   const [draft, setDraft] = useState<ExperimentCard>(blank);
   const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => saveCards(cards), [cards]);
   useEffect(() => {
     if (!seed) return;
     const it = seed.idea;
     setDraft({ ...blank(), title: it.title, hypothesis: it.hypothesis, change: it.change, custom: it.custom ?? "" });
-    setEditing(false);
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setEditing(false); setOpen(true);
+    setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }, [seed]);
   const set = (p: Partial<ExperimentCard>) => setDraft((d) => ({ ...d, ...p }));
   const ch = CHANGES.find((c) => c.id === draft.change)!;
@@ -80,7 +77,7 @@ export function CardBuilder({ seed, onSummary }: { seed: { idea: Idea; n: number
   const save = () => {
     const card = { ...draft, title: draft.title.trim() || ch.label, updated: Date.now() };
     setCards((cs) => (cs.some((c) => c.id === card.id) ? cs.map((c) => (c.id === card.id ? card : c)) : [card, ...cs]));
-    toast.success(editing ? "Card updated" : "Experiment card saved", { description: "Stored in this browser." });
+    toast.success(editing ? "Card updated" : "Card saved");
     setDraft(blank()); setEditing(false);
   };
   useEffect(() => {
@@ -89,29 +86,28 @@ export function CardBuilder({ seed, onSummary }: { seed: { idea: Idea; n: number
   }, [draft, cards, ch, onSummary]);
 
   return (
-    <div ref={ref} className="scroll-mt-20 space-y-4">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Your experiment cards</h2>
-      </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 [&>*]:min-w-0">
+    <Collapsible ref={ref} open={open} onOpenChange={setOpen} className="scroll-mt-20 space-y-4">
+      <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-xl bg-card px-4 py-3.5 text-left text-base font-medium ring-1 ring-foreground/10 [&[data-state=open]>svg]:rotate-180">
+        Plan your own experiment{cards.length > 0 && <Badge variant="secondary">{cards.length} saved</Badge>}
+        <ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="grid grid-cols-1 gap-4 lg:grid-cols-5 [&>*]:min-w-0">
         <Card className="@container lg:col-span-2">
           <CardHeader>
-            <CardTitle>{editing ? "Edit card" : "New experiment card"}</CardTitle>
+            <CardTitle>{editing ? "Edit card" : "New card"}</CardTitle>
             {(editing || draft.hypothesis) && <CardAction><Button variant="ghost" size="sm" onClick={() => { setDraft(blank()); setEditing(false); }}><X />Clear</Button></CardAction>}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5"><Label htmlFor="ec-title">Name</Label>
               <Input id="ec-title" value={draft.title} placeholder={ch.label} onChange={(e) => set({ title: e.target.value })} className="h-9" /></div>
             <div className="space-y-1.5"><Label htmlFor="ec-hyp">Hypothesis</Label>
-              <Textarea id="ec-hyp" rows={3} value={draft.hypothesis} placeholder="If I …, then val loss will … because …" onChange={(e) => set({ hypothesis: e.target.value })} />
-              <p className="text-xs text-muted-foreground">Predict a direction and a rough size, so you can be wrong.</p></div>
+              <Textarea id="ec-hyp" rows={3} value={draft.hypothesis} placeholder="If I …, then val loss will … because …" onChange={(e) => set({ hypothesis: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>The one change</Label>
               <Select value={draft.change} onValueChange={(v) => set({ change: v as ChangeId })}>
                 <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>{CHANGES.map((c) => <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>)}</SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">{ch.what}</p>
-              {draft.change === "custom" && <Textarea rows={2} value={draft.custom} placeholder="Describe the change in one or two sentences" onChange={(e) => set({ custom: e.target.value })} />}
+              {draft.change === "custom" && <Textarea rows={2} value={draft.custom} placeholder="Describe the change" onChange={(e) => set({ custom: e.target.value })} />}
             </div>
             <div className="space-y-1.5"><Label>Metric</Label>
               <Select value={draft.metric} onValueChange={(v) => set({ metric: v })}>
@@ -128,29 +124,28 @@ export function CardBuilder({ seed, onSummary }: { seed: { idea: Idea; n: number
                   {[500, 1500, 3000].map((n) => <ToggleGroupItem key={n} value={String(n)} className="h-9 flex-1 px-1 tabular-nums">{n >= 1000 ? `${n / 1000}k` : n}</ToggleGroupItem>)}
                 </ToggleGroup></div>
             </div>
-            {draft.seeds === 1 && <p className="text-xs text-amber-600 dark:text-amber-400">One seed can't tell an effect from noise. Fine for a smoke test.</p>}
           </CardContent>
           <CardFooter className="flex-col items-stretch gap-2">
             <Button className="h-9" disabled={!valid} onClick={save}><Save />{editing ? "Update card" : "Save card"}</Button>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="h-9" asChild><a href={browserLink(draft)} title={browserSupports(draft.change) ? "Open this change in the in-browser trainer" : "The browser trainer can't do this change yet: opens the baseline"}><Play />{browserSupports(draft.change) ? "Run in browser" : "Baseline in browser"}</a></Button>
+              <Button variant="outline" className="h-9" asChild><a href={browserLink(draft)} title={browserSupports(draft.change) ? "Run in the browser trainer" : "Opens the baseline"}><Play />{browserSupports(draft.change) ? "Run in browser" : "Baseline in browser"}</a></Button>
               <Button variant="outline" className="h-9" onClick={() => download({ ...draft, title: draft.title || ch.label })}><Download />Export .py</Button>
             </div>
           </CardFooter>
         </Card>
         <div className="space-y-3 lg:col-span-3">
           {cards.length === 0 ? (
-            <Empty className="h-full min-h-60 border border-dashed">
-              <EmptyHeader><EmptyTitle>No cards yet</EmptyTitle><EmptyDescription>Fill in the form, or press "Make an experiment card" on an idea above. Cards stay in this browser.</EmptyDescription></EmptyHeader>
+            <Empty className="h-full min-h-32 border border-dashed">
+              <EmptyHeader><EmptyTitle>No cards yet</EmptyTitle><EmptyDescription>Fill in the form or pick an idea.</EmptyDescription></EmptyHeader>
             </Empty>
           ) : cards.map((c) => (
             <SavedCard key={c.id} card={c} onChange={(nc) => setCards((cs) => cs.map((x) => (x.id === nc.id ? nc : x)))}
-              onEdit={() => { setDraft(c); setEditing(true); ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+              onEdit={() => { setDraft(c); setEditing(true); setOpen(true); ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
               onDelete={() => { if (confirm(`Delete "${c.title}"?`)) setCards((cs) => cs.filter((x) => x.id !== c.id)); }} />
           ))}
         </div>
-      </div>
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -175,10 +170,9 @@ function SavedCard({ card, onChange, onEdit, onDelete }: { card: ExperimentCard;
         <p className="text-pretty"><span className="text-muted-foreground">Hypothesis: </span>{card.hypothesis}</p>
         {card.change === "custom" && <p className="text-pretty"><span className="text-muted-foreground">Change: </span>{card.custom}</p>}
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" className="h-9" asChild><a href={browserLink(card)}><Play />{browserSupports(card.change) ? "Run a quick version in the browser" : "Run the baseline in the browser"}</a></Button>
-          <Button size="sm" variant="outline" className="h-9" onClick={() => download(card)}><Download />Export a PyTorch script</Button>
+          <Button size="sm" className="h-9" asChild><a href={browserLink(card)}><Play />{browserSupports(card.change) ? "Run in browser" : "Baseline in browser"}</a></Button>
+          <Button size="sm" variant="outline" className="h-9" onClick={() => download(card)}><Download />Export .py</Button>
         </div>
-        {!browserSupports(card.change) && <p className="text-xs text-muted-foreground">The in-browser trainer can switch positions, the MLP and depth. For this change, export the script and run it with PyTorch.</p>}
         <Collapsible className="group/res rounded-lg border">
           <CollapsibleTrigger className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium">
             Log results {res.length > 0 && <Badge variant="outline" className="font-mono">Δ {md >= 0 ? "+" : ""}{md.toFixed(3)}{Number.isFinite(sd) && ` ± ${sd.toFixed(3)}`}</Badge>}
@@ -220,12 +214,12 @@ function SavedCard({ card, onChange, onEdit, onDelete }: { card: ExperimentCard;
 function Verdict({ md, sd, n, metric }: { md: number; sd: number; n: number; metric: string }) {
   const lowerBetter = !/probe|quality/.test(metric);
   const better = lowerBetter ? md < 0 : md > 0;
-  if (n < 3 || !Number.isFinite(sd)) return <p className="text-xs text-muted-foreground">Mean change {md >= 0 ? "+" : ""}{md.toFixed(3)} over {n} seed{n > 1 ? "s" : ""}. Log at least 3 seeds to judge whether it beats the noise.</p>;
+  if (n < 3 || !Number.isFinite(sd)) return <p className="text-xs text-muted-foreground">Mean change {md >= 0 ? "+" : ""}{md.toFixed(3)} over {n} seed{n > 1 ? "s" : ""}. Log 3+ seeds.</p>;
   const z = Math.abs(md) / (sd / Math.sqrt(n) || 1e-9);
   const clear = z > 3;
   return (
     <p className={cn("rounded-md p-2 text-xs", clear ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground")}>
-      Mean change {md >= 0 ? "+" : ""}{md.toFixed(3)} over {n} seeds ({(sd / Math.sqrt(n)).toFixed(3)} standard error). {clear ? `That's a clear effect: the change is ${better ? "better" : "worse"}.` : "Not clearly bigger than the seed noise yet: add seeds or train longer."}
+      Mean change {md >= 0 ? "+" : ""}{md.toFixed(3)} ± {(sd / Math.sqrt(n)).toFixed(3)} over {n} seeds. {clear ? `Clear effect: ${better ? "better" : "worse"}.` : "Within the noise so far."}
     </p>
   );
 }

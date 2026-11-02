@@ -1,6 +1,8 @@
 // "Now in the real model": real gradients of TinyGPT from public/research/gradients.json.
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -39,16 +41,14 @@ export function RealGrads({ onSummary }: { onSummary: (s: string) => void }) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Now in the real model</h2>
-      </div>
+      <h2 className="text-2xl font-semibold tracking-tight">In the real model</h2>
       {!d ? <Waiting what="Real gradients" file="public/research/gradients.json" load={load} /> : <>
         {d.batch && (
           <div className="grid grid-cols-2 gap-3 @container md:grid-cols-4">
-            <Stat k="loss at init" v={d.batch.loss_step0.toFixed(2)} sub="≈ ln 256: pure guessing" />
-            <Stat k="loss trained" v={d.batch.loss_trained.toFixed(2)} sub="same batch" />
-            <Stat k="tensors" v={d.per_tensor.length} sub="each gets a gradient" />
-            <Stat k="numbers" v={d.per_tensor.reduce((s, t) => s + (t.numel ?? t.shape.reduce((a, b) => a * b, 1)), 0).toLocaleString()} sub="one gradient each" />
+            <Stat k="loss at start" v={d.batch.loss_step0.toFixed(2)} />
+            <Stat k="loss trained" v={d.batch.loss_trained.toFixed(2)} />
+            <Stat k="tensors" v={d.per_tensor.length} />
+            <Stat k="gradients" v={d.per_tensor.reduce((s, t) => s + (t.numel ?? t.shape.reduce((a, b) => a * b, 1)), 0).toLocaleString()} />
           </div>
         )}
         <div className="grid gap-4 lg:grid-cols-5">
@@ -66,13 +66,13 @@ function LogitGrads({ ex }: { ex: Grads["example"] }) {
   return (
     <Card className="@container lg:col-span-3">
       <CardHeader>
-        <CardTitle>Where backprop starts: ∂loss/∂logit</CardTitle>
+        <CardTitle>Where backprop starts</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="rounded-lg border bg-muted/40 p-3 font-mono text-[13px] leading-relaxed" data-ask-id="rg-prompt" data-ask={`prompt "${ex.prompt}" with correct next token "${ex.target}", loss ${ex.loss.toFixed(3)}`}>
           <span className="text-muted-foreground">{ex.prompt}</span>
           <span className="ml-1 rounded bg-viz-a/20 px-1 text-foreground">{show(ex.target)}</span>
-          <div className="mt-1 font-sans text-xs text-muted-foreground">target {show(ex.target)}{ex.p_target != null && ` · model gives it ${(ex.p_target * 100).toFixed(1)}%`} · loss −ln p = {ex.loss.toFixed(3)}</div>
+          <div className="mt-1 font-sans text-xs text-muted-foreground tabular-nums">{ex.p_target != null && `p ${(ex.p_target * 100).toFixed(1)}% · `}loss {ex.loss.toFixed(3)}</div>
         </div>
         <div className="space-y-1">
           {rows.map((r) => {
@@ -90,8 +90,7 @@ function LogitGrads({ ex }: { ex: Grads["example"] }) {
             );
           })}
         </div>
-        <div className="flex justify-between text-xs text-muted-foreground"><span>← negative: raise this logit</span><span>positive: lower it →</span></div>
-        <p className="text-xs text-muted-foreground">Same as the neuron above: the gradient says which way to nudge. Every number in the network then gets its share via the chain rule.</p>
+        <div className="flex justify-between text-xs text-muted-foreground"><span>← push up</span><span>push down →</span></div>
       </CardContent>
     </Card>
   );
@@ -103,7 +102,7 @@ function LayerNorms({ pl }: { pl: Grads["per_layer_norm_at"] }) {
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>Gradient size per layer</CardTitle>
+        <CardTitle>Gradient per layer</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {layers.map((l, i) => (
@@ -117,7 +116,7 @@ function LayerNorms({ pl }: { pl: Grads["per_layer_norm_at"] }) {
             ))}
           </div>
         ))}
-        <Legend items={[{ label: "random init (step 0)", color: "color-mix(in oklch, var(--muted-foreground) 45%, transparent)" }, { label: "trained (step 3000)", color: "var(--viz-a)" }]} />
+        <Legend items={[{ label: "at start", color: "color-mix(in oklch, var(--muted-foreground) 45%, transparent)" }, { label: "trained", color: "var(--viz-a)" }]} />
       </CardContent>
     </Card>
   );
@@ -138,14 +137,14 @@ function TensorBars({ tensors }: { tensors: Tensor[] }) {
   const lo = Math.min(...vals) / 1.5, hi = Math.max(...vals) * 1.2;
   const pos = (v: number) => (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo));
   const groups = [...new Set(shown.map(groupOf))];
-  const top = shown.reduce((a, b) => (val(b) > val(a) ? b : a));
   const fmtV = (v: number) => (v >= 0.01 ? v.toFixed(3) : v.toExponential(1));
   return (
-    <Card className="@container">
-      <CardHeader>
-        <CardTitle>Every weight matrix gets a gradient</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Collapsible asChild>
+    <Card className="@container gap-0 py-0">
+      <CollapsibleTrigger className="flex w-full items-center gap-2 px-4 py-3.5 text-left text-base font-medium [&[data-state=open]>svg]:rotate-180">
+        Every weight matrix<ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-4 px-4 pb-4">
         <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-center">
           {hasStep0 && (
             <ToggleGroup type="single" variant="outline" value={when} onValueChange={(v) => v && setWhen(v as typeof when)} className="w-full @2xl:w-auto">
@@ -157,7 +156,7 @@ function TensorBars({ tensors }: { tensors: Tensor[] }) {
             <ToggleGroupItem value="norm" className="h-9 flex-1 px-3">‖grad‖</ToggleGroupItem>
             <ToggleGroupItem value="ratio" className="h-9 flex-1 px-3">‖grad‖ / ‖weight‖</ToggleGroupItem>
           </ToggleGroup>
-          <div className="flex items-center gap-2 @2xl:ml-auto"><Switch id="rg-all" checked={all} onCheckedChange={setAll} /><Label htmlFor="rg-all" className="text-sm">Biases &amp; LayerNorm too ({tensors.length} tensors)</Label></div>
+          <div className="flex items-center gap-2 @2xl:ml-auto"><Switch id="rg-all" checked={all} onCheckedChange={setAll} /><Label htmlFor="rg-all" className="text-sm">All {tensors.length} tensors</Label></div>
         </div>
         <div className="grid gap-x-8 gap-y-4 @3xl:grid-cols-2">
           {groups.map((g) => (
@@ -177,8 +176,8 @@ function TensorBars({ tensors }: { tensors: Tensor[] }) {
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">Bars use a log scale from {fmtV(lo)} to {fmtV(hi)}. Biggest right now: <b className="text-foreground">{pretty(top.name)}</b> ({groupOf(top)}).</p>
-      </CardContent>
+      </CollapsibleContent>
     </Card>
+    </Collapsible>
   );
 }
