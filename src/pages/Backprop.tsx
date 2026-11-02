@@ -21,7 +21,6 @@ export function Backprop() {
     <div className="space-y-6 pb-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Backprop, visualized</h1>
-        <p className="mt-1 max-w-3xl text-muted-foreground">Training needs one answer for every number in the model: <i>if I nudge you, does the loss go up or down, and how much?</i> Backpropagation gets all of those answers in one backward sweep. Step through it here, node by node.</p>
       </div>
       <GraphLab onSummary={onGraph} />
       <FitLab onSummary={onFit} />

@@ -4,7 +4,7 @@ import { ChevronDown, ClipboardCopy, Download, ExternalLink, FileCode, Pencil, P
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,6 @@ export function IdeaBoard({ onUse }: { onUse: (idea: Idea) => void }) {
     <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">Idea board: where the frontier is moving</h2>
-        <p className="mt-1 max-w-3xl text-muted-foreground">Each of these started as someone's "what if?". Every card has a version small enough to try on TinyGPT this afternoon.</p>
       </div>
       <div className="grid grid-cols-1 gap-4 @container md:grid-cols-2 xl:grid-cols-3">
         {IDEAS.map((it) => (
@@ -93,13 +92,11 @@ export function CardBuilder({ seed, onSummary }: { seed: { idea: Idea; n: number
     <div ref={ref} className="scroll-mt-20 space-y-4">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">Your experiment cards</h2>
-        <p className="mt-1 max-w-3xl text-muted-foreground">Write the hypothesis first, pick one change, then take it to the browser or export a complete PyTorch script with that change wired in.</p>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 [&>*]:min-w-0">
         <Card className="@container lg:col-span-2">
           <CardHeader>
             <CardTitle>{editing ? "Edit card" : "New experiment card"}</CardTitle>
-            <CardDescription>Saved in this browser only.</CardDescription>
             {(editing || draft.hypothesis) && <CardAction><Button variant="ghost" size="sm" onClick={() => { setDraft(blank()); setEditing(false); }}><X />Clear</Button></CardAction>}
           </CardHeader>
           <CardContent className="space-y-4">
@@ -169,10 +166,6 @@ function SavedCard({ card, onChange, onEdit, onDelete }: { card: ExperimentCard;
     <Card className="gap-3 @container" data-ask-id={`card-${card.id}`} data-ask={`experiment card "${card.title}": hypothesis "${card.hypothesis}", change ${card.change === "custom" ? card.custom : ch.label}, metric ${card.metric}, ${card.seeds} seeds`}>
       <CardHeader>
         <CardTitle className="leading-snug">{card.title}</CardTitle>
-        <CardDescription className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="secondary">{card.change === "custom" ? "custom" : ch.label}</Badge>
-          <span className="text-xs">{card.metric} · {card.seeds} seed{card.seeds > 1 ? "s" : ""} · {card.steps.toLocaleString()} steps</span>
-        </CardDescription>
         <CardAction className="flex gap-0.5">
           <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label="Edit"><Pencil /></Button>
           <Button variant="ghost" size="icon-sm" onClick={onDelete} aria-label="Delete"><Trash2 /></Button>

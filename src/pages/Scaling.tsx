@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, BookOpen } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -45,7 +45,6 @@ export function Scaling() {
     <div className="space-y-6 pb-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Scaling</h1>
-        <p className="mt-1 max-w-3xl text-muted-foreground">Make the model bigger and the loss goes down, smoothly enough to fit with a formula. That one observation is why labs build ever larger models. Here it is measured on TinyGPT's family, plus the math to plan your own run.</p>
       </div>
       {!d ? <Waiting what="Scaling runs" file="public/research/scaling.json" load={load} /> : <>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -97,7 +96,6 @@ function LossCurves({ runs, onSummary }: { runs: Run[]; onSummary: (s: string) =
     <Card className="@container">
       <CardHeader>
         <CardTitle>Bigger models learn faster from the same data</CardTitle>
-        <CardDescription>Validation loss for every size, trained with the identical recipe. Tap or hover the chart to read values.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -153,7 +151,6 @@ function PowerLaw({ d, runs, onSummary }: { d: ScalingData; runs: Run[]; onSumma
     <Card className="@container">
       <CardHeader>
         <CardTitle>A straight line on log–log paper</CardTitle>
-        <CardDescription>Final loss vs model size. The fitted curve is {fit ? <span className="font-mono">{fit.formula.replace("alpha", "α")}</span> : "missing"}: a power law plus a floor <span className="font-mono">c</span> no model size can beat on this data.</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-6 @3xl:grid-cols-5 [&>*]:min-w-0">
         <div className="space-y-2 @3xl:col-span-3">

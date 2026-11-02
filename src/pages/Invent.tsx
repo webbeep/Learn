@@ -20,7 +20,6 @@ export function Invent() {
     <div className="space-y-8 pb-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Invent your own</h1>
-        <p className="mt-1 max-w-3xl text-muted-foreground">New architectures don't come from one flash of genius. They come from many small, honest experiments. You now have a real model small enough to train in a minute: here's how to run your own.</p>
       </div>
       <ResearchLoop onSummary={onLoop} />
       <IdeaBoard onUse={(idea) => setSeed((s) => ({ idea, n: (s?.n ?? 0) + 1 }))} />

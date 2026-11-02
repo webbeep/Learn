@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, FastForward, Pause, Play, RotateCcw, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
@@ -106,7 +106,6 @@ export function GraphLab({ onSummary }: { onSummary: (scene: string, s: string) 
     <Card className="@container">
       <CardHeader>
         <CardTitle>The chain rule, one node at a time</CardTitle>
-        <CardDescription>Forward computes values left → right. Backward sends gradients right → left: how much the {preset.lossLabel} would change if you nudged each number.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-center @2xl:justify-between">

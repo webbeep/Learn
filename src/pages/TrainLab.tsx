@@ -4,7 +4,7 @@ import { ChevronDown, CircleAlert, Dices, FileText, Pause, Play, RotateCcw, Sett
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,6 @@ export function TrainLab() {
     <div className="@container space-y-5 pb-10">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Train a GPT yourself</h1>
-        <p className="mt-1 max-w-3xl text-muted-foreground">A brand-new model, filled with random numbers, learning to write in your browser. Same tokenizer and stories as the real TinyGPT. Press Start, then break it on purpose.</p>
       </div>
       <ControlBar s={s} lossNow={lossNow} valNow={valNow} />
       {s.status === "error" && (
@@ -279,7 +278,6 @@ function LossCard({ s, smooth }: { s: TrainState; smooth: number[] }) {
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>Loss, live</CardTitle>
-        <CardDescription>How surprised the model is by the real next token. Validation is measured every 25 steps on a held-out slice it never trains on (short template sentences repeat in the tiny world, so not all of it is new).</CardDescription>
       </CardHeader>
       <CardContent>
         <LineChart askId="train-loss" ask={ask} xMax={xMax} yMax={yMax} height={250}
@@ -307,7 +305,6 @@ function SamplesCard({ s }: { s: TrainState }) {
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>What it writes {cur ? <>at step {cur.step}</> : "now"}</CardTitle>
-        <CardDescription>Fresh samples every 50 steps, same prompts as the real model</CardDescription>
         {s.status === "running" && pick === "now" && <CardAction><Badge variant="secondary" className="gap-1.5"><span className="size-1.5 animate-pulse rounded-full bg-viz-b" />live</Badge></CardAction>}
       </CardHeader>
       <CardContent className="space-y-2">
@@ -338,7 +335,6 @@ function GradCard({ s }: { s: TrainState }) {
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>Gradients flowing back</CardTitle>
-        <CardDescription>How hard the last step pushed on each part (length of its gradient, log scale). The loss sits at the top; the signal travels down.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!v ? <div className="h-40 animate-pulse rounded-lg bg-muted/50" /> : <>
@@ -386,7 +382,6 @@ function AttnCard({ s }: { s: TrainState }) {
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>Attention on a test sentence</CardTitle>
-        <CardDescription>Row = the word doing the looking, column = the earlier word it looks at. {own ? "The sentence comes from the held-out part of your text." : "The real model learns to look from the last “the” back to “red”."}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {!s.cfg.attention ? (
@@ -454,7 +449,6 @@ function WeightsCard({ viz }: { viz: Viz | null }) {
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>Weights</CardTitle>
-        <CardDescription>All weight-matrix numbers inside the blocks, now vs. the random start</CardDescription>
       </CardHeader>
       <CardContent>
         <div ref={ref} data-ask-id="train-weights" data-ask={`Histogram of the block weight matrices at step ${viz.step}: standard deviation ${hst.std.toFixed(4)} now versus ${hst.initStd.toFixed(4)} at random init (normal, std 0.02). Range shown ${hst.lo.toFixed(3)} to ${hst.hi.toFixed(3)}; values beyond are piled into the edge bins.`}>
@@ -492,12 +486,10 @@ const TRIES: { id: string; title: string; watch: string; run: (s: TrainState) =>
 function TryCard({ s }: { s: TrainState }) {
   const [done, setDone] = useState<Record<string, boolean>>(() => { try { return JSON.parse(localStorage.getItem(TRIED) || "{}"); } catch { return {}; } });
   const mark = (id: string, v: boolean) => { const d = { ...done, [id]: v }; setDone(d); try { localStorage.setItem(TRIED, JSON.stringify(d)); } catch { /* private mode */ } };
-  const n = TRIES.filter((t) => done[t.id]).length;
   return (
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>What to try</CardTitle>
-        <CardDescription>Each button sets it up and starts training. {n}/{TRIES.length} tried.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-2 @3xl/viz:grid-cols-2">
         {TRIES.map((t) => (

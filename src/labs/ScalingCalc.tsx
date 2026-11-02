@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Calculator, Clock, Cpu, MemoryStick, Scale } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -99,7 +99,6 @@ export function ComputeCalc({ onSummary }: { onSummary: (s: string) => void }) {
     <Card className="@container">
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Calculator className="size-4" />Plan your own training run</CardTitle>
-        <CardDescription>Back-of-envelope math every model builder does first. Pick a preset, then change anything.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="space-y-2">

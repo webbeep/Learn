@@ -1,6 +1,6 @@
 // "Now in the real model": real gradients of TinyGPT from public/research/gradients.json.
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -41,7 +41,6 @@ export function RealGrads({ onSummary }: { onSummary: (s: string) => void }) {
     <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">Now in the real model</h2>
-        <p className="mt-1 max-w-3xl text-muted-foreground">TinyGPT is the same idea with 170,560 leaves instead of 9. These are its real gradients on one batch of training text: once at random init, once fully trained.</p>
       </div>
       {!d ? <Waiting what="Real gradients" file="public/research/gradients.json" load={load} /> : <>
         {d.batch && (
@@ -68,7 +67,6 @@ function LogitGrads({ ex }: { ex: Grads["example"] }) {
     <Card className="@container lg:col-span-3">
       <CardHeader>
         <CardTitle>Where backprop starts: ∂loss/∂logit</CardTitle>
-        <CardDescription>For the last token, the gradient on each of the 256 logits is just <span className="font-mono">p − onehot</span>: the right answer gets pulled up, every other token gets pushed down by its probability.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="rounded-lg border bg-muted/40 p-3 font-mono text-[13px] leading-relaxed" data-ask-id="rg-prompt" data-ask={`prompt "${ex.prompt}" with correct next token "${ex.target}", loss ${ex.loss.toFixed(3)}`}>
@@ -106,7 +104,6 @@ function LayerNorms({ pl }: { pl: Grads["per_layer_norm_at"] }) {
     <Card className="lg:col-span-2">
       <CardHeader>
         <CardTitle>Gradient size per layer</CardTitle>
-        <CardDescription>Length of the gradient vector for each part of the model. Big at init (it's very wrong); small once trained (little left to fix).</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {layers.map((l, i) => (
@@ -147,7 +144,6 @@ function TensorBars({ tensors }: { tensors: Tensor[] }) {
     <Card className="@container">
       <CardHeader>
         <CardTitle>Every weight matrix gets a gradient</CardTitle>
-        <CardDescription>One bar per tensor, grouped by layer (log scale). {metric === "ratio" ? "Gradient ÷ weight size: how big a nudge is relative to the numbers it nudges." : "Length of each tensor's gradient vector."}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-center">

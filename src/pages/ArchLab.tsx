@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Cpu, FlaskConical, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,7 +81,6 @@ export function ArchLab() {
   const header = (
     <div>
       <h1 className="text-3xl font-semibold tracking-tight">What does each part do?</h1>
-      <p className="mt-1 max-w-3xl text-muted-foreground">Take TinyGPT, remove one part, retrain from the same random start on the same data, compare. Every number here comes from a real training run.</p>
     </div>
   );
   if (!data) return (
@@ -108,7 +107,6 @@ export function ArchLab() {
   const zoomed = zoom === "zoom" && late.length > 0;
   const ra = runs.find((r) => r.id === a), rb = runs.find((r) => r.id === b);
   const pMax = Math.max(0.05, ...runs.flatMap((r) => r.probe_top.map((t) => t.p))); // one shared scale so runs compare honestly
-  const redBest = Math.max(0, ...runs.map((r) => r.probe_top.find((t) => t.token === " red")?.p ?? 0));
   const sortBtn = (key: typeof sort.key, label: string, cls = "") => (
     <button className={cn("inline-flex items-center gap-1 font-medium hover:text-foreground", sort.key === key && "text-foreground", cls)}
       onClick={() => setSort((s) => ({ key, dir: s.key === key ? (s.dir === 1 ? -1 : 1) : 1 }))}>
@@ -123,7 +121,6 @@ export function ArchLab() {
       <Card className="gap-3">
         <CardHeader>
           <CardTitle>Validation loss while training</CardTitle>
-          <CardDescription>{data.steps.toLocaleString()} steps × {data.batch} sequences{data.tokens_per_step ? ` (${data.tokens_per_step.toLocaleString()} tokens/step)` : ""}. Lower is better. Tap a run to show or hide it.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-1.5">
@@ -163,7 +160,6 @@ export function ArchLab() {
       <Card className="gap-3">
         <CardHeader>
           <CardTitle>Results</CardTitle>
-          <CardDescription>Final validation loss, and how much worse than the full model. Tap a column to sort.</CardDescription>
         </CardHeader>
         <CardContent className="px-0 sm:px-6">
           <div className="overflow-x-auto">
@@ -217,7 +213,6 @@ export function ArchLab() {
       <Card className="gap-3">
         <CardHeader>
           <CardTitle>Side by side</CardTitle>
-          <CardDescription>Same prompts, same sampling seed. Only the architecture differs.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 @3xl:grid-cols-2">
@@ -252,9 +247,6 @@ export function ArchLab() {
       <Card className="gap-3">
         <CardHeader>
           <CardTitle>Every run on the test sentence</CardTitle>
-          <CardDescription><span className="font-mono text-xs">{data.probe_prompt} <span className="text-pin">___</span></span>
-            {redBest < 0.5 && <span className="mt-1 block">The right answer is “red”. After {data.steps.toLocaleString()} steps no variant has learned to copy it yet (best: {pct(redBest)}); the full 3,000-step TinyGPT gives it 87%. Bars share one scale.</span>}
-          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 @lg:grid-cols-2 @4xl:grid-cols-4">
           {runs.map((r) => (

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pause, Play, RotateCcw, StepForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -66,7 +66,6 @@ export function FitLab({ onSummary }: { onSummary: (s: string) => void }) {
     <Card className="@container">
       <CardHeader>
         <CardTitle>Fit a tiny dataset</CardTitle>
-        <CardDescription>The same engine, scaled up: a 2-layer net where every weight is a node like the ones above. Each step builds a graph of ~{(nodesPerStep(ds.dim, hidden, ds.X.length) / 1000).toFixed(0)}k nodes, runs it backward, and nudges all {nParams} weights.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <ToggleGroup type="single" variant="outline" value={dsId} onValueChange={(v) => { if (v) { setDsId(v as DatasetId); rebuild(v as DatasetId, hidden); } }} className="grid w-full grid-cols-2 @xl:flex">

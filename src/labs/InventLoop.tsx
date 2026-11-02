@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Beaker, FlaskConical, GitCompare, Lightbulb, Minimize2, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useResearch } from "./charts";
 
@@ -33,7 +33,6 @@ export function ResearchLoop({ onSummary }: { onSummary: (s: string) => void }) 
     <Card className="@container">
       <CardHeader>
         <CardTitle>The research loop</CardTitle>
-        <CardDescription>How new architectures actually get invented: small, fast, honest experiments, repeated. Walk through one real example.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-6 gap-1.5" role="tablist">
