@@ -49,6 +49,7 @@ _SAY = [
     (r"\bDPO\b", "D P O"), (r"\bSFT\b", "S F T"), (r"\be\.g\.", "for example"), (r"\bi\.e\.", "that is"),
     (r"\bvs\.?", "versus"), (r"≈", " about "), (r"×", " times "), (r"→", " to "), (r"−", "minus "),
     (r"\b1e-4\b", "one in ten thousand"), (r"\b1e-3\b", "one in a thousand"), (r"\b3e-3\b", "three in a thousand"),
+    (r"\beach snippet is 64 tokens\b", "each snippet is sixty-four tokens"),  # voice said "six four" here
     (r"\bln\b", "natural log"), (r"\s*—\s*", ", "), (r"\s*–\s*", ", "),
 ]
 
