@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 // Training runs here so the page stays smooth. Protocol: see client.ts.
 import { Tokenizer } from "../model/tokenizer";
-import { Trainer, prepare } from "./trainer";
+import { Trainer, prepare, promptsFrom } from "./trainer";
 import type { TrainConfig } from "./config";
 
 export type In =
@@ -25,9 +25,10 @@ async function setup(cfg: TrainConfig, text: string | null, myRun: number) {
   if (myRun !== run) return; // a newer init arrived while we were fetching
   if (lastText !== text || !data) { data = prepare(tok, text ?? defaultText!); lastText = text; }
   if (data.train.length < cfg.nCtx + 2 || data.val.length < cfg.nCtx + 2) throw new Error("That text is too short to train on: paste at least a few thousand characters.");
-  tr = new Trainer(cfg, tok, data.train, data.val);
+  const own = text !== null ? promptsFrom(tok, data.val) : null;
+  tr = new Trainer(cfg, tok, data.train, data.val, own?.prompts, own?.probe);
   elapsed = 0; sps = 0;
-  post({ type: "ready", params: tr.model.nParams, groups: tr.model.groups(), tokens: { train: data.train.length, val: data.val.length }, chars: (text ?? defaultText!).length });
+  post({ type: "ready", params: tr.model.nParams, groups: tr.model.groups(), tokens: { train: data.train.length, val: data.val.length }, chars: (text ?? defaultText!).length, probe: tr.probe });
   post({ type: "val", step: 0, loss: tr.evalLoss() });
   post({ type: "samples", step: 0, samples: tr.samples() });
   sendViz();

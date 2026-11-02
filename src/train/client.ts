@@ -14,14 +14,14 @@ export interface TrainState {
   samples: { step: number; list: Sample[] } | null;
   history: { step: number; samples: Sample[] }[]; // a few snapshots to compare
   viz: Viz | null; pRed: { step: number; p: number }[];
-  appliedQuery: string;
+  appliedQuery: string; probe: string;
 }
 
 export const trainer = createStore<TrainState>({
   cfg: DEFAULT_CONFIG, status: "loading", error: "", dataKind: "tiny", customText: "", chars: 0,
   params: 0, groups: [], tokens: { train: 0, val: 0 },
   step: 0, tokensSeen: 0, elapsed: 0, sps: 0, lr: DEFAULT_CONFIG.lr,
-  train: [], val: [], samples: null, history: [], viz: null, pRed: [], appliedQuery: "",
+  train: [], val: [], samples: null, history: [], viz: null, pRed: [], appliedQuery: "", probe: "",
 });
 
 let worker: Worker | null = null, run = 0, wantRun = false;
@@ -34,7 +34,7 @@ function ensureWorker() {
     const m = e.data; if (m.run !== run) return;
     switch (m.type) {
       case "ready":
-        trainer.set({ status: "ready", params: m.params, groups: m.groups, tokens: m.tokens, chars: m.chars });
+        trainer.set({ status: "ready", params: m.params, groups: m.groups, tokens: m.tokens, chars: m.chars, probe: m.probe });
         if (wantRun) { wantRun = false; start(); }
         break;
       case "progress":

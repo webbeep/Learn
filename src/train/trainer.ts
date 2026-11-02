@@ -22,7 +22,9 @@ export class Trainer {
   private initW: Float32Array;
   private prevW = new Map<string, Float32Array>(); private lastGrads: { name: string; grad: number }[] = [];
   private lastStream: { name: string; grad: number }[] = [];
-  constructor(public c: TrainConfig, public tok: Tokenizer, public train: Uint8Array, public val: Uint8Array) {
+  private lossEma = NaN;
+  constructor(public c: TrainConfig, public tok: Tokenizer, public train: Uint8Array, public val: Uint8Array,
+    public prompts: string[] = PROMPTS, public probe: string = PROBE) {
     this.model = new GPT(c, tok.vocab.length);
     this.opt = new Optimizer(c.optimizer);
     this.r = rng(c.seed * 7919 + 3);
@@ -61,7 +63,9 @@ export class Trainer {
     if (this.c.clip && norm > 1) { const s = 1 / norm; for (const p of m.params) if (p.t.grad) for (let i = 0; i < p.t.grad.length; i++) p.t.grad[i] *= s; }
     this.opt.step(m.params, this.lrNow());
     this.step++; this.tokensSeen += B * T; this.lastLoss = loss;
-    if (!isFinite(loss) || loss > 20) this.diverged = true;
+    // diverged = not a number, or (smoothed) far worse than random guessing
+    this.lossEma = isNaN(this.lossEma) ? loss : 0.9 * this.lossEma + 0.1 * loss;
+    if (!isFinite(loss) || this.lossEma > Math.log(this.model.V) + 2) this.diverged = true;
     return loss;
   }
 
@@ -83,7 +87,7 @@ export class Trainer {
 
   samples(n = 24, temp = 0.8): Sample[] {
     const r = rng(this.c.seed * 31 + this.step);
-    return noGrad(() => PROMPTS.map((prompt) => {
+    return noGrad(() => this.prompts.map((prompt) => {
       const ids = this.tok.encode(prompt).map((t) => t.id), start = ids.length;
       for (let i = 0; i < n; i++) {
         const l = this.logitsFor(ids).logits.data; let mx = -Infinity;
@@ -127,7 +131,7 @@ export class Trainer {
       weight: Math.sqrt(wn.get(name) ?? 0), update: Math.sqrt(un.get(name) ?? 0) / (Math.sqrt(wn.get(name) ?? 0) + 1e-12),
     }));
     // attention + prediction on the probe prompt
-    const ids = this.tok.encode(PROBE).map((t) => t.id).slice(-c.nCtx), T = ids.length, H = c.nHead;
+    const ids = this.tok.encode(this.probe).map((t) => t.id).slice(-c.nCtx), T = ids.length, H = c.nHead;
     const f = noGrad(() => m.forward(ids, 1, T));
     const last = f.logits.data.subarray((T - 1) * m.V, T * m.V); let mx = -Infinity;
     for (const v of last) if (v > mx) mx = v;
@@ -141,6 +145,16 @@ export class Trainer {
       hist: this.histogram(),
     };
   }
+}
+
+/** For your own text: prompts and a probe sentence taken from the held-out tail (never trained on). */
+export function promptsFrom(tok: Tokenizer, valIds: Uint8Array) {
+  const text = tok.decode(Array.from(valIds));
+  const sents = text.split(/(?<=[.!?\n])\s+/).map((x) => x.trim()).filter((x) => x.split(" ").length >= 6);
+  const pick = (i: number) => sents[Math.floor((i / 4) * sents.length)] ?? text.slice(0, 40);
+  const prompts = [0, 1, 2].map((i) => pick(i).split(" ").slice(0, 4).join(" "));
+  const probe = (sents.find((x) => x.length >= 50 && x.length <= 110) ?? text.slice(0, 90)).trim().split(" ").slice(0, -1).join(" "); // drop the last word: that's what it should predict
+  return { prompts, probe };
 }
 
 /** Tokenize text and split 90/10 into train/val. */

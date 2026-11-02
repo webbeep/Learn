@@ -33,26 +33,27 @@ export const fmtStep = (s: number) => (s >= 10000 ? `${(s / 1000).toFixed(0)}k` 
  * Line chart with a tap/hover crosshair. Values above yMax are drawn clipped at the top edge.
  * askId/ask: the whole chart is clickable for the tutor; each crosshair position is too.
  */
-export function LineChart({ series, xMax, yMax, yMin = 0, refs = [], height = 260, xLabel = "step", askId, ask, fmtY = (v) => v.toFixed(2) }: {
-  series: Series[]; xMax: number; yMax: number; yMin?: number; refs?: RefLine[]; height?: number; xLabel?: string;
-  askId: string; ask: string; fmtY?: (v: number) => string;
+export function LineChart({ series, xMax, xMin = 0, yMax, yMin = 0, refs = [], height = 260, xLabel = "step", askId, ask, fmtY = (v) => v.toFixed(2), endLabels = false }: {
+  series: Series[]; xMax: number; xMin?: number; yMax: number; yMin?: number; refs?: RefLine[]; height?: number; xLabel?: string;
+  askId: string; ask: string; fmtY?: (v: number) => string; endLabels?: boolean;
 }) {
   const [ref, W] = useWidth<HTMLDivElement>();
   const [hx, setHx] = useState<number | null>(null);
-  const H = height, L = 38, R = 12, T = 10, B = 28, iw = Math.max(10, W - L - R), ih = H - T - B;
-  const X = (x: number) => L + (x / Math.max(1, xMax)) * iw;
-  const Y = (y: number) => T + (1 - (Math.min(yMax, Math.max(yMin, y)) - yMin) / (yMax - yMin)) * ih;
-  const yStep = niceStep(yMax - yMin, 5), xStep = niceStep(Math.max(1, xMax), Math.max(2, Math.floor(iw / 80)));
+  const H = height, L = 38, R = endLabels && W > 420 ? 96 : 12, T = 10, B = 28, iw = Math.max(10, W - L - R), ih = H - T - B;
+  const X = (x: number) => L + ((x - xMin) / Math.max(1, xMax - xMin)) * iw;
+  const Y = (y: number) => T + (1 - (Math.min(yMax * 3, Math.max(yMin - (yMax - yMin), y)) - yMin) / (yMax - yMin)) * ih;
+  const clip = `clip-${askId}`;
+  const yStep = niceStep(yMax - yMin, 5), xStep = niceStep(Math.max(1, xMax - xMin), Math.max(2, Math.floor(iw / 80)));
   const yTicks: number[] = []; for (let v = Math.ceil(yMin / yStep) * yStep; v <= yMax + 1e-9; v += yStep) yTicks.push(+v.toFixed(6));
-  const xTicks: number[] = []; for (let v = 0; v <= xMax + 1e-9; v += xStep) xTicks.push(v);
+  const xTicks: number[] = []; for (let v = Math.ceil(xMin / xStep) * xStep; v <= xMax + 1e-9; v += xStep) xTicks.push(v);
   const path = (s: Series) => {
     let d = "", pen = false;
-    s.x.forEach((x, i) => { const y = s.y[i]; if (y == null || !isFinite(y)) { pen = false; return; } d += `${pen ? "L" : "M"}${X(x).toFixed(1)},${Y(y).toFixed(1)}`; pen = true; });
+    s.x.forEach((x, i) => { const y = s.y[i]; if (y == null || !isFinite(y) || x < xMin) { pen = false; return; } d += `${pen ? "L" : "M"}${X(x).toFixed(1)},${Y(y).toFixed(1)}`; pen = true; });
     return d;
   };
   const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect(), px = e.clientX - r.left;
-    setHx(Math.max(0, Math.min(xMax, ((px - L) / iw) * xMax)));
+    setHx(Math.max(xMin, Math.min(xMax, xMin + ((px - L) / iw) * (xMax - xMin))));
   };
   // nearest point per series at the crosshair
   const tip = hx == null ? [] : series.filter((s) => !s.hideInTip && s.x.length).map((s) => {
@@ -72,12 +73,22 @@ export function LineChart({ series, xMax, yMax, yMin = 0, refs = [], height = 26
             <text x={L + iw - 2} y={Y(r.y) - 4} fontSize={10} textAnchor="end" className="fill-muted-foreground">{r.label}</text>
           </g>
         ))}
+        <defs><clipPath id={clip}><rect x={L - 3} y={T - 3} width={iw + 6} height={ih + 6} /></clipPath></defs>
+        <g clipPath={`url(#${clip})`}>
         {series.map((s) => <path key={s.id} d={path(s)} fill="none" stroke={s.color} strokeWidth={s.width ?? 2} strokeDasharray={s.dashed ? "5 4" : undefined} opacity={s.opacity ?? 1} strokeLinejoin="round" strokeLinecap="round" />)}
-        {series.filter((s) => s.dots).map((s) => s.x.map((x, i) => s.y[i] != null && <circle key={s.id + i} cx={X(x)} cy={Y(s.y[i]!)} r={2.5} fill={s.color} stroke="var(--card)" strokeWidth={1.5} />))}
+        {series.filter((s) => s.dots).map((s) => s.x.map((x, i) => s.y[i] != null && x >= xMin && <circle key={s.id + i} cx={X(x)} cy={Y(s.y[i]!)} r={2.5} fill={s.color} stroke="var(--card)" strokeWidth={1.5} />))}
+        </g>
+        {endLabels && W > 420 && (() => {
+          // label each line at its last point, nudged apart so labels never overlap
+          const ends = series.map((s) => { let i = s.y.length - 1; while (i >= 0 && (s.y[i] == null || !isFinite(s.y[i]!))) i--; return i < 0 ? null : { s, x: s.x[i], y: s.y[i]!, py: Y(s.y[i]!) }; })
+            .filter((e): e is NonNullable<typeof e> => !!e && e.y >= yMin && e.y <= yMax).sort((a, b) => a.py - b.py);
+          for (let i = 1; i < ends.length; i++) ends[i].py = Math.max(ends[i].py, ends[i - 1].py + 12);
+          return ends.map((e) => <text key={e.s.id} x={X(e.x) + 6} y={e.py + 3.5} fontSize={10.5} className="fill-foreground">{e.s.label}</text>);
+        })()}
         {hx != null && tip.length > 0 && (
           <g pointerEvents="none">
             <line x1={X(tipX)} x2={X(tipX)} y1={T} y2={T + ih} stroke="var(--foreground)" opacity={0.35} />
-            {tip.map((t) => t.y != null && <circle key={t.s.id} cx={X(t.x)} cy={Y(t.y)} r={4} fill={t.s.color} stroke="var(--card)" strokeWidth={2} />)}
+            {tip.map((t) => t.y != null && t.y <= yMax && t.y >= yMin && <circle key={t.s.id} cx={X(t.x)} cy={Y(t.y)} r={4} fill={t.s.color} stroke="var(--card)" strokeWidth={2} />)}
           </g>
         )}
         <rect x={L} y={T} width={iw} height={ih} fill="transparent" />

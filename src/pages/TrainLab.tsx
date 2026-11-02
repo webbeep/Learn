@@ -29,7 +29,7 @@ const fmtLr = (lr: number) => (lr >= 0.1 ? lr.toFixed(lr >= 1 ? 1 : 2) : lr.toEx
 const fmtNum = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n >= 1e4 ? `${(n / 1e3).toFixed(0)}k` : n.toLocaleString());
 const fmtTime = (s: number) => (s < 60 ? `${s.toFixed(0)}s` : `${Math.floor(s / 60)}m ${String(Math.floor(s % 60)).padStart(2, "0")}s`);
 const fmtG = (g: number) => (g === 0 ? "0" : g >= 0.01 && g < 100 ? g.toFixed(g < 1 ? 3 : 2) : g.toExponential(1));
-function ema(xs: number[], a = 0.05) { const out: number[] = []; let m = xs[0] ?? 0; for (const x of xs) { m = isFinite(x) ? (out.length ? (1 - a) * m + a * x : x) : x; out.push(m); } return out; }
+function ema(xs: number[], a = 0.12) { const out: number[] = []; let m = xs[0] ?? 0; for (const x of xs) { m = isFinite(x) ? (out.length ? (1 - a) * m + a * x : x) : x; out.push(m); } return out; }
 function downsample(xs: number[], max = 500) {
   if (xs.length <= max) return { x: xs.map((_, i) => i + 1), y: xs };
   const k = xs.length / max, x: number[] = [], y: number[] = [];
@@ -70,7 +70,7 @@ export function TrainLab() {
       `Model: ${c.nLayer} layer(s), d_model ${c.dModel}, ${c.nHead} heads, MLP ${4 * c.dModel}, context ${c.nCtx}, vocab 256 (same BPE tokenizer as the real TinyGPT), ${s.params.toLocaleString()} params, ${partsText(c)}.`,
       `Training: ${OPTIM_LABEL[c.optimizer]}, lr ${c.lr} (30-step warmup), batch ${c.batch}×${c.nCtx} tokens, grad clip ${c.clip ? "1.0" : "off"}, seed ${c.seed}. Data: ${s.dataKind === "tiny" ? "tiny-world stories" : "the learner's own text"} (${s.tokens.train.toLocaleString()} train / ${s.tokens.val.toLocaleString()} held-out tokens).`,
       `Step ${s.step}, ${s.sps.toFixed(1)} steps/s, ${s.tokensSeen.toLocaleString()} tokens seen, ${s.elapsed.toFixed(0)} s. Train loss (smoothed) ${isFinite(lossNow) ? lossNow.toFixed(3) : "n/a"}, validation loss ${isFinite(valNow) ? valNow.toFixed(3) : "n/a"} (chance = ln 256 = 5.55; real TinyGPT reached 0.46 after 3000 steps of batch 64).`,
-      s.viz ? `Probe "${PROBE}" → top guesses ${s.viz.probe.map((p) => `"${p.token}" ${pct(p.p)}`).join(", ")} (real TinyGPT: " red" 87%).` : "",
+      s.viz ? `Probe "${s.probe || PROBE}" → top guesses ${s.viz.probe.map((p) => `"${p.token}" ${pct(p.p)}`).join(", ")}${s.dataKind === "tiny" ? ` (real TinyGPT: " red" 87%)` : ""}.` : "",
       s.viz ? `Gradient norms: ${s.viz.groups.map((g) => `${g.name} ${fmtG(g.grad)}`).join(", ")}.` : "",
       s.samples ? `Latest samples (step ${s.samples.step}): ${s.samples.list.map((x) => `"${x.prompt}" → "${x.text}"`).join(" | ")}` : "",
     ].filter(Boolean).join("\n"));
@@ -381,16 +381,16 @@ function AttnCard({ s }: { s: TrainState }) {
   const toks = v?.attn.tokens ?? [];
   const [ref, W] = useWidth<HTMLDivElement>(320);
   const T = toks.length, lab = 64, cell = Math.max(6, Math.min(14, Math.floor((W - lab) / Math.max(1, T))));
-  const redP = s.pRed;
+  const redP = s.pRed, own = s.dataKind === "custom";
   return (
     <Card className="gap-3">
       <CardHeader>
         <CardTitle>Attention on a test sentence</CardTitle>
-        <CardDescription>Row = the word doing the looking, column = the earlier word it looks at. The real model learns to look from the last “the” back to “red”.</CardDescription>
+        <CardDescription>Row = the word doing the looking, column = the earlier word it looks at. {own ? "The sentence comes from the held-out part of your text." : "The real model learns to look from the last “the” back to “red”."}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {!s.cfg.attention ? (
-          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">Attention is switched off: every token only sees itself, so the model can't copy “red” from earlier in the sentence.</div>
+          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">Attention is switched off: every token only sees itself, so the model can't copy {own ? "anything" : "“red”"} from earlier in the sentence.</div>
         ) : (
           <>
             <div className="flex flex-wrap gap-2">
@@ -418,25 +418,25 @@ function AttnCard({ s }: { s: TrainState }) {
           </>
         )}
         {v && (
-          <div className="grid gap-3 @md:grid-cols-2">
-            <div className="space-y-1" data-ask-id="train-probe" data-ask={`After "${PROBE}" the live model (step ${v.step}) predicts: ${v.probe.map((p) => `"${p.token}" ${pct(p.p)}`).join(", ")}. The right answer is " red"; the real TinyGPT gives it 87%.`}>
-              <div className="text-xs text-muted-foreground">Next word after “…now tom has the”</div>
+          <div className="@container"><div className={cn("grid gap-3", !own && "@md:grid-cols-2")}>
+            <div className="space-y-1" data-ask-id="train-probe" data-ask={`After "${s.probe || PROBE}" the live model (step ${v.step}) predicts: ${v.probe.map((p) => `"${p.token}" ${pct(p.p)}`).join(", ")}.${own ? "" : ` The right answer is " red"; the real TinyGPT gives it 87%.`}`}>
+              <div className="truncate text-xs text-muted-foreground">Next token after “…{(s.probe || PROBE).split(" ").slice(-4).join(" ")}”</div>
               {v.probe.map((p) => (
                 <div key={p.token} className="grid grid-cols-[4.5rem_1fr_2.6rem] items-center gap-2 text-xs">
-                  <span className={cn("truncate font-mono", p.token === " red" && "font-semibold text-pin")}>{show(p.token)}</span>
-                  <div className="h-3 rounded-sm bg-muted"><div className={cn("h-full rounded-sm", p.token === " red" ? "bg-pin" : "bg-viz-a")} style={{ width: `${p.p * 100}%` }} /></div>
+                  <span className={cn("truncate font-mono", !own && p.token === " red" && "font-semibold text-pin")}>{show(p.token)}</span>
+                  <div className="h-3 rounded-sm bg-muted"><div className={cn("h-full rounded-sm", !own && p.token === " red" ? "bg-pin" : "bg-viz-a")} style={{ width: `${p.p * 100}%` }} /></div>
                   <span className="text-right tabular-nums">{pct(p.p)}</span>
                 </div>
               ))}
             </div>
-            <div className="min-w-0">
+            {!own && <div className="min-w-0">
               <div className="text-xs text-muted-foreground">Chance of “red” over training</div>
               <LineChart askId="train-pred" ask={`Probability of the correct next token " red" on the probe sentence over training; now ${pct(v.pRed)} at step ${v.step} (real TinyGPT: 87%).`}
                 height={110} xMax={Math.max(50, redP[redP.length - 1]?.step ?? 50)} yMax={1} fmtY={(x) => pct(x)}
                 refs={[{ y: 0.871, label: "real model 87%" }]}
                 series={[{ id: "red", label: "p(red)", color: "var(--viz-pin)", x: redP.map((p) => p.step), y: redP.map((p) => p.p) }]} />
-            </div>
-          </div>
+            </div>}
+          </div></div>
         )}
       </CardContent>
     </Card>
@@ -482,9 +482,9 @@ const TRIES: { id: string; title: string; watch: string; run: (s: TrainState) =>
   { id: "learn", title: "Watch it learn from nothing", watch: "Loss starts at 5.55 (pure guessing) and the samples go from gibberish to real words within ~200 steps.", run: () => reset(DEFAULT_CONFIG, true) },
   { id: "diverge", title: "Set the learning rate to 1", watch: "Steps get so big the loss shoots up instead of down, then explodes.", run: (s) => { setCfg({ lr: 1 }); if (s.status !== "running") start(); } },
   { id: "tiny-lr", title: "Set the learning rate to 0.0001", watch: "Nothing is wrong, it is just painfully slow. The curve barely moves.", run: (s) => { reset({ ...s.cfg, optimizer: "adamw", lr: 1e-4 }, true); } },
-  { id: "no-attn", title: "Turn attention off", watch: "Words still come out, but it can't copy “red” from earlier: the probe's chance of “red” stays low.", run: (s) => reset({ ...s.cfg, attention: false }, true) },
-  { id: "no-pos", title: "Turn positions off", watch: "Without positions the model doesn't directly know word order. How much does the loss suffer?", run: (s) => reset({ ...s.cfg, pos: false }, true) },
-  { id: "no-resid", title: "Small model, no residual", watch: "Compare the gradient bars: without x + f(x), less signal makes it down to the early layers.", run: () => reset({ ...withPreset(DEFAULT_CONFIG, "small"), residual: false }, true) },
+  { id: "no-attn", title: "Turn attention off", watch: "Tokens can no longer share information. On Tiny, 400 steps end near 1.8 instead of about 1.0, and it can't copy “red”.", run: (s) => reset({ ...s.cfg, attention: false }, true) },
+  { id: "no-pos", title: "Turn positions off", watch: "The model no longer knows word order directly. Surprise: on this data it costs only a little (≈1.1 vs ≈1.0 at step 400). Why?", run: (s) => reset({ ...s.cfg, pos: false }, true) },
+  { id: "no-resid", title: "Small model, no residual", watch: "Watch the gradient bars: without x + f(x), the push reaching layer 1 shrinks ~100,000× and the loss stalls near 4.5.", run: () => reset({ ...withPreset(DEFAULT_CONFIG, "small"), residual: false }, true) },
   { id: "sgd", title: "Plain SGD instead of AdamW", watch: "Same model, simpler update rule. Which gets lower after 300 steps?", run: (s) => { reset({ ...s.cfg, optimizer: "sgd", lr: DEFAULT_LR.sgd }, true); } },
   { id: "batch1", title: "Batch size 1", watch: "Each step sees one 32-token snippet: the per-step loss gets very noisy.", run: (s) => { setCfg({ batch: 1 }); if (s.status !== "running") start(); } },
   { id: "own", title: "Train on your own text", watch: "Paste a few pages of anything into Setup → Training text.", run: () => { window.dispatchEvent(new Event("trainlab-open-setup")); setTimeout(() => document.getElementById("train-text")?.scrollIntoView({ behavior: "smooth", block: "center" }), 150); }, stay: true },
