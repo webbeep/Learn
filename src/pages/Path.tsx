@@ -16,6 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { addWish, ask, learner, setScreen, useStore } from "../lib/store";
 import { refreshProfile } from "../lib/api";
 import { Markdown } from "../ask/Markdown";
+import { LevelSelect } from "./Learn";
 
 export function Path() {
   const l = useStore(learner, (s) => s);
@@ -56,6 +57,7 @@ export function Path() {
             </>) : (
               <Empty className="border border-dashed"><EmptyHeader><EmptyTitle>No profile yet</EmptyTitle><EmptyDescription>Ask a few questions anywhere in the app. Click any visual, or press V and talk.</EmptyDescription></EmptyHeader></Empty>
             )}
+            <div className="flex items-center justify-between gap-3"><Label>My experience</Label><LevelSelect /></div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2"><Label>Explanation depth</Label>
                 <ToggleGroup type="single" variant="outline" size="sm" value={l.depth} onValueChange={(v) => v && learner.set({ depth: v as typeof l.depth })} className="w-full">

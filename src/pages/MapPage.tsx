@@ -57,7 +57,7 @@ export function MapPage() {
           <ItemGroup className="grid gap-2 @3xl:grid-cols-3">
             {l.profile.next.slice(0, 3).map((n, i) => (
               <Item key={i} variant="outline" asChild>
-                <a href={n.where === "training" ? "#/training" : n.where === "watch" ? "#/videos" : "#/xray"}>
+                <a href={n.where === "watch" ? "#/videos" : n.where?.match(/^(xray|training|train|backprop|lab|scaling|invent|learn(\/[\w-]+)?)$/) ? `#/${n.where}` : "#/xray"}>
                   <ItemContent><ItemTitle>{n.title}</ItemTitle><ItemDescription>{n.why}</ItemDescription></ItemContent>
                   <ItemActions><ArrowRight className="size-4" /></ItemActions>
                 </a>
