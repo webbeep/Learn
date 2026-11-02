@@ -8,7 +8,7 @@
     "remove it",
     "The shipped"
    ],
-   "new": ""
+   "new": "What does each part of a transformer like TinyGPT actually do? To find out, remove it, retrain from scratch, and see what breaks. We try five cuts, and two resizes with fewer or more layers. Each one is trained with the shipped model's recipe, the same settings as the TinyGPT in this app."
   },
   {
    "orig": "First the control: the full model. Loss 0.45. On our test prompt, Mia gives Tom the red ball, it says red, 98%. The shipped model says 87: same recipe, different batch order. Runs vary. So we also score 100 fresh stories like it: 100 of 100 right.",
@@ -17,55 +17,55 @@
     "Our test prompt",
     "The shipped"
    ],
-   "new": ""
+   "new": "First, the control: the full model we compare against. Its loss, the score for how wrong its guesses are, ends at 0.45. On our test prompt, Mia gives Tom her red ball, so the next word should be red. It says red, with 98 percent. The shipped model says 87 percent. Same recipe, but it saw the training data in a different order. So runs vary. That's why we also score 100 fresh stories like it, checking for the right colour: 100 of 100 right."
   },
   {
    "orig": "No attention. Every token is alone. It's exactly a bigram model: loss 1.64, bigram baseline 1.65. Right colour on 0 of 100 stories.",
    "visuals": "Ablation 'no attention' (120,256 params): Attention removed, so each token only sees itself and cannot copy information from earlier words. Real validation curve (colored) vs baseline (gray): final 1.644 vs 0.450. Probe top tokens: ' end' 10%, ' box' 3.1%, ' house' 3.0%. On 100 generated stories: right colour on top 0/100 (mean p 0.01). One random sample (temperature 0.8): ' kite is saturday.\\nnesday woofinn has a:'.",
    "keep": [],
-   "new": ""
+   "new": "No attention, so every word is alone: it can't look back at earlier ones. That makes it exactly a bigram model, which only uses the current word. Its loss, 1.64, matches the bigram baseline, 1.65. Right colour on 0 of 100 stories."
   },
   {
    "orig": "No positions. Surprise: it barely matters. The causal mask, which only lets each word see earlier ones, already leaks word order. Loss 0.45. Right colour on 100 of 100 stories.",
    "visuals": "Ablation 'no positions' (166,464 params): Positional embeddings removed, so the model knows which words came before but not in what order. Real validation curve (colored) vs baseline (gray): final 0.451 vs 0.450. Probe top tokens: ' red' 97%, ' black' 1.1%, ' purple' 0.9%. On 100 generated stories: right colour on top 100/100 (mean p 0.97). One random sample (temperature 0.8): ' red ball.\\nonce upon a time, there was a'.",
    "keep": [],
-   "new": ""
+   "new": "No positions: we remove the numbers that tell the model where each word sits. Surprisingly, it barely matters. The causal mask, which only lets each word see earlier ones, already leaks word order. Its loss is 0.45, just like the full model. Right colour on 100 of 100 stories."
   },
   {
    "orig": "No MLP. Attention still moves information, so copying survives. Loss 0.46. Right colour on 100 of 100 stories.",
    "visuals": "Ablation 'no MLP' (70,912 params): MLP blocks removed, so the model can still mix tokens but has far less per-token processing and memory. Real validation curve (colored) vs baseline (gray): final 0.457 vs 0.450. Probe top tokens: ' red' 89%, ' purple' 7.4%, ' pink' 2.0%. On 100 generated stories: right colour on top 100/100 (mean p 0.93). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
    "keep": [],
-   "new": ""
+   "new": "No MLP, the small network that works on each word on its own. Attention still moves information between words, so the copying still works. Loss 0.46. Right colour on 100 of 100 stories."
   },
   {
    "orig": "No residuals. It only learned which words are common: 4.50, the unigram level. Right colour on 0 of 100 stories.",
    "visuals": "Ablation 'no residual' (170,560 params): Residual connections removed, so each layer must rebuild the whole signal instead of adding to it. Real validation curve (colored) vs baseline (gray): final 4.502 vs 0.450. Probe top tokens: '.' 9.0%, ' the' 7.2%, '\\n' 5.1%. On 100 generated stories: right colour on top 0/100 (mean p 0.00). One random sample (temperature 0.8): ' daym a. one the toam the a..ied pink no'.",
    "keep": [],
-   "new": ""
+   "new": "No residuals, the shortcuts that let each layer add to the signal instead of rebuilding it. This one only learned which words are common: loss 4.50, the unigram level. Right colour on 0 of 100 stories."
   },
   {
    "orig": "No LayerNorm. It learns the language, loss 0.54, but rarely the trick. Right colour on 17 of 100 stories.",
    "visuals": "Ablation 'no LayerNorm' (169,664 params): LayerNorm removed, so activation sizes are no longer re-scaled and can drift from layer to layer. Real validation curve (colored) vs baseline (gray): final 0.542 vs 0.450. Probe top tokens: ' orange' 14%, ' blue' 12%, ' black' 12%. On 100 generated stories: right colour on top 17/100 (mean p 0.11). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
    "keep": [],
-   "new": ""
+   "new": "No LayerNorm, the step that keeps the numbers at a steady size. It learns the language, loss 0.54, but rarely the copying trick. Right colour on only 17 of 100 stories."
   },
   {
    "orig": "One layer. Loss 0.48, but copying like this typically needs two layers working together. Right colour on 30 of 100 stories.",
    "visuals": "Ablation '1 layer' (70,592 params): Only one block instead of three: less depth to build multi-step patterns. Real validation curve (colored) vs baseline (gray): final 0.476 vs 0.450. Probe top tokens: ' blue' 16%, ' green' 15%, ' black' 15%. On 100 generated stories: right colour on top 30/100 (mean p 0.26). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
    "keep": [],
-   "new": ""
+   "new": "Now the resizes. One layer instead of three. Its loss is 0.48, not far from the full model. But copying like this typically needs two layers working together. Right colour on 30 of 100 stories."
   },
   {
    "orig": "Six layers. Our one test prompt says it failed. But across all the stories, it often gets it right. One prompt can mislead. Right colour on 58 of 100 stories.",
    "visuals": "Ablation '6 layers' (320,512 params): Six blocks instead of three: twice the depth and roughly 1.9× the parameters. Real validation curve (colored) vs baseline (gray): final 0.460 vs 0.450. Probe top tokens: ' black' 22%, ' yellow' 21%, ' purple' 19%. On 100 generated stories: right colour on top 58/100 (mean p 0.60). One random sample (temperature 0.8): ' purple ball.\\nonce upon a time, there wa'.",
    "keep": [],
-   "new": ""
+   "new": "Six layers, twice as deep. Our one test prompt says it failed, since red isn't its top pick. But across all the stories, it often gets it right: the right colour on 58 of 100. So one prompt can mislead."
   },
   {
    "orig": "Line them up. Cutting residuals or attention wrecks it. The rest look alike by loss, yet their copy scores run from 100 down to 17 out of 100. Loss can hide skills. And each is just one run.",
    "visuals": "Leaderboard of real final validation losses (lower = better) with each model's colour-copy score on 100 generated stories: baseline 0.450 (100/100), no positions 0.451 (100/100), no MLP 0.457 (100/100), 6 layers 0.460 (58/100), 1 layer 0.476 (30/100), no LayerNorm 0.542 (17/100), no attention 1.644 (0/100), no residual 4.502 (0/100). One run each; same LR and steps for every variant.",
    "keep": [],
-   "new": ""
+   "new": "Now line them all up, from best loss to worst. Cutting residuals or attention wrecks the model. The rest look alike by loss, yet their colour scores run from 100 down to 17 out of 100. So a good loss can hide a missing skill. And remember, each is just one run, and runs vary."
   },
   {
    "orig": "So: attention moves information, positions add order, MLPs process, residuals and LayerNorm keep it trainable, and depth composes. Now go break one yourself.",
@@ -73,7 +73,7 @@
    "keep": [
     "Now go"
    ],
-   "new": ""
+   "new": "So, in short: attention moves information between words, positions add word order, and MLPs process each word. Residuals and LayerNorm keep it trainable, and depth lets it build patterns step by step. Now go break one yourself in the Architecture lab."
   }
  ]
 }

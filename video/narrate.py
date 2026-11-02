@@ -156,22 +156,32 @@ def words(wav: str) -> list[dict]:
 
 
 _norm = lambda s: re.sub(r"[^a-z0-9]", "", s.lower())
+_NUMWORDS = {"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven",
+             "8": "eight", "9": "nine", "10": "ten", "11": "eleven", "12": "twelve"}
 
 
-def phrase_time(ws: list[dict], phrase: str) -> float | None:
-    """Start time of `phrase` in the aligned words (tolerant to punctuation and number formatting)."""
+def _same(a: str, b: str) -> bool:
+    if a == b:
+        return True
+    if _NUMWORDS.get(a) == b or _NUMWORDS.get(b) == a:
+        return True
+    short, long_ = sorted((a, b), key=len)   # allow plurals / possessives ("token" ~ "tokens"), not "to" ~ "tom"
+    return len(short) >= 4 and long_.startswith(short) and len(long_) - len(short) <= 2
+
+
+def phrase_time(ws: list[dict], phrase: str, after: float = 0.0) -> float | None:
+    """Start time of `phrase` in the aligned words, searching only from `after` seconds on (sync is sequential)."""
     target = [_norm(t) for t in spoken(phrase).split() if _norm(t)]
     if not ws or not target:
         return None
     toks = [_norm(w["w"]) for w in ws]
     k = min(3, len(target))
-    for i in range(len(toks)):
-        if all(i + j < len(toks) and (toks[i + j] == target[j] or toks[i + j].startswith(target[j]) or target[j].startswith(toks[i + j]))
-               for j in range(k)):
-            return ws[i]["s"]
-    for i, t in enumerate(toks):          # fall back to the first word only
-        if t and t == target[0]:
-            return ws[i]["s"]
+    for need in (k, 1):
+        for i in range(len(toks)):
+            if ws[i]["e"] < after:
+                continue
+            if all(i + j < len(toks) and _same(toks[i + j], target[j]) for j in range(need)):
+                return ws[i]["s"]
     return None
 
 
@@ -190,7 +200,9 @@ def _sync_phrases(scene_file: str | None = None) -> list[str]:
     files = [os.path.join(HERE, "scenes", scene_file)] if scene_file else \
         [os.path.join(r, f) for r in (os.path.join(HERE, "scenes"), HERE) for f in os.listdir(r) if f.endswith(".py")]
     for path in files:
-        out.update(re.findall(r"(?:self\.sync|t_of)\(\s*[\"']([^\"'{}]+)[\"']", open(path).read()))
+        src = open(path).read()
+        out.update(re.findall(r'(?:self\.sync|t_of)\(\s*"([^"{}]+)"', src))
+        out.update(re.findall(r"(?:self\.sync|t_of)\(\s*'([^'{}]+)'", src))
     return sorted(out, key=len, reverse=True)
 
 

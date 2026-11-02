@@ -7,7 +7,7 @@
    "keep": [
     "80 seconds"
    ],
-   "new": ""
+   "new": "This video is about how a model learns. At step zero, before any training, it wrote this gibberish. 80 seconds of training later, it wrote this short story. What happened in between?"
   },
   {
    "orig": "Most weights start as tiny random noise. So at first, it spreads its bets almost evenly over all 256 tokens. Its loss is 5.56, almost exactly what pure guessing scores.",
@@ -15,7 +15,7 @@
    "keep": [
     "Its loss"
    ],
-   "new": ""
+   "new": "Weights are the numbers a model learns. Most start as tiny random noise. So at first, the model spreads its bets almost evenly over all 256 tokens, the chunks of text it can pick. Its loss, a score for how wrong its guesses are, is 5.56. That's almost exactly what pure guessing scores."
   },
   {
    "orig": "Training is one game. At every position, predict the next token. The score is cross-entropy, minus the log of the probability you gave the right answer.",
@@ -24,13 +24,13 @@
     "Predict",
     "The score"
    ],
-   "new": ""
+   "new": "Training is one simple game. At every position in the text, predict the next token. Each token on top points to the one that comes after it. The score is called cross-entropy: minus the log of the probability you gave the right answer. Lower is better."
   },
   {
    "orig": "Give the right token 87 percent, and the loss is 0.14. Give it one in 256, and it's 5.55. Confidently wrong is the most expensive of all.",
    "visuals": "Plot of loss = −log p: p = 0.87 → 0.14 (pink), p = 1/256 → 5.55 (blue), p = 0.001 → 6.91 (orange, 'confidently wrong').",
    "keep": [],
-   "new": ""
+   "new": "Give the right token 87 percent, and the loss is only 0.14. Give it one in 256, which is a blind guess, and the loss is 5.55. Being confidently wrong, giving the right answer almost no chance, costs the most of all."
   },
   {
    "orig": "Backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss. Gradient descent takes a small step that way, and repeats. Like a ball rolling downhill. The real optimizer, AdamW, is a smarter version of that step.",
@@ -40,7 +40,7 @@
     "Like a ball",
     "The real optimizer"
    ],
-   "new": ""
+   "new": "So how does the model get better? First, backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss, and by how much. That is the gradient. Then gradient descent takes a small step that way, and repeats. It's like a ball rolling downhill. The real optimizer, the rule TinyGPT actually uses, is AdamW. It's a smarter version of that step."
   },
   {
    "orig": "Each step grades 64 random snippets of 64 tokens at once. That's 4,096 predictions per step, for 3000 steps. That's about 7.7 passes over the training text.",
@@ -50,7 +50,7 @@
     "for 3000",
     "passes"
    ],
-   "new": ""
+   "new": "Each step grades 64 random snippets of 64 tokens at once. Each tiny square is one prediction. That's 4,096 predictions per step, for 3000 steps in all. That's about 7.7 passes over the training text. One pass means reading all of it once."
   },
   {
    "orig": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is held-out text it doesn't train on. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45, so it learned patterns, not pages.",
@@ -61,13 +61,13 @@
     "That",
     "freshly"
    ],
-   "new": ""
+   "new": "Here's the real loss curve, on a log scale, which makes small late gains easier to see. It starts at 5.56, right at chance, which means pure guessing. It crashes below 1 by step 150. Then it keeps grinding down to about 0.46. The dashed line is the loss on held-out text, which the model never trains on. Our tiny world reuses sentence templates, so that text isn't all new. But freshly generated stories score 0.45. So the model learned patterns, not pages. It didn't just memorize the text."
   },
   {
    "orig": "And here's what it wrote along the way, one sample each from the same prompt. Step zero is word salad, though it's made of real words, because many tokens are whole words. Step 100, broken grammar. Step 300, actual sentences.",
    "visuals": "One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 (loss 0.69) well-formed sentences.",
    "keep": [],
-   "new": ""
+   "new": "And here's what the model wrote along the way, one sample at each stage, all from the same prompt. At step zero, it's word salad, a jumble of words that means nothing. It's made of real words, though, because many tokens are whole words. By step 100, the grammar is still broken. By step 300, it writes actual sentences."
   },
   {
    "orig": "At step 1000, it still handed Tom the yellow ball. Wrong. By step 3000, it's the red ball. Correct, and nobody told it why.",
@@ -75,7 +75,7 @@
    "keep": [
     "By step 3000"
    ],
-   "new": ""
+   "new": "At step 1000, the model still handed Tom the yellow ball. That's wrong, because Mia gave him the red one. By step 3000, it's the red ball. That's correct, and nobody ever told the model why."
   },
   {
    "orig": "Nobody wrote a single rule. Predict, measure the miss, nudge, repeat. Next up, train your own.",
@@ -84,7 +84,7 @@
     "Predict",
     "Next up"
    ],
-   "new": ""
+   "new": "Nobody wrote a single rule. It all came from one loop: predict, measure the miss, nudge the weights, repeat. Next up, train your own model."
   }
  ]
 }

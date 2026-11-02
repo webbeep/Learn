@@ -9,13 +9,13 @@
     "The edited",
     "the unigram"
    ],
-   "new": ""
+   "new": "What lets deep networks train? Take every block of TinyGPT and delete its x plus, the part that adds the input back in. Train on the same data for the same 3,000 steps. The normal model gets its loss, the score for how wrong it is, down to 0.45. The edited one stalls at 4.50, about the unigram level: it only learned which words are common."
   },
   {
    "orig": "And it ignores you. Three different prompts, almost the same words back.",
    "visuals": "Real samples from the no-residual model for three different prompts: ' daym a. one the toam the a..ied pink no' | ' day hill a. one the toam the a..i\\n. now' | ' daym a.ed say toam the a..ied. now.. bl'.",
    "keep": [],
-   "new": ""
+   "new": "And the edited model ignores what you write. Give it three different prompts, and you get almost the same words back."
   },
   {
    "orig": "Why? Training sends a gradient backward through every layer. Without the plus, each layer multiplies it by its own slope. In a deep plain stack that's about times 0.2 per layer, and twenty-four of those leave almost nothing.",
@@ -23,7 +23,7 @@
    "keep": [
     "twenty-four"
    ],
-   "new": ""
+   "new": "So why does it break? To learn, training sends a gradient backward through every layer. The gradient tells each learned number which way to move. Without the plus, each layer multiplies it by its own slope, how strongly its output reacts to its input. In a deep stack without the plus, that means multiplying by about 0.2 at every layer. And twenty-four of those in a row leave almost nothing."
   },
   {
    "orig": "Measured in a fresh 24-layer model: without residuals, the gradient reaching the first layer is 10 to the 17 times smaller than at the top. Forward, the signal keeps its size, but every position ends up holding the same vector. With residuals, the gradient is nearly flat.",
@@ -33,7 +33,7 @@
     "Forward",
     "With residuals"
    ],
-   "new": ""
+   "new": "We measured this in a fresh 24-layer model, before any training. The x plus links are called residuals. And without residuals, the gradient reaching the first layer is 10 to the 17 times smaller than at the top, practically zero. Forward, from input to output, the signal keeps its size. But every position in the text ends up holding the same vector, the same list of numbers. With residuals, the gradient is nearly flat: the first layer gets about as much as the top."
   },
   {
    "orig": "Our 3-layer model isn't that deep: its gradient shrinks only about 130 times. So how stuck it gets depends on the starting weights. With the standard small init, it stalls. Start the blocks larger, and the same plain stack does learn. Residuals make depth easy to train, whatever the init.",
@@ -42,7 +42,7 @@
     "standard small",
     "Start the"
    ],
-   "new": ""
+   "new": "But our 3-layer model isn't that deep. Without the plus, its gradient shrinks only about 130 times. So how stuck it gets depends on the init, the random weights the model begins with. With the standard small init, it stalls. Start the blocks with larger weights, and the same stack, still without the plus, does learn. So residuals make depth easy to train, whatever the init."
   },
   {
    "orig": "The plus sign builds a highway. The signal travels straight along it, and each block reads from it and adds an edit back. On the way back, every plus passes the gradient through unchanged, so even the first layer gets a strong signal.",
@@ -51,7 +51,7 @@
     "each block",
     "On the way back"
    ],
-   "new": ""
+   "new": "So the plus sign builds a highway, called the residual stream. The signal travels straight along it, and each block reads from it and adds its own edit back. On the way back, during training, every plus passes the gradient through unchanged. So even the first layer gets a strong signal."
   },
   {
    "orig": "As blocks keep adding edits, the stream itself grows. LayerNorm doesn't shrink it. It hands each block a rescaled copy: subtract the mean, divide by the spread, per token, then a learned gain and bias. Every block reads inputs of a sane size.",
@@ -60,7 +60,7 @@
     "It hands",
     "each block"
    ],
-   "new": ""
+   "new": "But as blocks keep adding edits, the stream itself grows. This is where LayerNorm comes in. It doesn't shrink the stream. It hands each block a rescaled copy. It works on one token, one chunk of text, at a time. It subtracts the mean, the average of its numbers, and divides by their spread. Then a learned gain and bias adjust the result. So every block reads inputs of a sane size."
   },
   {
    "orig": "In real trained 12-layer models, the stream grows about 12 times from bottom to top even with LayerNorm. Without it, 165 times, and validation loss ends at 0.69 instead of 0.62. Remove the residuals instead: 4.57.",
@@ -68,7 +68,7 @@
    "keep": [
     "validation loss"
    ],
-   "new": ""
+   "new": "How much does this matter? In real trained 12-layer models, the stream grows about 12 times from bottom to top, even with LayerNorm. Without it, the stream grows 165 times. And the validation loss, measured on text kept out of training, ends at 0.69 instead of 0.62, so a bit worse. Remove the residuals instead, and it ends at 4.57, far worse."
   },
   {
    "orig": "So every block is two lines: read a normalized copy, add the result back. Virtually every modern transformer keeps both ideas: a residual stream and a normalization layer, LayerNorm or its simpler cousin RMSNorm.",
@@ -76,7 +76,7 @@
    "keep": [
     "add the result"
    ],
-   "new": ""
+   "new": "To sum up, every block is just two lines of code. Each line says the same thing: read a normalized copy, then add the result back. Virtually every modern transformer, the design TinyGPT uses, keeps both ideas. There's a residual stream that keeps gradients alive. And there's a normalization layer that keeps sizes sane, either LayerNorm or its simpler cousin RMSNorm."
   }
  ]
 }

@@ -7,7 +7,7 @@
    "keep": [
     "data,"
    ],
-   "new": ""
+   "new": "This video gives you the whole recipe for training your own model. It comes down to data, batches, steps, and two numbers to keep an eye on."
   },
   {
    "orig": "Start with text. Ours is 5.2 million characters, which the tokenizer turns into 1.69 million tokens. Hold back the last five percent of documents. The model never trains on them. That's your validation set.",
@@ -17,7 +17,7 @@
     "Hold back",
     "validation set"
    ],
-   "new": ""
+   "new": "Start with text. Ours is 5.2 million characters, which the tokenizer turns into 1.69 million tokens, the small chunks of text the model reads. Hold back the last five percent of documents. The model never trains on them, so they can test it fairly. That's your validation set."
   },
   {
    "orig": "One catch. Our tiny world reuses the same sentence templates, so 55 percent of the validation stories also appear word for word in training. Real projects deduplicate before splitting. So we also test on the 1,359 stories that are new combinations.",
@@ -27,7 +27,7 @@
     "Real projects",
     "So we also"
    ],
-   "new": ""
+   "new": "There's one catch. Our tiny world of stories reuses the same sentence templates. So 55 percent of the validation stories also appear word for word in training. That's like seeing the exam questions in advance. Real projects deduplicate before splitting, which means removing repeated copies first. So we also test on the 1,359 stories that are new combinations. The model never saw those word for word."
   },
   {
    "orig": "Each step grabs 32 random windows of 64 tokens, predicts the next token at every position, averages the loss, and nudges every weight once.",
@@ -36,7 +36,7 @@
     "averages",
     "nudges"
    ],
-   "new": ""
+   "new": "Now the training itself. Each step grabs 32 random windows of 64 tokens. Together, those windows make one batch. The model predicts the next token at every position, averages the loss, the score for how wrong those guesses were, and nudges every weight once."
   },
   {
    "orig": "An epoch is one full pass over the training data: about 782 steps here. Our 1,500-step runs see each token about twice, on average. Windows are random, so some tokens get seen more, and some never.",
@@ -45,7 +45,7 @@
     "Our",
     "Windows are"
    ],
-   "new": ""
+   "new": "How much of the data does training actually see? An epoch is one full pass over the training data. Here, that takes about 782 steps. Our 1,500-step runs see each token about twice, on average. But windows are random. So some tokens get seen more often, and some are never seen at all."
   },
   {
    "orig": "Now watch two numbers. Training loss: how well it does on text it studies. Validation loss: held-out text. With all the data they move together, and the deduplicated set lands at 0.51. Here, unseen means new combinations of familiar sentences.",
@@ -54,7 +54,7 @@
     "Validation loss",
     "deduplicated"
    ],
-   "new": ""
+   "new": "Now watch two numbers. Training loss shows how well the model does on the text it studies. Validation loss shows how it does on held-out text it never trains on. With all the data, the two move together, and the deduplicated set, the stories never seen word for word, lands at 0.51. So here, unseen means new combinations of sentences it already knows."
   },
   {
    "orig": "Now the same model and the same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs. Training loss dives to 0.07. Validation loss bottoms out around step 200, then climbs.",
@@ -63,7 +63,7 @@
     "Training loss dives",
     "Validation loss"
    ],
-   "new": ""
+   "new": "Now let's see what goes wrong with too little data. Same model, same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs, so it sees the same text over and over. Training loss dives to 0.07, almost perfect. Validation loss bottoms out around step 200, then climbs back up."
   },
   {
    "orig": "It memorized those few thousand tokens instead of learning the language. That widening gap is overfitting.",
@@ -71,25 +71,25 @@
    "keep": [
     "overfitting"
    ],
-   "new": ""
+   "new": "The model memorized those few thousand tokens instead of learning the language. So it does badly on anything new. That widening gap between the two curves is called overfitting."
   },
   {
    "orig": "Give it more data and the gap closes. 1.7 with four thousand tokens, and by 256 thousand it's already gone. This corpus repeats itself a lot.",
    "visuals": "Four real runs side by side (4k tokens, 32k tokens, 256k tokens, all 1.6M tokens), each with train (yellow) and validation (pink) curves; final gaps (val − train): 1.662, 0.185, 0.005, 0.005.",
    "keep": [],
-   "new": ""
+   "new": "Give it more data, and the gap closes. Here are four runs, each with more data. The gap is 1.7 with four thousand tokens, and by 256 thousand it's already gone. Remember, this corpus, our training text, repeats itself a lot."
   },
   {
    "orig": "While yours trains, check four things. First loss near log of the vocab size. A fast drop, then a slow grind. Validation following training. And no spikes.",
    "visuals": "Checklist: 1) step-0 loss ≈ ln(256) = 5.55 (ours 5.56); 2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / early stop); 4) no spikes or NaN (else lower the learning rate).",
    "keep": [],
-   "new": ""
+   "new": "When you train your own, check four things. The first loss should match pure guessing: the log of the vocab size. You want a fast drop, then a slow grind. Look for validation following training. And no spikes, which mean the learning rate is too high."
   },
   {
    "orig": "That's the whole recipe. Now train one in your browser.",
    "visuals": "Final card: 'now train one in your browser →'.",
    "keep": [],
-   "new": ""
+   "new": "That's the whole recipe: data, batches, steps, and watching the loss. Now train one in your browser."
   }
  ]
 }

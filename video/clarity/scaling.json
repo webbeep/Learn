@@ -5,7 +5,7 @@
    "orig": "Seven TinyGPTs, from 8 thousand to 1.8 million parameters. Same data, same 3.1 million tokens each. Bigger models land lower, with smaller gains at the top.",
    "visuals": "Real validation curves of 7 model sizes trained on the same 3,072,000 tokens: 8.4k params → 0.888, 22k params → 0.672, 36k params → 0.646, 171k params → 0.488, 478k params → 0.474, 834k params → 0.474, 1.8M params → 0.464.",
    "keep": [],
-   "new": ""
+   "new": "Do bigger models do better? Here are seven TinyGPTs, from 8 thousand to 1.8 million parameters, or learned numbers. All read the same 3.1 million tokens of text. The bigger ones reach a lower loss, or error score, but the gains shrink at the top."
   },
   {
    "orig": "Plot final loss against size on a log axis, and the dots fall on a smooth curve: a power law. Every time you multiply the size, the loss above a floor shrinks by a predictable factor. Here it flattens near 0.42, but only for this token budget: the same 171 thousand parameter model trained on four times more tokens reaches 0.45 instead of 0.49.",
@@ -15,7 +15,7 @@
     "Here it",
     "four times"
    ],
-   "new": ""
+   "new": "Now plot each model's final loss against its size. The size axis is a log axis, so equal steps along it mean multiplying the size. The dots fall on a smooth curve called a power law. That means every time you multiply the size, the part of the loss above a floor shrinks by a predictable factor. Here it flattens near 0.42, the floor. But that only holds for this token budget, the amount of text we trained on. The same 171 thousand parameter model, trained on four times more tokens, reaches 0.45 instead of 0.49."
   },
   {
    "orig": "Now plot the same runs against compute. For a tiny budget, small models win. As the budget grows, the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from 8 thousand to 1.8 million parameters.",
@@ -23,7 +23,7 @@
    "keep": [
     "Following"
    ],
-   "new": ""
+   "new": "Next, plot the same runs against compute, the total work done during training. With a tiny budget, small models win. As the budget grows, the best choice keeps shifting to bigger models. Following the lower edge, the winner goes from 8 thousand to 1.8 million parameters. That edge marks the best loss you can get at each budget."
   },
   {
    "orig": "Big labs found the same shape at vastly larger scale. Kaplan and colleagues, 2020: loss follows smooth power laws in parameters, data and compute. Then Chinchilla, 2022: for a fixed budget, grow the model and the training data together. Their 70 billion parameter model saw 1.4 trillion tokens, about 20 per parameter.",
@@ -31,7 +31,7 @@
    "keep": [
     "Then Chinchilla"
    ],
-   "new": ""
+   "new": "Big AI labs found the same shape at a vastly larger scale. In 2020, Kaplan and colleagues showed that loss follows smooth power laws in parameters, data and compute. Then Chinchilla, a study from 2022, looked at a fixed budget. It found you should grow the model and the training data together. Their 70 billion parameter model saw 1.4 trillion tokens, about 20 tokens for every parameter."
   },
   {
    "orig": "By Chinchilla's rule of thumb, derived for huge web-text runs, our 4 biggest models would want more tokens: the largest saw just 1.7 per parameter. But our data repeats itself, so treat that as a rough guide. And real labs often train far past 20 tokens per parameter, to make models cheaper to run.",
@@ -39,7 +39,7 @@
    "keep": [
     "But our data"
    ],
-   "new": ""
+   "new": "So how do our runs measure up? Chinchilla's rule of thumb was worked out for huge runs on web text. By that rule, our 4 biggest models would want more tokens: the largest saw just 1.7 tokens per parameter. But our data repeats itself a lot, so treat that as a rough guide. And real labs often train far past 20 tokens per parameter, to get smaller models that are cheaper to run."
   },
   {
    "orig": "For your own models: train a ladder of small ones first, fit the curve, and predict before you spend. Balance size and data for your budget, and remember where the curve flattens depends on the data. Our fit is seven tiny models, one seed, one learning rate: the shape, not a law.",
@@ -47,7 +47,7 @@
    "keep": [
     "Our fit"
    ],
-   "new": ""
+   "new": "What does this mean for your own models? First, train a ladder of small ones. Then fit the curve through their results, and predict the big one before you spend. Balance size and data for your budget. And remember, where the curve flattens depends on the data. Our fit is seven tiny models with one seed, meaning one random start. And every size used the same learning rate, the step size of training. So take it as the shape, not a law."
   }
  ]
 }

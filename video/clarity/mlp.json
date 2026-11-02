@@ -9,7 +9,7 @@
     "The MLP",
     "two thirds"
    ],
-   "new": ""
+   "new": "Each layer of the model has two parts. Attention lets tokens, chunks of text, share information. Then every token goes off alone, through a small neural network called the MLP. It holds two thirds of each layer's weights, the numbers it learns."
   },
   {
    "orig": "Inside, three steps. Expand the 64 numbers into 256 neurons. Pass each through GELU, which lets positive signals through and squashes negatives to nearly zero. Then project back to 64, and add the result to the token's vector.",
@@ -19,7 +19,7 @@
     "Pass each",
     "Then project"
    ],
-   "new": ""
+   "new": "Inside, there are three steps. First, expand the 64 numbers into 256 neurons, small units that each compute one number. Next, pass each through GELU, a simple curve that lets positive signals through and squashes negatives to nearly zero. Then project back down to 64, and add the result to the token's vector, its running list of numbers."
   },
   {
    "orig": "Here are the real 256 neuron values in layer 3, for the last word of our story. Most stay quiet. Only 18 percent fire above 0.1.",
@@ -27,7 +27,7 @@
    "keep": [
     "Only"
    ],
-   "new": ""
+   "new": "Let's see it for real. Here are all 256 neuron values in layer 3. They're for the last word of our story, 'now Tom has the'. Most stay quiet, close to zero. Only 18 percent fire, with a value above 0.1."
   },
   {
    "orig": "Each neuron's input weights are a pattern it's looking for. Here's one we found by browsing: neuron 1 in layer 1. It fires on 'a' after 'has': right before the thing being owned. Here, a color.",
@@ -37,7 +37,7 @@
     "fires on",
     "Right before"
    ],
-   "new": ""
+   "new": "So what makes a neuron fire? Each neuron's input weights, the numbers that feed into it, are a pattern it's looking for. Here's one we found by browsing: neuron 1 in layer 1. It fires on 'a' after 'has', right before the thing being owned. Here, that's a color: red, and then blue."
   },
   {
    "orig": "In 400 fresh stories, 200 of its 200 strongest firings came right before a color word. And its output weights push, roughly, toward red, purple, black, green. In these stories, a 'color comes next' detector that nobody designed.",
@@ -47,7 +47,7 @@
     "And its output",
     "Output weights"
    ],
-   "new": ""
+   "new": "Is that just luck? We checked 400 freshly generated stories. Of the 200 times it fired hardest, all 200 came right before a color word. And its output weights, the numbers it passes on, push roughly toward red, purple, black and green. That makes those words more likely. So in these stories, it works as a 'color comes next' detector that nobody designed."
   },
   {
    "orig": "The five neurons firing hardest in layer 3, on the final 'the': Number 212 pushes toward so, red and purple. Number 77, toward says and word fragments. Most of them look mixed, with unrelated tokens at the top. That's often called polysemantic.",
@@ -55,7 +55,7 @@
    "keep": [
     "polysemantic"
    ],
-   "new": ""
+   "new": "Now back to layer 3 and the final 'the'. Here are the five neurons firing hardest there, with the tokens each one pushes toward. Number 212 pushes toward 'so', red and purple. Number 77 pushes toward 'says', and bits of words. Most of them look mixed, with unrelated tokens at the top. That's often called polysemantic, meaning many meanings in one neuron."
   },
   {
    "orig": "Attention in layer 2 already fetched red from earlier in the story. This MLP turns that into the prediction. Just before it, red had 1.9 percent. Right after it, 87.",
@@ -63,7 +63,7 @@
    "keep": [
     "Right after"
    ],
-   "new": ""
+   "new": "So how does the answer come together? Attention in layer 2 already fetched red from earlier in the story. This MLP, in the last layer, turns that into the prediction. Just before it, red had only 1.9 percent. Right after it, 87 percent. It goes from a long shot to quite sure."
   },
   {
    "orig": "So where do facts live? One leading view: an MLP works like a key-value memory. Input weights are keys that recognize a situation. Output weights are values that write an answer. Researchers have changed facts a model states with one targeted edit to a single MLP layer. Strong evidence, but not the whole story.",
@@ -73,7 +73,7 @@
     "Input weights",
     "Output weights"
    ],
-   "new": ""
+   "new": "So where does a model store facts? One leading view says an MLP works like a key-value memory, a bit like a dictionary. Input weights are keys that recognize a situation, like 'has a'. Output weights are values that write an answer, like a push toward colors. That's just what our neuron did. Researchers have even changed facts a model states with one targeted edit to a single MLP layer. That's strong evidence, but not the whole story."
   },
   {
    "orig": "Attention moves information between tokens. The MLP transforms it, inside each token. Stack both three times, and the vector at 'the' reads as red. Go poke the neurons in the X-ray.",
@@ -82,7 +82,7 @@
     "The MLP",
     "Go poke"
    ],
-   "new": ""
+   "new": "So, to sum up. Attention moves information between tokens. The MLP looks at each token on its own and transforms it. Stack both three times, and by the end, the vector at 'the' reads as red. Go poke the neurons yourself in the X-ray lab."
   }
  ]
 }

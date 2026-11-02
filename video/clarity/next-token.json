@@ -5,7 +5,7 @@
    "orig": "The model never outputs a word. It outputs 256 numbers. Here's how those turn into one word.",
    "visuals": "A wall of 256 thin bars — the model's real raw scores for every token in the vocab after the prompt; the tallest (pink) is ' red'.",
    "keep": [],
-   "new": ""
+   "new": "How does a model pick its next word? It never outputs a word. Instead, it outputs 256 numbers. That's one score for every token, each small chunk of text it knows."
   },
   {
    "orig": "These raw scores are called logits. For our prompt, red scores 10.4, white 7.7, purple 7.5. Two thirds of the vocab sits below zero.",
@@ -13,7 +13,7 @@
    "keep": [
     "Two thirds"
    ],
-   "new": ""
+   "new": "These raw scores are called logits, and higher means more likely. Our prompt ends with the words, now Tom has the. Red scores highest, at 10.4. White gets 7.7, and purple 7.5. Two thirds of all the tokens score below zero."
   },
   {
    "orig": "Softmax turns them into probabilities. Raise e to each logit, then divide by the total. Exponentials blow small gaps up into big ones, so red ends up with 87 percent.",
@@ -22,19 +22,19 @@
     "Raise e",
     "87 percent"
    ],
-   "new": ""
+   "new": "Softmax then turns these scores into probabilities that add up to one. Raise e to the power of each logit, then divide each by their total. Those powers blow small gaps up into big ones. So red ends up with 87 percent, which means the model is quite sure."
   },
   {
    "orig": "Temperature divides every logit before the softmax. At temperature one, nothing changes.",
    "visuals": "A big 'T = 1.0' dial appears top right and the formula gains '/ T': p = exp(logit / T) / sum of exp(all 256 logits / T); the bars stay at their T = 1 values.",
    "keep": [],
-   "new": ""
+   "new": "Next comes a dial called temperature. It divides every logit before the softmax. Set to one, it changes nothing."
   },
   {
    "orig": "Turn it down to 0.3, and the gaps get stretched. Red jumps to 99.98 percent. Basically deterministic.",
    "visuals": "T slides to 0.3: ' red' grows to 99.98%, every other bar collapses to ~0.",
    "keep": [],
-   "new": ""
+   "new": "Turn it down to 0.3, and the gaps get stretched. Red jumps to 99.98 percent, while the rest nearly vanish. So the pick is basically fixed: almost always red."
   },
   {
    "orig": "Crank it to 2, and everything flattens. Red drops to 32 percent, and almost half the probability leaks into the long tail of junk.",
@@ -42,7 +42,7 @@
    "keep": [
     "long tail"
    ],
-   "new": ""
+   "new": "Now turn it up to 2, and everything flattens out. Red drops to 32 percent. And almost half the probability leaks into the long tail of junk, all those unlikely tokens that don't fit here."
   },
   {
    "orig": "Top k is the safety net. Keep only the k best tokens, zero out the rest, and renormalize. With k equals 3, the junk is gone, and red is back to 67 percent. Its cousin, top p, keeps the fewest tokens whose probabilities add up to p.",
@@ -51,7 +51,7 @@
     "zero out",
     "Its cousin"
    ],
-   "new": ""
+   "new": "Top k is the safety net against that junk. Keep only the k best tokens, zero out the rest, and renormalize. That means scaling the survivors back up so they add up to one again. With k equals 3, the junk is gone. Red is back to 67 percent. Its cousin is top p. It keeps the fewest top tokens whose probabilities add up to p, a share you choose."
   },
   {
    "orig": "Then we roll a weighted die. Lay the probabilities end to end, throw a dart, and take whatever it lands on. Here are 20 rolls at temperature one. 18 came up red, plus one white and one purple.",
@@ -59,7 +59,7 @@
    "keep": [
     "Here are 20"
    ],
-   "new": ""
+   "new": "Then we pick a token by rolling a weighted die. Lay the probabilities end to end, like a strip. Red takes up most of it. Throw a dart, and take whatever token it lands on. Here are 20 rolls at temperature one. 18 came up red, plus one white and one purple. So unlikely tokens still win sometimes."
   },
   {
    "orig": "Sampling matters most when the model is torn. Zoe has a yellow shoe. What color is the shoe? Yellow, 47 percent. Pink, 46. A coin flip. Greedy says yellow, just barely. Sample at temperature one, and it names the wrong color more often than not. Even at 0.3, yellow only gets 52 percent. The model just doesn't know.",
@@ -70,7 +70,7 @@
     "more often",
     "Even at 0.3"
    ],
-   "new": ""
+   "new": "This random pick, called sampling, matters most when the model is torn. Here's a test. The prompt tells it the color of Zoe's shoe. Then it asks: what color is the shoe? Yellow, the right answer, gets 47 percent. Pink gets 46. That's a coin flip. Greedy, which always takes the top token, says yellow, but only just. Sample at temperature one, and it names the wrong color more often than not. Even at 0.3, yellow only gets 52 percent. The model just doesn't know."
   },
   {
    "orig": "Greedy takes the top token every time. Temperature sharpens or flattens the odds. Top k and top p cut off the junk. Then you roll. Go turn the dial yourself in the X-ray.",
@@ -78,7 +78,7 @@
    "keep": [
     "Go turn"
    ],
-   "new": ""
+   "new": "Let's sum up how one word gets picked. Greedy takes the top token every time. Temperature sharpens or flattens the odds. Top k and top p cut off the junk in the long tail. Then you roll the weighted die. Go turn the dial yourself in the X-ray."
   }
  ]
 }

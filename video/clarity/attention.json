@@ -7,13 +7,13 @@
    "keep": [
     "Attention."
    ],
-   "new": ""
+   "new": "How does the last word, 'the', find its way back to 'red'? The answer is attention. It lets each word look back at earlier words. Let's build it from three arrows."
   },
   {
    "orig": "Every token turns its vector into three new ones. A query that asks, what am I looking for. A key that says, here's what I've got. And a value, the info it hands over if it gets picked.",
    "visuals": "The token ' the' spawns three arrows: query (blue) 'what am I looking for?', key (teal) 'what do I contain?', value (orange) 'what do I hand over if picked?'. Note: each = the token's vector × its own learned matrix (W_Q, W_K, W_V).",
    "keep": [],
-   "new": ""
+   "new": "Every token, a chunk of text, carries a vector, a list of numbers. It turns that vector into three new ones. A query, which asks, what am I looking for? A key, which says, here's what I've got. And a value, the information it hands over if it gets picked. Each one comes from multiplying the vector by its own learned grid of numbers, called a matrix."
   },
   {
    "orig": "To score a match, take the dot product of a query with each earlier key. Pointing the same way scores high. At right angles, zero. Opposite, negative.",
@@ -23,7 +23,7 @@
     "right angles",
     "Opposite"
    ],
-   "new": ""
+   "new": "How well does a query match each earlier key? To score it, take the dot product: multiply the matching numbers, then add them up. Arrows pointing the same way score high. At right angles, the score is zero. Opposite arrows score negative."
   },
   {
    "orig": "Do it for every earlier token, and you get one score each. Red's key lines up with the query, so it scores highest.",
@@ -31,7 +31,7 @@
    "keep": [
     "scores highest"
    ],
-   "new": ""
+   "new": "Do this for every earlier token, and you get one score for each. Here are three of them: red, Mia and ball. Red's key lines up with the query, so it scores highest."
   },
   {
    "orig": "Divide by the square root of the vector size. Real heads here use 16 numbers, so divide by 4. That stops scores from growing with size and saturating the softmax. Then softmax turns every score into a positive weight, and the weights add up to one.",
@@ -39,7 +39,7 @@
    "keep": [
     "Then softmax"
    ],
-   "new": ""
+   "new": "First, one small adjustment. Divide each score by the square root of the vector size. In this model, each attention unit is called a head. Each head uses keys of 16 numbers, so we divide by 4. This stops scores from growing just because the vectors are bigger. Big scores would push the next step, softmax, to extremes. Then softmax turns every score into a positive weight, and the weights add up to one. Here, red ends up with almost all the weight."
   },
   {
    "orig": "The output is the weighted sum of the values, so it's mostly the value of whatever matched best. One more matrix mixes the heads' outputs, and the result gets added onto the token's vector.",
@@ -48,7 +48,7 @@
     "weighted sum",
     "One more matrix"
    ],
-   "new": ""
+   "new": "Now use those weights. The output is the weighted sum of the values: scale each value by its weight, then add them up. So it's mostly the value of whatever matched best, here red. One more matrix mixes the outputs of all the heads, and the result gets added onto the token's vector."
   },
   {
    "orig": "Every token asks its own query at the same time, one row each. One rule. No peeking at the future. A causal mask blocks each token from looking at anything after itself, which keeps next-token training honest.",
@@ -56,7 +56,7 @@
    "keep": [
     "A causal mask"
    ],
-   "new": ""
+   "new": "All of this happens for every token at the same time. Each token asks its own query and gets one row in this grid. There's one rule: no peeking at the future. A causal mask blocks each token from looking at anything after itself. That keeps training honest. The model learns by guessing the next token, so it mustn't see the answer."
   },
   {
    "orig": "Now the real thing. Layer two, head four, on our prompt. From the final 'the', it puts 93 percent of its attention on 'red', way back at position three.",
@@ -64,7 +64,7 @@
    "keep": [
     "93"
    ],
-   "new": ""
+   "new": "Now let's look at the real thing: layer two, head four, reading our story. From the final 'the', it puts 93 percent of its attention on 'red', way back at position three. Every other token gets only a thin line."
   },
   {
    "orig": "So red's value gets carried forward, right to the spot where the model has to name a color. Switch this one head off, and red drops from 87 percent to 2. Nobody programmed that. It fell out of training.",
@@ -73,7 +73,7 @@
     "Switch this",
     "Nobody"
    ],
-   "new": ""
+   "new": "So red's value gets carried forward, right to the spot where the model has to name a color. That answers our opening question. Switch this one head off, and the model's confidence in red drops from 87 percent to just 2. Nobody programmed that. It emerged on its own during training."
   },
   {
    "orig": "Each layer has four heads, and each one learns its own habit. Layer one, head four stares at 'now'. Layer two, head one looks at 'ball'. Twelve heads, twelve habits.",
@@ -82,7 +82,7 @@
     "Layer one, head four",
     "Layer two, head one"
    ],
-   "new": ""
+   "new": "That was just one head. There are twelve in all, and each one learns its own habit. Each panel shows where one head looks from the final 'the'. Layer one, head four stares at 'now'. Layer two, head one looks at 'ball'. Four heads in each of three layers makes twelve heads, and twelve habits."
   },
   {
    "orig": "Many heads, many habits, all running in parallel. Go find your favorite head in the X-ray.",
@@ -90,7 +90,7 @@
    "keep": [
     "Go find"
    ],
-   "new": ""
+   "new": "So that's attention: words looking back at earlier words. Many heads, many habits, all running at the same time. Go find your favorite head in the X-ray lab."
   }
  ]
 }

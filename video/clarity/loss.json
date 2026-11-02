@@ -9,13 +9,13 @@
     "make the model guess",
     "Every position"
    ],
-   "new": ""
+   "new": "How can a model learn from raw text, with no answer key? Hide the next token, a small chunk of text, and make the model guess it. Every position becomes a free quiz question. This video is about how those guesses are graded."
   },
   {
    "orig": "Each guess is scored with cross-entropy: minus the natural log of the probability it gave the right token. Sure and right is nearly free. Unsure costs more. Badly wrong costs a lot.",
    "visuals": "Formula: loss = −ln(p[right token]) (natural log); its curve; four real guesses from the story placed on it: ' now' → ' tom' p = 99.70%, loss 0.003; ' the' → ' red' p = 87.07%, loss 0.138; ' a' → ' red' p = 12.43%, loss 2.085; '.' → ' tom' p = 4.52%, loss 3.096.",
    "keep": [],
-   "new": ""
+   "new": "Each guess gets a score called cross-entropy, and that score is the loss for that guess. It's minus the natural log of the probability the model gave the right token. Here's that curve. If it's sure and right, it costs almost nothing. If it's unsure, it costs more. And if it's badly wrong, it costs a lot."
   },
   {
    "orig": "Every guess on our story: 16 of the 25 are nearly free. The spikes are the real coin flips: which color Mia has, which toy, who comes next.",
@@ -23,7 +23,7 @@
    "keep": [
     "The spikes"
    ],
-   "new": ""
+   "new": "Here's the loss for every guess on our story, one bar each. 16 of the 25 are nearly free. The spikes are the real coin flips, where several answers make sense. Which color does Mia have? Which toy? Who comes next?"
   },
   {
    "orig": "The first red is a pure guess. Only 8 colors can follow 'a', since orange takes 'an', so the best possible is 12.5 percent. The model gives 12.4: essentially perfect. The last red follows from the story: 87 percent. Averaged, the story's loss is 0.52.",
@@ -32,7 +32,7 @@
     "The last red",
     "Averaged"
    ],
-   "new": ""
+   "new": "Look at two of those guesses. The first red is a pure guess: nothing earlier tells you Mia's color. Only 8 colors can follow the word a, since you'd say an orange, not a orange. So the best anyone could do is 12.5 percent. The model gives 12.4, which is essentially perfect. The last red can be worked out from the story, so the model gives it 87 percent. Averaged over every guess, the story's loss is 0.52."
   },
   {
    "orig": "Now rewind. With random weights, the model spreads its bets evenly over 256 tokens: a loss of 5.55 per guess. The real step-zero loss: 5.56.",
@@ -41,7 +41,7 @@
     "a loss of",
     "The real step"
    ],
-   "new": ""
+   "new": "Now rewind to the start. With random weights, the numbers a model learns, it spreads its bets evenly over all 256 tokens. Then every guess has a loss of 5.55. The real step-zero loss is 5.56. That's almost exactly the same."
   },
   {
    "orig": "Take e to the loss, and you get perplexity: roughly how many tokens it's choosing between. At step zero, about 260. After training, 1.6 on average: near one for most tokens, more for a fresh color or name.",
@@ -50,7 +50,7 @@
     "At step zero",
     "After training"
    ],
-   "new": ""
+   "new": "There's another way to read the loss. Raise e to the power of the loss, and you get perplexity. That's roughly how many tokens the model is choosing between. At step zero, it's about 260, roughly every token it knows. After training, it's 1.6 on average. That's near one for most tokens, where it's almost sure, and more for a fresh color or name."
   },
   {
    "orig": "Here's the real run: 5.56 at the start, below one by step 150, then 0.46. Held-out text scores 0.46 too. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45: it learned patterns, not pages. Some of what's left is coin flips no model can beat.",
@@ -60,7 +60,7 @@
     "then",
     "freshly generated"
    ],
-   "new": ""
+   "new": "Here's our real training run. It begins at 5.56, drops below one by step 150, and then ends at 0.46. Held-out text, which the model never trains on, scores 0.46 too. But our tiny world reuses sentence templates, so that text isn't all new. Freshly generated stories, though, score 0.45. So it learned patterns, not pages: it didn't just memorize. And some of the loss that's left comes from coin flips, like a random color or name, that no model can beat."
   },
   {
    "orig": "Each step averages 4,096 guesses: 64 snippets of 64 tokens. Single tokens are wildly uneven: 73 percent are nearly free, while the hard 18 percent carry 92 percent of the loss. Yet the batch average barely moves.",
@@ -70,13 +70,13 @@
     "while",
     "Yet the batch"
    ],
-   "new": ""
+   "new": "Each training step averages a batch of 4,096 guesses: 64 snippets of 64 tokens. In this grid, brighter means a higher loss. Single tokens are wildly uneven. 73 percent are nearly free, while the hardest 18 percent carry 92 percent of the loss. Yet the batch average barely moves from one batch to the next."
   },
   {
    "orig": "Why does that work? The gradient of an average is the average of the gradients.",
    "visuals": "Caption: gradient of the average = average of the gradients.",
    "keep": [],
-   "new": ""
+   "new": "Why does averaging work? A gradient says which way to nudge a weight. And the gradient of an average is the average of the gradients."
   },
   {
    "orig": "So every token casts a small vote on how to nudge each weight. The votes disagree, but their average points somewhere steady.",
@@ -84,7 +84,7 @@
    "keep": [
     "their"
    ],
-   "new": ""
+   "new": "So every token casts a small vote on how to nudge each weight. In this toy picture, each gray arrow is one vote. Those votes often disagree, but their average, this thick yellow arrow, points somewhere steady."
   },
   {
    "orig": "Predict, score, average, nudge. Now watch the loss fall in the training lab.",
@@ -92,7 +92,7 @@
    "keep": [
     "Now watch"
    ],
-   "new": ""
+   "new": "Predict the next token, score the guess, average the scores, and nudge the weights. Now watch the loss fall in the training lab."
   }
  ]
 }

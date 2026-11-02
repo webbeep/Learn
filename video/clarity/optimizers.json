@@ -7,7 +7,7 @@
    "keep": [
     "decides"
    ],
-   "new": ""
+   "new": "Here are seven training runs: same model, same data, same 1,000 steps. Only one number changed: the learning rate, which sets the step size. And it decides everything."
   },
   {
    "orig": "Picture the loss as a landscape and the weights as a ball. The gradient is the slope under the ball. Step downhill by the learning rate times the slope. Repeat.",
@@ -16,19 +16,19 @@
     "The gradient",
     "Step downhill"
    ],
-   "new": ""
+   "new": "Picture the loss, our score for how wrong the model is, as a hilly landscape. The weights, the numbers it learns, are a ball on it. The gradient is the slope under the ball. Step downhill by the learning rate times the slope. Then repeat."
   },
   {
    "orig": "Too small: you crawl. Just right: you settle in a few steps. Too big: every step overshoots, bouncing higher and higher.",
    "visuals": "Three toy bowls (illustration): too small (creeps), just right (settles), too big (overshoots, bouncing out of the valley).",
    "keep": [],
-   "new": ""
+   "new": "Here are three toy bowls. If the learning rate is too small, you crawl. Just right, and you settle at the bottom in a few steps. Too big, and every step overshoots, bouncing higher and higher."
   },
   {
    "orig": "The real runs agree. Learning rate one e minus four is still crawling at 1.74. three e minus three reaches 0.55. At 0.1, it thrashes around and ends at 3.72.",
    "visuals": "Real AdamW validation curves: lr 1e-4 (too small) ends at 1.74, lr 3e-3 (best) ends at 0.55, lr 0.1 (too big) ends at 3.72.",
    "keep": [],
-   "new": ""
+   "new": "The real runs agree. Learning rate one e minus four, which is tiny, is still crawling, at a loss of 1.74. Three e minus three reaches 0.55, the best of these three. At 0.1, the steps are too big: it thrashes around and ends at 3.72."
   },
   {
    "orig": "Loss landscapes often have long, narrow valleys. Plain gradient descent zigzags across the walls and creeps along the floor. Momentum adds up past gradients: the back-and-forth parts cancel, and the steady downhill part builds speed.",
@@ -37,7 +37,7 @@
     "Plain",
     "Momentum adds"
    ],
-   "new": ""
+   "new": "Loss landscapes often have long, narrow valleys, like this toy one seen from above. Plain gradient descent, the simple rule from before, zigzags across the walls. It only creeps along the floor. Momentum adds up past gradients, like a heavy ball that keeps rolling. The back-and-forth parts cancel out. The steady downhill part builds speed."
   },
   {
    "orig": "On the real model, the best plain SGD ends at 0.74. With momentum, 0.57, at a lower learning rate, since momentum sums gradients.",
@@ -46,7 +46,7 @@
     "Plain",
     "With momentum"
    ],
-   "new": ""
+   "new": "Now the real model. The best run of plain SGD, the simple rule we just saw, ends at 0.74. With momentum, it reaches 0.57. That's at a lower learning rate, since momentum sums gradients, which makes its steps bigger."
   },
   {
    "orig": "Here's the catch. At step zero, typical gradient sizes differ 274 times between weight tensors. One learning rate can't suit them all.",
@@ -54,7 +54,7 @@
    "keep": [
     "differ"
    ],
-   "new": ""
+   "new": "But here's the catch. The weights come in separate groups, called tensors. At step zero, typical gradient sizes differ hugely between these weight tensors. The biggest is 274 times the smallest. So one learning rate can't suit them all."
   },
   {
    "orig": "Adam keeps two running averages for every weight: the gradient, which is momentum, and the gradient squared. Dividing one by the square root of the other gives each weight its own step size.",
@@ -65,7 +65,7 @@
     "gradient squared",
     "Dividing"
    ],
-   "new": ""
+   "new": "Adam fixes this. For every weight, it keeps two running averages, updated every step. On top is the average of the gradient. That's the gradient, smoothed out, which is momentum. Below is the average of the gradient squared: that weight's typical gradient size. Dividing one by the square root of the other gives each weight its own step size."
   },
   {
    "orig": "AdamW adds weight decay, a small shrink of every weight each step, applied directly to the weights. In this one sweep its good range spans 10 times; momentum SGD's, 3; plain SGD never got close. That forgiveness is a big reason it's the usual default.",
@@ -73,7 +73,7 @@
    "keep": [
     "Plain"
    ],
-   "new": ""
+   "new": "AdamW adds weight decay: a small shrink of every weight at each step, applied directly to the weights. This grid shows every run in this one sweep, and teal boxes came close to the best. For AdamW, the biggest good learning rate is 10 times the smallest. For SGD with momentum, just 3 times. Plain SGD never got close. That forgiveness, not needing a perfect learning rate, is a big reason AdamW is the usual default."
   },
   {
    "orig": "Our real recipe also uses a schedule: warm up for 100 steps while Adam's averages are still noisy, then decay along a cosine so the model settles. The sweep kept the rate constant on purpose.",
@@ -82,7 +82,7 @@
     "warm up",
     "then decay"
    ],
-   "new": ""
+   "new": "Our real recipe for TinyGPT also changes the learning rate over time. That's called a schedule. First, warm up for 100 steps. The rate rises gradually while Adam's averages are still noisy. Then decay along a cosine curve. The rate falls smoothly toward zero, so the model settles. The sweep kept the rate constant on purpose."
   },
   {
    "orig": "So: start with AdamW, sweep the learning rate in steps of three, warm up then decay, and if the loss spikes, turn it down.",
@@ -91,7 +91,7 @@
     "warm up",
     "then decay"
    ],
-   "new": ""
+   "new": "So here's the recipe. Start with AdamW. Sweep the learning rate in steps of three, trying each value three times bigger than the last. Warm up, then decay. And if the loss suddenly spikes, turn the learning rate down."
   }
  ]
 }

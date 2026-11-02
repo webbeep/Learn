@@ -8,7 +8,7 @@
     "says red",
     "87"
    ],
-   "new": ""
+   "new": "Mia gives her red ball to Tom. Now Tom has the... what? This tiny GPT, a model that predicts the next word, says red. It's 87 percent sure. Nobody told it the rules."
   },
   {
    "orig": "Three layers. 170 thousand parameters. Trained for 80 seconds on a CPU. About a million times smaller than GPT-3.",
@@ -16,7 +16,7 @@
    "keep": [
     "a million"
    ],
-   "new": ""
+   "new": "And this model is tiny. It has three layers and 170 thousand parameters, the numbers it learns. It was trained for 80 seconds on an ordinary CPU. That's about a million times smaller than GPT-3."
   },
   {
    "orig": "Step one, chop the text into tokens. Spaces stick to the front of words, and every chunk gets an ID number. 23 tokens.",
@@ -25,7 +25,7 @@
     "Spaces",
     "23 tokens"
    ],
-   "new": ""
+   "new": "Step one: chop the text into tokens, the small chunks the model reads. Spaces stick to the front of words. Every chunk gets an ID number, since models only work with numbers. Our story comes to 23 tokens."
   },
   {
    "orig": "Each ID grabs a row of 64 numbers from a lookup table, its embedding. Add a position vector, and every token becomes a point in 64-dimensional space.",
@@ -33,7 +33,7 @@
    "keep": [
     "Add a position"
    ],
-   "new": ""
+   "new": "Step two: each ID grabs a row of 64 numbers from a lookup table. That row, called an embedding, stands for the token. Add a position vector, another list of numbers that marks where the token sits. Now every token is a point in 64-dimensional space."
   },
   {
    "orig": "Squash those 64 numbers down to two, and you can see what it learned. Names land in one neighborhood. Colors land in another. Nobody told it that.",
@@ -42,13 +42,13 @@
     "Names",
     "Colors land"
    ],
-   "new": ""
+   "new": "We can't picture 64 numbers at once. So let's squash them down to two, and draw every token as a dot. Now you can see what it learned. Names land in one neighborhood. Colors land in another, close to things like ball and kite. Nobody told it that."
   },
   {
    "orig": "Now the tokens talk. In every attention layer, each token looks back at the tokens so far, itself included, and pulls in whatever looks useful.",
    "visuals": "The 23 tokens slide into a column; on the right, the last token ' the' is the query. Lines fan out from it to the tokens so far, itself included (on-screen caption: layer 2, averaged over its 4 heads; line thickness = attention weight).",
    "keep": [],
-   "new": ""
+   "new": "Step three: the tokens talk to each other. This is called attention, and every layer does it. Each token looks back at the tokens so far, itself included, and pulls in whatever looks useful. Here, the last 'the' looks back, and thicker lines mean more attention."
   },
   {
    "orig": "One head in layer two, looking from the last 'the', puts 93 percent of its attention on 'red'. Switch that head off, and red drops from 87 percent to 2. On stories like this, it fetches the handed-over item's color.",
@@ -58,7 +58,7 @@
     "Switch that",
     "87"
    ],
-   "new": ""
+   "new": "Each layer's attention is split into four heads, which each learn to look for different things. Watch one head in layer two. From the last 'the', it puts 93 percent of its attention on 'red'. Switch that head off, and the chance of red drops from 87 percent to just 2. So on stories like this one, this head fetches the color of the item that was handed over."
   },
   {
    "orig": "Attention moves information between tokens. Then a small MLP works on each token alone. Each one adds its result onto the token's vector, the residual stream. That pair is a layer, and this model stacks three.",
@@ -68,7 +68,7 @@
     "Each one adds",
     "stacks three"
    ],
-   "new": ""
+   "new": "Step four: the layers. Attention moves information between tokens. Then a small MLP, a simple neural network, works on each token alone. Each one adds its result onto the token's vector, the running list of numbers for that token. That running total is called the residual stream. One attention plus one MLP make a layer, and this model stacks three."
   },
   {
    "orig": "Peek at its best guess after each layer. Layer one says 'the', layer two says 'white', and only the final MLP locks in red, at 87 percent. Layer two fetched the color, MLP three turns it into the answer.",
@@ -76,7 +76,7 @@
    "keep": [
     "87"
    ],
-   "new": ""
+   "new": "Here's a peek at its best guess at each stage, as if we stopped right there. Layer one says 'the'. Layer two says 'white', which is at least a color. Only the final MLP locks in red, at 87 percent. So layer two fetched the color, and MLP three turned it into the answer."
   },
   {
    "orig": "The final vector is scored against all 256 tokens, and softmax turns the scores into probabilities. Red 87 percent, white 6, purple 5, crumbs for the rest.",
@@ -84,13 +84,13 @@
    "keep": [
     "87"
    ],
-   "new": ""
+   "new": "Step five: turn that into a prediction. The final vector is compared with all 256 tokens it knows, giving each one a score. Then softmax turns the scores into probabilities, chances that add up to one. Red gets 87 percent, white 6, purple 5, and the rest get crumbs."
   },
   {
    "orig": "Take the top pick, append it, run it again. Red. Ball. Period. Newline. Once upon a time. Always taking the top pick is greedy. Rolling weighted dice is sampling.",
    "visuals": "Greedy decoding: the context '… now tom has the' gets the model's top pick appended each step (' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time', with their probabilities); the row slides left as it grows, with a loop arrow feeding the output back in.",
    "keep": [],
-   "new": ""
+   "new": "Step six: pick and repeat. Take the top pick, add it to the end, and run it again. Out comes red, then ball, a period, a newline, and once upon a time. Always taking the top pick is called greedy. Rolling weighted dice, so likely tokens come up more often, is called sampling."
   },
   {
    "orig": "That's GPT. Text in, probabilities out, one token at a time. Now go poke it in the X-ray.",
@@ -98,7 +98,7 @@
    "keep": [
     "Now go poke"
    ],
-   "new": ""
+   "new": "That's GPT. Text goes in and becomes tokens, then numbers. They flow through the layers, and out come probabilities, one token at a time. Now go poke it in the X-ray lab."
   }
  ]
 }

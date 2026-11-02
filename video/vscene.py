@@ -75,12 +75,12 @@ class Narration:
     def left(self):
         return max(0.0, self.dur - self.elapsed)
 
-    def t_of(self, phrase: str) -> float:
+    def t_of(self, phrase: str, after: float = 0.0) -> float:
         i = self.text.lower().find(phrase.lower())
         if i < 0:
             raise ValueError(f"phrase {phrase!r} not in line")
         if self.wav:  # exact time from word alignment when available
-            t = narrate.phrase_time(narrate.words(self.wav), phrase)
+            t = narrate.phrase_time(narrate.words(self.wav), phrase, after)
             if t is not None:
                 return min(t, self.dur)
         sp = getattr(self, "spoken", self.text)
@@ -127,7 +127,7 @@ class VScene(Scene):
     def sync(self, phrase: str, lead: float = 0.15):
         """Wait until (approximately) `phrase` is being spoken in the current line."""
         ln = self._line
-        target = ln.t_of(phrase) - lead
+        target = ln.t_of(phrase, after=max(0.0, ln.elapsed - 0.4)) - lead
         if target - ln.elapsed > 0.02:
             self.wait(target - ln.elapsed)
 

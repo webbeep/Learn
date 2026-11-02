@@ -8,7 +8,7 @@
     "Which of",
     "one sweep"
    ],
-   "new": ""
+   "new": "TinyGPT guessed red at 87 percent. That still leaves some loss, our score for how wrong it was. Which of its 170,560 weights, the numbers it learns, deserve the blame? And how much? Backpropagation, or backprop, answers that for all of them, in one sweep backwards."
   },
   {
    "orig": "A toy version first. Forward: two times three is six, plus one is seven. That misses the target five by two. Squared, the loss is four.",
@@ -19,7 +19,7 @@
     "That misses",
     "Squared"
    ],
-   "new": ""
+   "new": "Let's start with a toy version. Here, x is two, and w, the weight, is three. Going forward, two times three is six, plus one is seven. That misses the target, five, by two. Squared, the loss is four."
   },
   {
    "orig": "Now backwards. The slope at z is twice the miss: four. A plus node passes blame straight through: a and b get four. A times node scales it by the other input: w gets eight, x gets twelve.",
@@ -31,7 +31,7 @@
     "w gets",
     "x gets"
    ],
-   "new": ""
+   "new": "Now we go backwards, passing blame from the loss back to the inputs. The slope at z is how fast the loss changes when z moves. Here it's twice the miss: four. A plus node passes blame straight through. So a and b each get four. A times node scales the blame by the other input. So w gets eight, and x gets twelve."
   },
   {
    "orig": "Brute-force check: nudge w by a hair, and the loss moves eight times as much. Each node just multiplies the blame from above by its own local slope.",
@@ -40,7 +40,7 @@
     "Each node",
     "slope"
    ],
-   "new": ""
+   "new": "Let's check that the brute-force way. Nudge w by a hair, a tiny amount, and the loss moves eight times as much. That's just what we predicted. So the rule is simple. Each node just multiplies the blame from above by its own local slope, and passes it on."
   },
   {
    "orig": "Now the real thing. Each output logit's blame is its probability, minus one for the right answer. Red: minus 0.13, push up. White and purple: plus, push down.",
@@ -49,7 +49,7 @@
     "Red:",
     "White and"
    ],
-   "new": ""
+   "new": "Now the real thing. The model gives each token, each possible next piece of text, a final score called a logit. Each logit's blame is its probability, minus one if it's the right answer. Red: minus 0.13, so push its score up. White and purple: plus, so push theirs down."
   },
   {
    "orig": "That blame flows down through all three layers. Where paths merge, like the residual stream, blames add up. From this one prediction, 167,744 weights get some blame.",
@@ -57,7 +57,7 @@
    "keep": [
     "Where paths"
    ],
-   "new": ""
+   "new": "That blame flows down through all three layers, from the output back to the input. Where paths merge, like the residual stream, blames add up. That stream is the running total that every layer adds to. From this one prediction, 167,744 weights get some blame, nearly all of them."
   },
   {
    "orig": "One real weight: gradient minus 0.07. Negative means: increase me, and the loss drops. A plain step at learning rate 0.003 adds 0.0002.",
@@ -65,7 +65,7 @@
    "keep": [
     "A plain step"
    ],
-   "new": ""
+   "new": "Look at one real weight. Its gradient, its share of the blame, is minus 0.07. Negative means: increase me, and the loss drops. A plain step at learning rate 0.003, which sets the step size, adds 0.0002."
   },
   {
    "orig": "Take that step on every weight at once, and it overshoots: red falls to 51 percent. TinyGPT's training clips gradients longer than one, and this one is 7.95. Clipped, red rises to 87.5.",
@@ -73,13 +73,13 @@
    "keep": [
     "Clipped,"
    ],
-   "new": ""
+   "new": "But take that step on every weight at once, and it overshoots: red falls to 51 percent. So TinyGPT's training clips the gradient whenever its overall length is more than one, scaling it down to length one. This gradient's length is 7.95, far too long. Clipped, red rises to 87.5, a small gain in the right direction."
   },
   {
    "orig": "And real training averages blame over 4,096 predictions per batch, uses 0.003 only as a cosine schedule's peak, and lets AdamW set each weight's step.",
    "visuals": "Real training differs from the toy step: averages over 4,096 predictions per batch, clips the gradient only when its length exceeds 1, uses lr 0.003 as the peak of a warmup + cosine schedule, and AdamW adapts each weight's step size.",
    "keep": [],
-   "new": ""
+   "new": "Real training is different. It averages blame over each batch, a group of 4,096 predictions. It uses 0.003 only as the peak of a cosine schedule, which ramps the rate up, then down. And it lets AdamW, a smarter update rule, set each weight's step."
   },
   {
    "orig": "Why does backward cost about twice forward? Each forward matrix multiply needs two going back: blame for its inputs, and for its weights. So a training step is roughly three forward passes.",
@@ -89,7 +89,7 @@
     "and for its weights",
     "So a training"
    ],
-   "new": ""
+   "new": "Why does the backward pass cost about twice the forward pass? The model's main work is matrix multiplies, which combine big grids of numbers. Each forward matrix multiply needs two going back. It must work out blame for its inputs, and for its weights. So a training step costs roughly three forward passes."
   },
   {
    "orig": "Forward, backward, nudge. In PyTorch, loss dot backward does the middle step for you. Go watch the gradients flow.",
@@ -98,7 +98,7 @@
     "In PyTorch",
     "Go watch"
    ],
-   "new": ""
+   "new": "Go forward to get the loss. Go backward to share the blame. Then nudge every weight. In PyTorch, a coding library, loss dot backward does the middle step for you. Go watch the gradients flow."
   }
  ]
 }

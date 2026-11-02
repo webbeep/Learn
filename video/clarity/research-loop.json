@@ -5,7 +5,7 @@
    "orig": "Inventing a new model isn't one big idea. It's a loop: a hypothesis, the smallest experiment that could test it, a baseline, one change, an honest comparison, and only then, scale up what wins. Let's run it, for real, on TinyGPT.",
    "visuals": "The research loop as six pills around a circle: hypothesis → smallest experiment → baseline → change ONE thing → compare across seeds → scale up what wins → back to hypothesis.",
    "keep": [],
-   "new": ""
+   "new": "How do people invent a better model? It isn't one big idea. It's a loop. You start with a hypothesis, a guess you can test. Then you design the smallest experiment that could test it. You set up a baseline, the unchanged model to compare against. You make one change, and run an honest comparison. And only then do you scale up what wins. Let's run this loop, for real, on TinyGPT."
   },
   {
    "orig": "Hypothesis: TinyGPT doesn't need its position embeddings. Attention by itself ignores word order, but the causal mask leaks some: each token sees a different number of tokens before it. So maybe it can work out positions on its own.",
@@ -14,7 +14,7 @@
     "but the causal",
     "So maybe"
    ],
-   "new": ""
+   "new": "Here's our hypothesis: TinyGPT doesn't need its position embeddings. Those are the numbers that tell each token, each small chunk of text, where it sits. Attention, where tokens look back at earlier ones, ignores word order by itself. But the causal mask, which hides every later token, leaks some. Each token sees a different number of tokens before it. So maybe the model can work out positions on its own."
   },
   {
    "orig": "The smallest test: short runs of 600 steps, a few minutes at most on two CPU threads. Same code, same data, same batches, same seed. The baseline is unchanged TinyGPT; the only difference is one line.",
@@ -23,7 +23,7 @@
     "The baseline",
     "the only difference"
    ],
-   "new": ""
+   "new": "The smallest test is two short runs of 600 training steps, a few minutes at most on two CPU threads. Both use the same code, the same data and the same seed, the number behind the random start. They even see the same batches, the groups of examples trained on at each step. The baseline is unchanged TinyGPT, and the only difference is one line."
   },
   {
    "orig": "Then compare, on held-out text, measured on the exact same batches. Baseline: 0.65. No positions: 0.68. Removing them hurt, by about 0.03.",
@@ -33,7 +33,7 @@
     "No positions",
     "Removing"
    ],
-   "new": ""
+   "new": "Then compare the loss, which scores how wrong the guesses are. It's measured on held-out text, kept apart from training, on the exact same batches. Baseline: 0.65. No positions: 0.68. Lower is better, so removing them hurt, by about 0.03."
   },
   {
    "orig": "But one seed could be luck. So we ran two more seeds per arm, each with its own initial weights and batch order. Both numbers move, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap beats the seed-to-seed spread.",
@@ -43,7 +43,7 @@
     "yet every seed",
     "No positions"
    ],
-   "new": ""
+   "new": "But one seed could just be luck. So we ran two more seeds for each arm, meaning each version of the model. Each seed gives its own starting weights and batch order. Both numbers move around, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap is bigger than the spread from seed to seed."
   },
   {
    "orig": "Three classic traps. Different compute: compare against the released model, trained five times longer, and the gap looks 7 times bigger than it is. Unfair tuning: the learning rate was picked for the baseline, not the variant. And leakage: 55 percent of held-out lines, 39 percent of the text, also appear in training.",
@@ -51,17 +51,17 @@
    "keep": [
     "The baseline"
    ],
-   "new": ""
+   "new": "Now, three classic traps. Different compute means unequal amounts of training. Compare against the released model, which trained five times longer, and the gap looks 7 times bigger than it really is. Unfair tuning: the learning rate, the size of each training step, was picked for the baseline, not for the variant. And leakage: 55 percent of the held-out lines, 39 percent of the text, also appear in the training data. So the model may have seen them before."
   },
   {
    "orig": "So at 600 steps, positions win. Now scale it up. The app's full 3,000-step ablation finds the gap all but closes: 0.450 versus 0.451. And papers report causal models can learn position without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis.",
    "visuals": "Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? At 600 steps (mean of 3 seeds) baseline 0.6543 vs no positions 0.6896; at 3,000 steps (the app's ablation, 1 seed) 0.4502 vs 0.4511: the gap nearly closes. Haviv et al. 2022: causal LMs without positional encodings still learn position. CTA: Invent lab.",
    "keep": [
-    "The app",
+    "The app's full",
     "And papers",
     "Your turn"
    ],
-   "new": ""
+   "new": "So at 600 steps, keeping positions wins. Now scale it up: more seeds, longer runs, a bigger model, and check whether the gap holds. The app's full 3,000-step ablation, a longer run with positions removed, finds the gap all but closes: 0.450 versus 0.451. And papers report that causal models, which only look backward, can learn position without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis and test it."
   }
  ]
 }

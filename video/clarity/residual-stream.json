@@ -9,13 +9,13 @@
     "reads it",
     "adds a note"
    ],
-   "new": ""
+   "new": "Every token carries one vector, a list of numbers, through the whole model. That vector is called the residual stream. Think of it as a whiteboard. The six blocks above it, an attention and an MLP for each layer, never wipe it. Each one reads it, then adds a note, which can even cancel what's there."
   },
   {
    "orig": "In code it's one line per block. x equals x, plus something. Nothing is overwritten, only added.",
    "visuals": "The two lines of code that define the stream: x = x + attention(LayerNorm(x)); x = x + MLP(LayerNorm(x)), repeated for each of the 3 layers. A dot travels along the stream picking up each block's note.",
    "keep": [],
-   "new": ""
+   "new": "In code, it's one line per block: x equals x, plus something. Here x is the stream, and the something is that block's note. Nothing is overwritten, only added."
   },
   {
    "orig": "Here's the real stream for the last word of our story. It starts as token plus position. Block by block, notes pile up, and its length grows from 1.19 to 3.23.",
@@ -23,7 +23,7 @@
    "keep": [
     "Block by block"
    ],
-   "new": ""
+   "new": "Here's the real stream for the last word of our story, 'now Tom has the'. It starts as the token's own numbers plus numbers for its position. Block by block, notes pile up. Its length, a measure of how big the vector is, grows from 1.19 to 3.23."
   },
   {
    "orig": "Notes add as arrows, not lengths: MLP 1's note even makes the board shorter. Most are around length one, but the last MLP writes a big one, 3.68, larger than the whole board before it.",
@@ -31,19 +31,19 @@
    "keep": [
     "But the last"
    ],
-   "new": ""
+   "new": "Next to each strip is the length of the note that block added. Notes add as arrows, not lengths. A note can point partly against the board, and MLP 1's note even makes the board shorter. Most notes are around length one, but the last MLP writes a big one, 3.68. That's larger than the whole board before it."
   },
   {
    "orig": "Because every block shares one board, you can read it at any depth with the model's own final readout. That's the logit lens: a rough peek, since early layers were never trained to be read this way.",
    "visuals": "Four checkpoints on the stream (token + position, after layer 1, after layer 2, after layer 3) will each be decoded with the model's final LayerNorm + unembedding + softmax: the logit lens.",
    "keep": [],
-   "new": ""
+   "new": "Because every block shares one board, you can read it at any point along the way. Just use the model's own final readout, the step that turns the board into next-token guesses. That's called the logit lens. It's only a rough peek, though, since early layers were never trained to be read this way."
   },
   {
    "orig": "Straight after embedding, it just says 'the', 100 percent: the readout reuses the embedding table, so it sees the token it's sitting on. After layer 1, still 'the', 33. After layer 2, 'white', 12. After layer 3, red, 87.",
    "visuals": "Logit-lens top-3 at each checkpoint for the final ' the': token + position: ' the' 100.0%, ' tom' 0.0%, ' mia' 0.0%; after layer 1: ' the' 32.6%, ' black' 9.2%, ' purple' 8.3%; after layer 2: ' white' 11.6%, 'day' 11.2%, ' ho' 8.8%; after layer 3: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%.",
    "keep": [],
-   "new": ""
+   "new": "At the very start, with just the token and its position, the lens says 'the', at 100 percent. That's because the readout reuses the table that turned tokens into numbers. So it simply sees the token it's sitting on. After layer 1, it still says 'the', at 33 percent. After layer 2, it says 'white', at 12 percent. After layer 3, it says red, at 87 percent."
   },
   {
    "orig": "One catch: the board's scale drifts. Averaged over the story, its length grows from 1.3 to 7.3. So before any block reads it, LayerNorm re-centres the vector and rescales it to a standard size. Only the copy a block reads gets normalized; the board itself stays a plain running sum.",
@@ -54,7 +54,7 @@
     "reads it",
     "Only the copy"
    ],
-   "new": ""
+   "new": "One catch: the board's scale drifts. Averaged over the whole story, its length grows from 1.3 to 7.3. So before any block reads it, a step called LayerNorm tidies it up. It re-centres the numbers so they average zero, and rescales the vector to a standard size. Only the copy a block reads gets normalized like this. The board itself stays a plain running sum of all the notes."
   },
   {
    "orig": "The final readout needs one too. Skip it, and red drops from 87 percent to 6, but it's still the top guess: LayerNorm mostly sets the confidence.",
@@ -62,7 +62,7 @@
    "keep": [
     "Skip it"
    ],
-   "new": ""
+   "new": "The final readout needs a LayerNorm too. Skip it, and red drops from 87 percent to 6. But it's still the top guess. So here, LayerNorm mostly sets how confident the model is, not which word it picks."
   },
   {
    "orig": "For interpretability, every note is just a vector you can measure, read, or erase. Erase layer 3's MLP note, and red falls to 2 percent. Erase layer 2's attention, home of the color-copying head, and it falls to 4.",
@@ -71,7 +71,7 @@
     "Erase layer 3",
     "Erase layer 2"
    ],
-   "new": ""
+   "new": "Why does this matter? First, for interpretability, which means understanding what's going on inside a model. Every note is just a vector you can measure, read, or remove. Erase layer 3's MLP note, and red falls to 2 percent. Erase layer 2's attention, home of the head that copies the color, and it falls to 4 percent."
   },
   {
    "orig": "For design: because blocks add instead of overwrite, gradients flow straight back through the plus signs, a big part of why deep networks can train at all. Many newer architectures keep the whiteboard and change what writes on it.",
@@ -80,7 +80,7 @@
     "Many newer",
     "whiteboard"
    ],
-   "new": ""
+   "new": "Second, for design. Because blocks add instead of overwriting, gradients flow straight back through the plus signs. Gradients tell each number which way, and how much, to change during training. That's a big part of why deep networks, with many layers, can train at all. Many newer architectures, meaning model designs, keep the whiteboard and change what writes on it."
   },
   {
    "orig": "One shared board. Six notes. One readout. Go watch it fill up in the X-ray.",
@@ -88,7 +88,7 @@
    "keep": [
     "Go watch"
    ],
-   "new": ""
+   "new": "So the residual stream is one shared board. Six blocks add notes, and one readout reads the result. Go watch it fill up in the X-ray lab."
   }
  ]
 }

@@ -7,13 +7,13 @@
    "keep": [
     "So how"
    ],
-   "new": ""
+   "new": "To this model, the word red is just token 157, a numbered chunk of text. That number is just a row in a table. So how does a number come to mean anything? The answer is embeddings."
   },
   {
    "orig": "The very first step is a lookup table. 256 rows, one per token, 64 numbers in each row. Token 157 just grabs row 157. That row is its embedding.",
    "visuals": "The real 256×64 embedding table as a heatmap (orange positive, blue negative). Row 157 is outlined and slides out as a strip of 64 cells; its first values are -0.17, -0.14, -0.18, +0.07 … -0.19.",
    "keep": [],
-   "new": ""
+   "new": "The very first step is a lookup table. It has 256 rows, one for each token, with 64 numbers in each row. Orange cells are positive, blue ones negative. Token 157 simply grabs row 157. That row is its embedding, the list of numbers that stands for the token."
   },
   {
    "orig": "All 16,384 numbers started as random noise. And the same table is reused at the very end, to score every possible next token. So training pulls tokens that fit the same slots toward similar rows.",
@@ -22,7 +22,7 @@
     "And the same",
     "So training"
    ],
-   "new": ""
+   "new": "All 16,384 numbers in this table started as random noise. And the same table is reused at the very end, to score every possible next token. So training, the model's learning process, pulls tokens that fit the same slots toward similar rows. In other words, tokens that fill the same spot in a sentence, like two colors, get similar numbers."
   },
   {
    "orig": "No single number means red. What matters is the direction the whole row points. We compare directions with cosine similarity: one means same way, zero means unrelated.",
@@ -32,7 +32,7 @@
     "We compare",
     "one means"
    ],
-   "new": ""
+   "new": "No single number means red. Think of the whole row as an arrow: what matters is the direction it points. Purple points almost the same way. We compare directions with cosine similarity, which measures how well two arrows line up. One means same way, zero means unrelated."
   },
   {
    "orig": "Now the real thing. Red's nearest neighbours: purple at 0.92, white, black. Tom's neighbours are names. Cat's are animals. Park's are places. A random pair of tokens scores about 0.1.",
@@ -40,7 +40,7 @@
    "keep": [
     "A random"
    ],
-   "new": ""
+   "new": "Now the real thing. Red's nearest neighbours are the tokens whose rows point most nearly the same way. First comes purple, with a score of 0.92, then white and black. Tom's neighbours are other names. Cat's are animals. Park's are places. A random pair of tokens scores only about 0.1, so these really are close."
   },
   {
    "orig": "Squash all 256 rows from 64 dimensions down to two, with PCA, and plot them. The names split off into their own island. Colors, animals, objects and places crowd together.",
@@ -49,7 +49,7 @@
     "names split",
     "Colors"
    ],
-   "new": ""
+   "new": "Now let's squash all 256 rows from 64 dimensions, one per number, down to two. We use a standard method called PCA, and plot each token as a dot. The names split off into their own island. Colors, animals, objects and places crowd together in one big group."
   },
   {
    "orig": "Re-run PCA on just these 48 words. Names sit far away. Colors and places get their own patches. Animals and objects overlap: they fill the same slot, nouns after 'the', and often after a color. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group.",
@@ -58,7 +58,7 @@
     "Colors",
     "And in the full"
    ],
-   "new": ""
+   "new": "Let's zoom in. Re-run PCA on just these 48 words. The names sit far away. Colors and places get their own patches. Animals and objects overlap, and that makes sense: they fill the same slot in a sentence. They're nouns that come after 'the', and often after a color, like 'the red ball'. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group."
   },
   {
    "orig": "But red at position 3 and red at position 20 would look identical. So a second table holds one learned vector per position, and it's simply added on.",
@@ -67,7 +67,7 @@
     "So a second",
     "and it"
    ],
-   "new": ""
+   "new": "But red at position 3 and red at position 20 would look identical. The model couldn't tell where each word sits. So a second table holds one learned vector, another list of numbers, for each position. And it's simply added on. The sum is what the first layer sees."
   },
   {
    "orig": "Compare all 64 position vectors with each other. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, even opposite. A smooth, learned sense of where.",
@@ -76,7 +76,7 @@
     "Next-door",
     "Far-apart"
    ],
-   "new": ""
+   "new": "Now compare all 64 position vectors with each other, using cosine similarity again. Bright means similar. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, and some even point the opposite way. So the model has learned a smooth sense of where each token is."
   },
   {
    "orig": "Sixty-four numbers is tiny. GPT-3's largest version uses 12,288 per token, 192 times the room. More directions means more distinctions it can keep apart at once.",
@@ -85,7 +85,7 @@
     "GPT-3",
     "192"
    ],
-   "new": ""
+   "new": "Sixty-four numbers per token is tiny. The largest version of GPT-3 uses 12,288 numbers per token, which is 192 times the room. With more directions to point in, the model can keep more distinctions apart at once."
   },
   {
    "orig": "An embedding is a learned row of numbers whose meaning lives in its direction. Go find them in the X-ray.",
@@ -94,7 +94,7 @@
     "direction",
     "Go find"
    ],
-   "new": ""
+   "new": "So, to sum up: an embedding is a learned row of numbers for each token. Its meaning lives in the direction it points. Similar tokens point similar ways. Go find them in the X-ray lab."
   }
  ]
 }
