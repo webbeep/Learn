@@ -482,7 +482,7 @@ for step in range(201):
 print("uniform guess = ln V =", round(math.log(V), 3))   # step 0 starts exactly here`,
       codeCaption: "The same four-step loop on a toy next-character model: the loss starts exactly at ln V (uniform guessing) and falls as the weights learn which character follows which.",
     },
-    pitfall: { myth: "Training copies the training text into the model.", truth: "Training adjusts parameters so likely continuations get high probability. TinyGPT's loss on held-out text (about 0.46) matches its training loss, and freshly generated stories it has never seen score about 0.5, so it learned patterns that generalize rather than a copy. Big models can memorize some passages, but mostly they learn patterns." },
+    pitfall: { myth: "Training copies the training text into the model.", truth: "Training adjusts parameters so likely continuations get high probability. TinyGPT's loss on held-out text (about 0.46) matches its training loss, and freshly generated stories it has never seen score about 0.45, so it learned patterns that generalize rather than a copy. Big models can memorize some passages, but mostly they learn patterns." },
     further: [
       { title: "3Blue1Brown: But what is a neural network?", url: "https://www.youtube.com/watch?v=aircAruvnKk", note: "What a neural network is, from the ground up." },
       { title: "3Blue1Brown: Gradient descent, how neural networks learn", url: "https://www.youtube.com/watch?v=IHZwWFHWa-w", note: "How the nudging works: gradient descent." },
@@ -495,7 +495,7 @@ print("uniform guess = ln V =", round(math.log(V), 3))   # step 0 starts exactly
       { title: "Loss = surprise", body: "For each position, loss = −ln(probability given to the true next token). 87.1% on “ red” costs 0.14; 5.9% would cost 2.83; 100% costs 0." },
       { title: "The starting line: ln 256", body: "Uniform guessing over 256 tokens scores ln 256 ≈ 5.55. TinyGPT's step-0 loss was 5.56, so a fresh model really knows nothing." },
       { title: "An average over thousands of guesses", body: "Each step averages the loss over 64 × 64 = 4,096 predictions. TinyGPT ended near 0.46: about as unsure as choosing between 1.6 equally likely options (e^0.46 ≈ 1.58, the “perplexity”)." },
-      { title: "Two curves, one story", body: "Training loss is measured on text the model learns from; validation loss on held-out text (TinyGPT keeps 5% aside). Both ended near 0.46. Short template lines like \u201cthe sky is blue.\u201d repeat in the tiny world, so not every held-out line is new, but freshly generated stories also score about 0.5: it generalizes.", tryIt: "On the Training page, compare the solid (training) and dashed (validation) curves." },
+      { title: "Two curves, one story", body: "Training loss is measured on text the model learns from; validation loss on held-out text (TinyGPT keeps 5% aside). Both ended near 0.46. Short template lines like \u201cthe sky is blue.\u201d repeat in the tiny world, so not every held-out line is new, but freshly generated stories also score about 0.45: it generalizes.", tryIt: "On the Training page, compare the solid (training) and dashed (validation) curves." },
       { title: "Zero isn't the goal", body: "Real text is partly unpredictable (which name starts the next story?), so even a perfect model has a loss floor above 0." },
     ],
     quiz: [

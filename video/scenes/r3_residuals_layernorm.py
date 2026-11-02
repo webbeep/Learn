@@ -44,8 +44,9 @@ class ResidualsLayerNorm(VScene):
         cb = pl.line(BASE["curve"]["step"], BASE["curve"]["val"], TEAL, 4)
         cn = pl.line(NORES["curve"]["step"], NORES["curve"]["val"], PINK, 4)
         uni = DashedLine(pl.p(0, UNI), pl.p(AB_STEPS, UNI), color=MUTED, stroke_width=2, dash_length=0.1)
-        unil = self.T(f"dashed: unigram level {UNI:.2f} (only knows which words are common)", 22, MUTED) \
-            .move_to(pl.p(AB_STEPS, UNI - 0.75), aligned_edge=RIGHT)
+        unil = VGroup(self.T(f"dashed: unigram level, {UNI:.2f}", 22, MUTED),
+                      self.T("(only knows which words are common)", 22, MUTED)).arrange(DOWN, aligned_edge=RIGHT, buff=0.06) \
+            .move_to(pl.p(AB_STEPS, UNI - 0.95), aligned_edge=RIGHT)
         lb = self.M(f"with  x +  → {BASE['final_val']:.2f}", 24, TEAL).next_to(pl.p(AB_STEPS, BASE["final_val"]), UP, buff=0.18) \
             .align_to(pl.p(AB_STEPS, 0), RIGHT)
         ln_ = self.M(f"without → {NORES['final_val']:.2f}", 24, PINK).next_to(pl.p(AB_STEPS, NORES["final_val"]), UP, buff=0.18) \
@@ -127,7 +128,7 @@ class ResidualsLayerNorm(VScene):
         yt = [10 ** e for e in range(int(math.log10(ylo)), int(math.log10(yhi)) + 1, 3)]
         pg = Plot([0, L], [ylo, yhi], width=7.6, height=4.3, ylog=True, xticks=list(range(0, L + 1, 4)), yticks=yt,
                   xlabel="layer (0 = input embeddings)", ylabel=f"gradient reaching each layer, fresh {L}-layer model (log)",
-                  yfmt=lambda v: f"1e{int(round(math.log10(v)))}").move_to(DOWN * 0.45 + LEFT * 2.2)
+                  yfmt=lambda v: f"1e{int(round(math.log10(v)))}").move_to(DOWN * 0.45 + LEFT * 1.6)
         lgb = pg.line(list(range(L + 1)), gb, TEAL, 4)
         lgn = pg.line(list(range(L + 1)), [max(v, ylo) for v in gn], PINK, 4)
         ratio = gn[-1] / max(gn[0], 1e-300)

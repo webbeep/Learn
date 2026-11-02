@@ -5523,7 +5523,7 @@
   "id": "next-token",
   "title": "Next token: logits, softmax & temperature",
   "subtitle": "How 256 raw scores become one word: softmax, temperature, top-k/top-p, greedy vs sampling",
-  "duration": 103.4,
+  "duration": 121.9,
   "track": "inference",
   "order": 70,
   "src": "/videos/next-token.mp4",
@@ -5536,38 +5536,38 @@
     "title": "256 numbers"
    },
    {
-    "t": 7.33,
+    "t": 7.37,
     "title": "Logits"
    },
    {
-    "t": 19.2,
+    "t": 19.23,
     "title": "Softmax"
    },
    {
-    "t": 31.4,
+    "t": 31.47,
     "title": "Temperature"
    },
    {
-    "t": 54.93,
+    "t": 55.03,
     "title": "Top-k"
    },
    {
-    "t": 71.93,
+    "t": 72.07,
     "title": "The dice roll"
    },
    {
-    "t": 85.53,
+    "t": 85.63,
     "title": "When it's unsure"
    },
    {
-    "t": 108.73,
+    "t": 108.87,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 7.33,
+    "end": 7.37,
     "text": "The model never outputs a word. It outputs 256 numbers. Here's how those turn into one word.",
     "scene": "A wall of 256 thin bars — the model's real raw scores for every token in the vocab after the prompt; the tallest (pink) is ' red'.",
     "objects": [
@@ -5594,8 +5594,8 @@
     ]
    },
    {
-    "start": 7.33,
-    "end": 19.2,
+    "start": 7.37,
+    "end": 19.23,
     "text": "These raw scores are called logits. For our prompt, red scores 10.4, white 7.7, purple 7.5. Two thirds of the vocab sits below zero.",
     "scene": "Bar chart of the six highest logits: ' red' 10.37, ' white' 7.68, ' purple' 7.53, ' black' 4.62, ' ava' 3.98, ',' 3.72; the other 250 range from 3.61 down to −5.88.",
     "objects": [
@@ -5672,8 +5672,8 @@
     ]
    },
    {
-    "start": 19.2,
-    "end": 31.4,
+    "start": 19.23,
+    "end": 31.47,
     "text": "Softmax turns them into probabilities. Raise e to each logit, then divide by the total. Exponentials blow small gaps up into big ones, so red ends up with 87 percent.",
     "scene": "The logit bars morph into probability bars: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, ' black' 0.28%, ' ava' 0.15%, ',' 0.11%, all 250 others together 1.42%. Formula: p = exp(logit) / sum of exp over all 256 logits.",
     "objects": [
@@ -5750,8 +5750,8 @@
     ]
    },
    {
-    "start": 31.4,
-    "end": 37.6,
+    "start": 31.47,
+    "end": 37.7,
     "text": "Temperature divides every logit before the softmax. At temperature one, nothing changes.",
     "scene": "A big 'T = 1.0' dial appears top right and the formula gains '/ T': p = exp(logit / T) / sum of exp(all 256 logits / T); the bars stay at their T = 1 values.",
     "objects": [
@@ -5848,8 +5848,8 @@
     ]
    },
    {
-    "start": 37.6,
-    "end": 46.73,
+    "start": 37.7,
+    "end": 46.83,
     "text": "Turn it down to 0.3, and the gaps get stretched. Red jumps to 99.98 percent. Basically deterministic.",
     "scene": "T slides to 0.3: ' red' grows to 99.98%, every other bar collapses to ~0.",
     "objects": [
@@ -5946,8 +5946,8 @@
     ]
    },
    {
-    "start": 46.73,
-    "end": 54.93,
+    "start": 46.83,
+    "end": 55.03,
     "text": "Crank it to 2, and everything flattens. Red drops to 32 percent, and almost half the probability leaks into the long tail of junk.",
     "scene": "T slides to 2.0: ' red' falls to 32.4%, ' white' 8.4%, ' purple' 7.8%, and the 250 others together reach 47.1%.",
     "objects": [
@@ -6044,8 +6044,8 @@
     ]
    },
    {
-    "start": 54.93,
-    "end": 71.93,
+    "start": 55.03,
+    "end": 72.07,
     "text": "Top k is the safety net. Keep only the k best tokens, zero out the rest, and renormalize. With k equals 3, the junk is gone, and red is back to 67 percent. Its cousin, top p, keeps the fewest tokens whose probabilities add up to p.",
     "scene": "At T = 2 with top-k = 3: only ' red', ' white', ' purple' survive and renormalize to 66.6%, 17.3%, 16.1%; everything else drops to 0. Note: top-p keeps the fewest tokens whose probabilities add up to p.",
     "objects": [
@@ -6162,10 +6162,10 @@
     ]
    },
    {
-    "start": 71.93,
-    "end": 85.53,
-    "text": "Then we roll a weighted die. Lay the probabilities end to end, throw a dart, and take whatever it lands on. Here are 20 rolls at temperature one. 18 came up red, plus one purple and one white.",
-    "scene": "The T = 1 probabilities laid end to end as a strip (' red' 87% takes most of it, then ' white', ' purple', and a sliver for everything else). 20 random darts (fixed seed, not picked) land on it; the picked tokens appear below: 18 came up red, plus one purple and one white.",
+    "start": 72.07,
+    "end": 85.63,
+    "text": "Then we roll a weighted die. Lay the probabilities end to end, throw a dart, and take whatever it lands on. Here are 20 rolls at temperature one. 18 came up red, plus one white and one purple.",
+    "scene": "The T = 1 probabilities laid end to end as a strip (' red' 87% takes most of it, then ' white', ' purple', and a sliver for everything else). 20 random darts (fixed seed, not picked) land on it; the picked tokens appear below: 18 came up red, plus one white and one purple.",
     "objects": [
      {
       "id": "strip",
@@ -6182,206 +6182,206 @@
       "label": "roll 1: \" red\" (p = 87.1%)",
       "box": [
        0.057,
-       0.6357,
-       0.0541,
-       0.0504
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-1",
       "label": "roll 2: \" red\" (p = 87.1%)",
       "box": [
-       0.1477,
-       0.6357,
-       0.0541,
-       0.0504
+       0.1395,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-2",
       "label": "roll 3: \" red\" (p = 87.1%)",
       "box": [
-       0.2384,
-       0.6357,
-       0.0541,
-       0.0504
+       0.2221,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-3",
       "label": "roll 4: \" red\" (p = 87.1%)",
       "box": [
-       0.3291,
-       0.6357,
-       0.0541,
-       0.0504
+       0.3046,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-4",
       "label": "roll 5: \" red\" (p = 87.1%)",
       "box": [
-       0.4198,
-       0.6357,
-       0.0541,
-       0.0504
+       0.3871,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-5",
       "label": "roll 6: \" white\" (p = 5.9%)",
       "box": [
-       0.5,
-       0.6357,
-       0.075,
-       0.0504
+       0.4696,
+       0.6164,
+       0.1006,
+       0.0662
       ]
      },
      {
       "id": "roll-6",
       "label": "roll 7: \" red\" (p = 87.1%)",
       "box": [
-       0.6011,
-       0.6357,
-       0.0541,
-       0.0504
+       0.5807,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-7",
       "label": "roll 8: \" red\" (p = 87.1%)",
       "box": [
-       0.6918,
-       0.6357,
-       0.0541,
-       0.0504
+       0.6632,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-8",
       "label": "roll 9: \" red\" (p = 87.1%)",
       "box": [
-       0.7825,
-       0.6357,
-       0.0541,
-       0.0504
+       0.7457,
+       0.6164,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-9",
       "label": "roll 10: \" purple\" (p = 5.1%)",
       "box": [
-       0.8575,
-       0.6357,
-       0.0855,
-       0.0504
+       0.8282,
+       0.6164,
+       0.1148,
+       0.0662
       ]
      },
      {
       "id": "roll-10",
       "label": "roll 11: \" red\" (p = 87.1%)",
       "box": [
-       0.057,
-       0.7139,
-       0.0541,
-       0.0504
+       0.0927,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-11",
       "label": "roll 12: \" red\" (p = 87.1%)",
       "box": [
-       0.1477,
-       0.7139,
-       0.0541,
-       0.0504
+       0.1752,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-12",
       "label": "roll 13: \" red\" (p = 87.1%)",
       "box": [
-       0.2384,
-       0.7139,
-       0.0541,
-       0.0504
+       0.2577,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-13",
       "label": "roll 14: \" red\" (p = 87.1%)",
       "box": [
-       0.3291,
-       0.7139,
-       0.0541,
-       0.0504
+       0.3402,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-14",
       "label": "roll 15: \" red\" (p = 87.1%)",
       "box": [
-       0.4198,
-       0.7139,
-       0.0541,
-       0.0504
+       0.4227,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-15",
       "label": "roll 16: \" red\" (p = 87.1%)",
       "box": [
-       0.5105,
-       0.7139,
-       0.0541,
-       0.0504
+       0.5052,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-16",
       "label": "roll 17: \" red\" (p = 87.1%)",
       "box": [
-       0.6011,
-       0.7139,
-       0.0541,
-       0.0504
+       0.5878,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-17",
       "label": "roll 18: \" red\" (p = 87.1%)",
       "box": [
-       0.6918,
-       0.7139,
-       0.0541,
-       0.0504
+       0.6703,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-18",
       "label": "roll 19: \" red\" (p = 87.1%)",
       "box": [
-       0.7825,
-       0.7139,
-       0.0541,
-       0.0504
+       0.7528,
+       0.7175,
+       0.072,
+       0.0662
       ]
      },
      {
       "id": "roll-19",
       "label": "roll 20: \" red\" (p = 87.1%)",
       "box": [
-       0.8732,
-       0.7139,
-       0.0541,
-       0.0504
+       0.8353,
+       0.7175,
+       0.072,
+       0.0662
       ]
      }
     ]
    },
    {
-    "start": 85.53,
-    "end": 108.73,
+    "start": 85.63,
+    "end": 108.87,
     "text": "Sampling matters most when the model is torn. Zoe has a yellow shoe. What color is the shoe? Yellow, 47 percent. Pink, 46. A coin flip. Greedy says yellow, just barely. Sample at temperature one, and it names the wrong color more often than not. Even at 0.3, yellow only gets 52 percent. The model just doesn't know.",
     "scene": "A real near coin flip: for 'zoe has a yellow shoe. q: what color is the shoe? a: the shoe is' the model gives ' yellow' 47.1%, ' pink' 45.9%, ' black' 3.1%, ' purple' 1.1%. Greedy decoding picks yellow (correct, barely); sampling at T = 1 picks a wrong color 52.9% of the time; at T = 0.3 yellow only reaches 52.3%. Flash: 'coin flip'.",
     "objects": [
@@ -6458,8 +6458,8 @@
     ]
    },
    {
-    "start": 108.73,
-    "end": 121.27,
+    "start": 108.87,
+    "end": 121.4,
     "text": "Greedy takes the top token every time. Temperature sharpens or flattens the odds. Top k and top p cut off the junk. Then you roll. Go turn the dial yourself in the X-ray.",
     "scene": "Recap list: greedy (always take the top token), temperature (sharpen or flatten the odds), top-k · top-p (cut off the long tail of junk), sample (roll the weighted dice). Final card: 'go turn the dial yourself in the X-ray'.",
     "objects": [
@@ -6521,7 +6521,7 @@
   "id": "training",
   "title": "How it learned",
   "subtitle": "Training in under 2 minutes: loss, gradient descent, and real samples from step 0 to step 3000",
-  "duration": 111.0,
+  "duration": 136.63,
   "track": "training",
   "order": 10,
   "src": "/videos/training.mp4",
@@ -6534,34 +6534,34 @@
     "title": "Gibberish to stories"
    },
    {
-    "t": 7.2,
+    "t": 7.23,
     "title": "Random start"
    },
    {
-    "t": 22.53,
+    "t": 22.57,
     "title": "The loss"
    },
    {
-    "t": 45.67,
+    "t": 45.77,
     "title": "Gradient descent"
    },
    {
-    "t": 78.07,
+    "t": 78.2,
     "title": "The loss curve"
    },
    {
-    "t": 100.13,
+    "t": 100.27,
     "title": "What it wrote"
    },
    {
-    "t": 128.13,
+    "t": 128.3,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 7.2,
+    "end": 7.23,
     "text": "At step zero, this model wrote this. 80 seconds of training later, it wrote this. What happened in between?",
     "scene": "Two real samples from the prompt 'mia has a red ball. tom': at step 0 the continuation is gibberish ('sh hill w timog say litam…'); at step 3000 it is a coherent story ending 'now tom has the red ball.'",
     "objects": [
@@ -6588,8 +6588,8 @@
     ]
    },
    {
-    "start": 7.2,
-    "end": 22.53,
+    "start": 7.23,
+    "end": 22.57,
     "text": "Most weights start as tiny random noise. So at first, it spreads its bets almost evenly over all 256 tokens. Its loss is 5.56, almost exactly what pure guessing scores.",
     "scene": "256 near-equal bars (each ≈ 0.39%): the untrained model's flat guess. Below: real loss at step 0 = 5.56 vs ln 256 = 5.55 for uniform guessing.",
     "objects": [
@@ -6616,8 +6616,8 @@
     ]
    },
    {
-    "start": 22.53,
-    "end": 32.33,
+    "start": 22.57,
+    "end": 32.4,
     "text": "Training is one game. At every position, predict the next token. The score is cross-entropy, minus the log of the probability you gave the right answer.",
     "scene": "Tokens of 'mia has a red ball.' on top, each with an arrow down to the token that follows it (the target). Formula: cross-entropy loss = −log(p[correct next token]).",
     "objects": [
@@ -6684,8 +6684,8 @@
     ]
    },
    {
-    "start": 32.33,
-    "end": 45.67,
+    "start": 32.4,
+    "end": 45.77,
     "text": "Give the right token 87 percent, and the loss is 0.14. Give it one in 256, and it's 5.55. Confidently wrong is the most expensive of all.",
     "scene": "Plot of loss = −log p: p = 0.87 → 0.14 (pink), p = 1/256 → 5.55 (blue), p = 0.001 → 6.91 (orange, 'confidently wrong').",
     "objects": [
@@ -6732,8 +6732,8 @@
     ]
    },
    {
-    "start": 45.67,
-    "end": 64.0,
+    "start": 45.77,
+    "end": 64.1,
     "text": "Backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss. Gradient descent takes a small step that way, and repeats. Like a ball rolling downhill. The real optimizer, AdamW, is a smarter version of that step.",
     "scene": "A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step shown with a slope arrow, settling near a low point. Note: the real optimizer is AdamW, learning rate 0.003.",
     "objects": [
@@ -6770,8 +6770,8 @@
     ]
    },
    {
-    "start": 64.0,
-    "end": 78.07,
+    "start": 64.1,
+    "end": 78.2,
     "text": "Each step grades 64 random snippets of 64 tokens at once. That's 4,096 predictions per step, for 3000 steps. That's about 7.7 passes over the training text.",
     "scene": "A 64×64 grid of tiny squares = 4,096 next-token predictions per training step; × 3,000 steps ≈ 12.3 million graded guesses ≈ 7.7 passes over the 1,602,516-token training split.",
     "objects": [
@@ -6808,8 +6808,8 @@
     ]
    },
    {
-    "start": 78.07,
-    "end": 100.13,
+    "start": 78.2,
+    "end": 100.27,
     "text": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is validation, text it never trained on. It tracks training, so it's learning patterns, not memorizing.",
     "scene": "The real training curve from training.json (121 points every 25 steps), log-scale loss axis: train loss (yellow) and validation loss on held-out text (dashed teal) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and keep falling to 0.46 (val 0.46) at step 3000.",
     "objects": [
@@ -6876,8 +6876,8 @@
     ]
    },
    {
-    "start": 100.13,
-    "end": 117.13,
+    "start": 100.27,
+    "end": 117.3,
     "text": "And here's what it wrote along the way, one sample each from the same prompt. Step zero is word salad, though it's made of real words, because many tokens are whole words. Step 100, broken grammar. Step 300, actual sentences.",
     "scene": "One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 (loss 0.69) well-formed sentences.",
     "objects": [
@@ -6904,8 +6904,8 @@
     ]
    },
    {
-    "start": 117.13,
-    "end": 128.13,
+    "start": 117.3,
+    "end": 128.3,
     "text": "At step 1000, it still handed Tom the yellow ball. Wrong. By step 3000, it's the red ball. Correct, and nobody told it why.",
     "scene": "Step 1000 sample ends 'now tom has the yellow ball' (highlighted pink — wrong, mia gave him the red ball); step 3000 sample ends 'now tom has the red ball' (highlighted teal — correct).",
     "objects": [
@@ -6942,8 +6942,8 @@
     ]
    },
    {
-    "start": 128.13,
-    "end": 135.87,
+    "start": 128.3,
+    "end": 136.03,
     "text": "Nobody wrote a single rule. Predict, measure the miss, nudge, repeat. Next up, train your own.",
     "scene": "The training loop as pills: predict → measure the miss → nudge the weights → repeat, with an arrow looping back. Final card: 'next: train your own'.",
     "objects": [
@@ -7005,7 +7005,7 @@
   "id": "loss",
   "title": "Loss: the one number training cares about",
   "subtitle": "Next-token prediction, cross-entropy with real probabilities, perplexity, and why averaging works",
-  "duration": 141.93,
+  "duration": 149.23,
   "track": "training",
   "order": 20,
   "src": "/videos/loss.mp4",
@@ -7026,23 +7026,23 @@
     "title": "Every guess, scored"
    },
    {
-    "t": 52.47,
+    "t": 52.17,
     "title": "Pure guessing"
    },
    {
-    "t": 66.7,
+    "t": 66.4,
     "title": "Perplexity"
    },
    {
-    "t": 82.97,
+    "t": 82.67,
     "title": "The real curve"
    },
    {
-    "t": 101.47,
+    "t": 110.03,
     "title": "Why averaging works"
    },
    {
-    "t": 133.73,
+    "t": 142.03,
     "title": "Recap"
    }
   ],
@@ -7225,8 +7225,8 @@
    },
    {
     "start": 21.8,
-    "end": 32.67,
-    "text": "Here's every guess on our story. 16 of the 25 are nearly free. The spikes are the real coin flips: which color Mia has, which toy, who comes next.",
+    "end": 32.37,
+    "text": "Every guess on our story: 16 of the 25 are nearly free. The spikes are the real coin flips: which color Mia has, which toy, who comes next.",
     "scene": "Bar chart of the real loss for each of the 25 next-token predictions in the story (labels = the token being predicted). 16 cost under 0.05; the spikes (pink) are ' red' (2.08), ' ball' (2.68), ' tom' (3.10), ' blue' (2.11), ' kite' (2.37).",
     "objects": [
      {
@@ -7482,8 +7482,8 @@
     ]
    },
    {
-    "start": 32.67,
-    "end": 52.47,
+    "start": 32.37,
+    "end": 52.17,
     "text": "The first red is a pure guess. Only 8 colors can follow 'a', since orange takes 'an', so the best possible is 12.5 percent. The model gives 12.4: essentially perfect. The last red follows from the story: 87 percent. Averaged, the story's loss is 0.52.",
     "scene": "Two callouts: 'mia has a' → 'red' p = 12.43% (loss 2.085); 8 colors can follow 'a' (orange takes 'an'), so the best possible is 1/8 = 12.5% (loss 2.079): the model is essentially optimal. 'now tom has the' → 'red' p = 87.1% (loss 0.14). Average over all 25 predictions = 0.520.",
     "objects": [
@@ -7770,8 +7770,8 @@
     ]
    },
    {
-    "start": 52.47,
-    "end": 66.7,
+    "start": 52.17,
+    "end": 66.4,
     "text": "Now rewind. With random weights, the model spreads its bets evenly over 256 tokens: a loss of 5.55 per guess. The real step-zero loss: 5.56.",
     "scene": "256 equal bars (illustration of a uniform guess, 0.39% each). Every guess costs ln 256 = 5.545; the real step-0 training loss from training.json is 5.5593.",
     "objects": [
@@ -7808,8 +7808,8 @@
     ]
    },
    {
-    "start": 66.7,
-    "end": 82.97,
+    "start": 66.4,
+    "end": 82.67,
     "text": "Take e to the loss, and you get perplexity: roughly how many tokens it's choosing between. At step zero, about 260. After training, 1.6 on average: near one for most tokens, more for a fresh color or name.",
     "scene": "Perplexity = e^loss ≈ the effective number of choices. Step 0: e^5.56 ≈ 260 squares (≈ the 256-token vocabulary). Step 3000: e^0.46 ≈ 1.58: one full square plus a partial one; an average: ~1 for most tokens, several for a fresh color or name.",
     "objects": [
@@ -7846,14 +7846,14 @@
     ]
    },
    {
-    "start": 82.97,
-    "end": 101.47,
-    "text": "Here's the real run: 5.56 at the start, below one by step 150, then 0.46. On unseen text, also 0.46: it learned patterns, not pages. Some of what's left is coin flips no model can beat.",
-    "scene": "The real training-loss curve from training.json (121 points): 5.56 at step 0 on the pure-guessing line (ln 256 = 5.55), 0.99 at step 150, 0.46 at step 3000; validation loss on held-out text (dashed teal) ends at 0.46. Part of the remaining loss is irreducible (random colors, names).",
+    "start": 82.67,
+    "end": 110.03,
+    "text": "Here's the real run: 5.56 at the start, below one by step 150, then 0.46. Held-out text scores 0.46 too. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45: it learned patterns, not pages. Some of what's left is coin flips no model can beat.",
+    "scene": "The real training-loss curve from training.json (121 points): 5.56 at step 0 on the pure-guessing line (ln 256 = 5.55), 0.99 at step 150, 0.46 at step 3000; held-out loss (dashed teal; shares sentence templates with training) ends at 0.46; freshly generated stories (new seed) score 0.45. Part of the remaining loss is irreducible (random colors, names).",
     "objects": [
      {
       "id": "val",
-      "label": "validation loss on held-out text: 5.552 → 0.461",
+      "label": "held-out loss (same sentence templates as training): 5.552 → 0.461",
       "box": [
        0.159,
        0.277,
@@ -7903,19 +7903,29 @@
      },
      {
       "id": "end",
-      "label": "step 3000: train loss 0.4595 (perplexity 1.58), validation 0.4611",
+      "label": "step 3000: train loss 0.4595 (perplexity 1.58), held-out 0.4611",
       "box": [
-       0.5847,
-       0.6907,
-       0.358,
-       0.1161
+       0.5909,
+       0.6913,
+       0.3456,
+       0.1155
+      ]
+     },
+     {
+      "id": "fresh",
+      "label": "mean loss on 82,944 predictions in freshly generated stories (seed 123): 0.4496",
+      "box": [
+       0.5909,
+       0.6319,
+       0.339,
+       0.0407
       ]
      }
     ]
    },
    {
-    "start": 101.47,
-    "end": 120.33,
+    "start": 110.03,
+    "end": 128.9,
     "text": "Each step averages 4,096 guesses: 64 snippets of 64 tokens. Single tokens are wildly uneven: 73 percent are nearly free, while the hard 18 percent carry 92 percent of the loss. Yet the batch average barely moves.",
     "scene": "Heatmap of real per-token losses for one 64×64 batch of fresh tiny-world text (brighter = higher loss). Stats over 82,944 fresh predictions: 73.2% cost < 0.1; 18.0% cost > 1 and carry 92.2% of the total. Six random batch averages: 0.476, 0.452, 0.426, 0.459, 0.458, 0.437.",
     "objects": [
@@ -7962,9 +7972,9 @@
     ]
    },
    {
-    "start": 120.33,
-    "end": 125.57,
-    "text": "Here's why that works. The gradient of an average is just the average of the gradients.",
+    "start": 128.9,
+    "end": 133.87,
+    "text": "Why does that work? The gradient of an average is the average of the gradients.",
     "scene": "Caption: gradient of the average = average of the gradients.",
     "objects": [
      {
@@ -8020,8 +8030,8 @@
     ]
    },
    {
-    "start": 125.57,
-    "end": 133.73,
+    "start": 133.87,
+    "end": 142.03,
     "text": "So every token casts a small vote on how to nudge each weight. The votes disagree, but their average points somewhere steady.",
     "scene": "Toy picture (illustration): twelve thin gray arrows (per-token gradient directions) scattered around one thick yellow arrow (their average). Caption: every token casts a small vote on each nudge.",
     "objects": [
@@ -8068,9 +8078,9 @@
     ]
    },
    {
-    "start": 133.73,
-    "end": 141.33,
-    "text": "Predict, score, average, nudge. That's the whole signal. Now watch the loss fall in the training lab.",
+    "start": 142.03,
+    "end": 148.63,
+    "text": "Predict, score, average, nudge. Now watch the loss fall in the training lab.",
     "scene": "Recap loop: predict the next token → score: −ln p → average everything → nudge, looping back. CTA: watch the loss fall in the Training lab.",
     "objects": [
      {
@@ -9467,10 +9477,10 @@
       "id": "adam-rule",
       "label": "Adam: step = lr × avg(g) / sqrt(avg(g²)) (+ small ε), per weight",
       "box": [
-       0.2534,
-       0.3209,
-       0.4931,
-       0.1583
+       0.253,
+       0.3059,
+       0.4939,
+       0.1883
       ]
      },
      {
@@ -10325,7 +10335,7 @@
   "id": "residuals-layernorm",
   "title": "Residuals & LayerNorm: why deep nets train",
   "subtitle": "Vanishing gradients, the residual highway, and what LayerNorm really rescales, with real ablations",
-  "duration": 106.43,
+  "duration": 144.2,
   "track": "design",
   "order": 10,
   "src": "/videos/residuals-layernorm.mp4",
@@ -10338,30 +10348,30 @@
     "title": "Delete the plus"
    },
    {
-    "t": 21.8,
+    "t": 21.87,
     "title": "Vanishing gradients"
    },
    {
-    "t": 54.67,
+    "t": 54.73,
     "title": "It depends on init"
    },
    {
-    "t": 75.4,
+    "t": 75.5,
     "title": "The residual highway"
    },
    {
-    "t": 89.67,
+    "t": 89.77,
     "title": "LayerNorm"
    },
    {
-    "t": 126.6,
+    "t": 126.7,
     "title": "Recap"
    }
   ],
   "segments": [
    {
     "start": 0.0,
-    "end": 17.4,
+    "end": 17.43,
     "text": "Delete the x plus from every block of TinyGPT. Same data, same 3,000 steps. The normal model reaches 0.45. The edited one stalls at 4.50: about the unigram level. It only learned which words are common.",
     "scene": "Code 'x = x + attn(LN(x))' with 'x +' struck out. Real validation curves, 3-layer TinyGPT trained 3000 steps: with residuals (teal) → 0.450; without (pink) stalls at 4.502, close to the unigram baseline 4.556 (dashed: a model that only knows word frequencies).",
     "objects": [
@@ -10399,17 +10409,17 @@
       "id": "unigram",
       "label": "unigram baseline: cross-entropy 4.556 for a model that only knows word frequencies",
       "box": [
-       0.0604,
+       0.1291,
        0.4425,
-       0.7434,
-       0.0519
+       0.6747,
+       0.0798
       ]
      }
     ]
    },
    {
-    "start": 17.4,
-    "end": 21.8,
+    "start": 17.43,
+    "end": 21.87,
     "text": "And it ignores you. Three different prompts, almost the same words back.",
     "scene": "Real samples from the no-residual model for three different prompts: ' daym a. one the toam the a..ied pink no' | ' day hill a. one the toam the a..i\\n. now' | ' daym a.ed say toam the a..ied. now.. bl'.",
     "objects": [
@@ -10446,8 +10456,8 @@
     ]
    },
    {
-    "start": 21.8,
-    "end": 36.73,
+    "start": 21.87,
+    "end": 36.8,
     "text": "Why? Training sends a gradient backward through every layer. Without the plus, each layer multiplies it by its own slope. In a deep plain stack that's about times 0.2 per layer, and twenty-four of those leave almost nothing.",
     "scene": "Backward pass as a chain of ×0.19 pills (the real average per-layer shrink of the gradient in a 24-layer no-residual TinyGPT at init); 0.19^24 = 4.0e-18.",
     "objects": [
@@ -10474,8 +10484,8 @@
     ]
    },
    {
-    "start": 36.73,
-    "end": 54.67,
+    "start": 36.8,
+    "end": 54.73,
     "text": "Measured in a fresh 24-layer model: without residuals, the gradient reaching the first layer is 10 to the 17 times smaller than at the top. Forward, the signal keeps its size, but every position ends up holding the same vector. With residuals, the gradient is nearly flat.",
     "scene": "Real measurement, a separate 24-layer TinyGPT at initialisation: RMS of the gradient reaching each layer (log scale). Without residuals (pink) it falls from 4.9e-04 at the top to 2.0e-21 at the input (×10^-17); with residuals (teal) it stays ≈ 5.5e-05–4.3e-05. Side note: without residuals the forward signal RMS stays 0.04–0.05, but positions become identical (spread 1.4e-07).",
     "objects": [
@@ -10483,9 +10493,9 @@
       "id": "grad-nores",
       "label": "real: gradient RMS without residuals, 4.92e-04 at the top layer → 1.98e-21 at the embeddings",
       "box": [
-       0.1363,
+       0.0739,
        0.2752,
-       0.6047,
+       0.5344,
        0.5194
       ]
      },
@@ -10493,9 +10503,9 @@
       "id": "forward",
       "label": "without residuals the forward signal RMS stays 0.045–0.054 (LayerNorm rescales each block's input) but positions collapse: spread 1.4e-07 of the RMS at layer 24",
       "box": [
-       0.7656,
+       0.6328,
        0.3705,
-       0.2344,
+       0.319,
        0.2286
       ]
      },
@@ -10503,17 +10513,17 @@
       "id": "grad-res",
       "label": "real: gradient RMS with residuals, 4.33e-05 → 5.51e-05: nearly flat",
       "box": [
-       0.1363,
+       0.0739,
        0.3036,
-       0.6047,
+       0.5344,
        0.0678
       ]
      }
     ]
    },
    {
-    "start": 54.67,
-    "end": 75.4,
+    "start": 54.73,
+    "end": 75.5,
     "text": "Our 3-layer model isn't that deep: its gradient shrinks only about 130 times. So how stuck it gets depends on the starting weights. With the standard small init, it stalls. Start the blocks larger, and the same plain stack does learn. Residuals make depth easy to train, whatever the init.",
     "scene": "Real: 3-layer TinyGPT without residuals at init, gradient shrinks 130× from top to embeddings. Two 600-step runs (batch 32): block init std 0.02 → val 4.569 (stalled), std 0.125 → 2.947 and still falling.",
     "objects": [
@@ -10531,9 +10541,9 @@
       "id": "init-002",
       "label": "real: no residuals, std 0.02 init → val 4.569 after 600 steps",
       "box": [
-       0.1074,
+       0.0933,
        0.339,
-       0.8493,
+       0.793,
        0.179
       ]
      },
@@ -10541,17 +10551,17 @@
       "id": "init-0125",
       "label": "real: no residuals, std 0.125 init → val 2.947 after 600 steps",
       "box": [
-       0.1074,
+       0.0933,
        0.3377,
-       0.8216,
+       0.7654,
        0.3059
       ]
      }
     ]
    },
    {
-    "start": 75.4,
-    "end": 89.67,
+    "start": 75.5,
+    "end": 89.77,
     "text": "The plus sign builds a highway. The signal travels straight along it, and each block reads from it and adds an edit back. On the way back, every plus passes the gradient through unchanged, so even the first layer gets a strong signal.",
     "scene": "Diagram: a yellow 'residual stream' arrow left to right; attention and MLP blocks branch off it and add their output back through '+' nodes; a pink arrow below shows the gradient flowing straight back through every +.",
     "objects": [
@@ -10618,8 +10628,8 @@
     ]
    },
    {
-    "start": 89.67,
-    "end": 106.93,
+    "start": 89.77,
+    "end": 107.03,
     "text": "As blocks keep adding edits, the stream itself grows. LayerNorm doesn't shrink it. It hands each block a rescaled copy: subtract the mean, divide by the spread, per token, then a learned gain and bias. Every block reads inputs of a sane size.",
     "scene": "Illustration: a 12-number vector (orange, mean 0.7, std 1.5) passes through LayerNorm, (x − mean)/std (→ mean 0, std 1), then a learned gain and bias. Applied per token across its 64 numbers, to the copy each block reads; the residual stream itself is unchanged.",
     "objects": [
@@ -10666,8 +10676,8 @@
     ]
    },
    {
-    "start": 106.93,
-    "end": 126.6,
+    "start": 107.03,
+    "end": 126.7,
     "text": "In real trained 12-layer models, the stream grows about 12 times from bottom to top even with LayerNorm. Without it, 165 times, and validation loss ends at 0.69 instead of 0.62. Remove the residuals instead: 4.57.",
     "scene": "Left: real RMS of the hidden state at each layer of trained 12-layer models: with LayerNorm 0.15 → 1.75; without 0.07 → 12.35. Right: real validation curves (1000 steps): residual+LN 0.620, no LN 0.693, no residual 4.569.",
     "objects": [
@@ -10724,8 +10734,8 @@
     ]
    },
    {
-    "start": 126.6,
-    "end": 143.27,
+    "start": 126.7,
+    "end": 143.4,
     "text": "So every block is two lines: read a normalized copy, add the result back. Virtually every modern transformer keeps both ideas: a residual stream and a normalization layer, LayerNorm or its simpler cousin RMSNorm.",
     "scene": "Recap: the pre-LN block is x = x + attn(LN(x)); x = x + mlp(LN(x)). '+' = the highway that keeps gradients alive; LN = keeps every layer's input at a sane scale.",
     "objects": [
@@ -11483,7 +11493,7 @@
       "id": "pt-xs",
       "label": "3,312 non-embedding params → val 0.888 (fit 0.890)",
       "box": [
-       0.1371,
+       0.1475,
        0.3776,
        0.0141,
        0.025
@@ -11493,7 +11503,7 @@
       "id": "pt-s",
       "label": "14,496 non-embedding params → val 0.672 (fit 0.676)",
       "box": [
-       0.2272,
+       0.2331,
        0.5322,
        0.0141,
        0.025
@@ -11503,7 +11513,7 @@
       "id": "pt-m",
       "label": "25,472 non-embedding params → val 0.646 (fit 0.623)",
       "box": [
-       0.2617,
+       0.2658,
        0.5513,
        0.0141,
        0.025
@@ -11513,7 +11523,7 @@
       "id": "pt-base",
       "label": "150,080 non-embedding params → val 0.488 (fit 0.517)",
       "box": [
-       0.37,
+       0.3687,
        0.665,
        0.0141,
        0.025
@@ -11523,7 +11533,7 @@
       "id": "pt-l",
       "label": "447,552 non-embedding params → val 0.474 (fit 0.481)",
       "box": [
-       0.4367,
+       0.4321,
        0.6747,
        0.0141,
        0.025
@@ -11533,7 +11543,7 @@
       "id": "pt-xl",
       "label": "793,344 non-embedding params → val 0.474 (fit 0.467)",
       "box": [
-       0.4717,
+       0.4653,
        0.6745,
        0.0141,
        0.025
@@ -11543,7 +11553,7 @@
       "id": "pt-xxl",
       "label": "1,779,840 non-embedding params → val 0.464 (fit 0.453)",
       "box": [
-       0.521,
+       0.5122,
        0.682,
        0.0141,
        0.025
@@ -11553,9 +11563,9 @@
       "id": "fit",
       "label": "fitted power law: L = 0.417 + 12.948·N^-0.408",
       "box": [
-       0.0921,
+       0.1051,
        0.2466,
-       0.5413,
+       0.5143,
        0.4691
       ]
      },
@@ -11563,7 +11573,7 @@
       "id": "formula",
       "label": "fit parameters a = 12.948, alpha = 0.408, c = 0.417",
       "box": [
-       0.6651,
+       0.651,
        0.2125,
        0.3005,
        0.4
@@ -11573,9 +11583,9 @@
       "id": "floor",
       "label": "fitted floor c = 0.417 at a fixed 3,072,000-token budget; it moves with data (171k model on 12,288,000 tokens: 0.450)",
       "box": [
-       0.071,
+       0.085,
        0.7179,
-       0.5796,
+       0.5515,
        0.0216
       ]
      },
@@ -11583,7 +11593,7 @@
       "id": "more-data",
       "label": "the 171k model trained on 12,288,000 tokens (ablation baseline) reaches 0.450 vs 0.488 at 3,072,000 tokens: the flattening point moves with data",
       "box": [
-       0.249,
+       0.2456,
        0.3997,
        0.3407,
        0.3173
@@ -11602,7 +11612,7 @@
       "label": "8.4k model: val loss vs compute, up to 1.55e+11 FLOPs",
       "box": [
        0.1907,
-       0.231,
+       0.1998,
        0.1704,
        0.4729
       ]
@@ -11612,7 +11622,7 @@
       "label": "22k model: val loss vs compute, up to 4.09e+11 FLOPs",
       "box": [
        0.2362,
-       0.2378,
+       0.2066,
        0.1745,
        0.4908
       ]
@@ -11622,7 +11632,7 @@
       "label": "36k model: val loss vs compute, up to 6.58e+11 FLOPs",
       "box": [
        0.2607,
-       0.2536,
+       0.2224,
        0.1745,
        0.4781
       ]
@@ -11632,7 +11642,7 @@
       "label": "171k model: val loss vs compute, up to 3.14e+12 FLOPs",
       "box": [
        0.3409,
-       0.3208,
+       0.2896,
        0.1745,
        0.4291
       ]
@@ -11642,7 +11652,7 @@
       "label": "478k model: val loss vs compute, up to 8.82e+12 FLOPs",
       "box": [
        0.3938,
-       0.4126,
+       0.3814,
        0.1745,
        0.3388
       ]
@@ -11652,7 +11662,7 @@
       "label": "834k model: val loss vs compute, up to 1.54e+13 FLOPs",
       "box": [
        0.4223,
-       0.4845,
+       0.4533,
        0.1745,
        0.2669
       ]
@@ -11662,7 +11672,7 @@
       "label": "1.8M model: val loss vs compute, up to 3.39e+13 FLOPs",
       "box": [
        0.4629,
-       0.5709,
+       0.5396,
        0.1745,
        0.1817
       ]
@@ -11672,7 +11682,7 @@
       "label": "compute frontier (real): best run for each budget, 8.4k → 22k → 36k → 171k → 478k → 834k → 1.8M",
       "box": [
        0.1907,
-       0.231,
+       0.1998,
        0.7285,
        0.5216
       ]
@@ -11718,7 +11728,7 @@
       "label": "8,432 params trained on 3,072,000 tokens = 364.3 tokens/param",
       "box": [
        0.282,
-       0.2344,
+       0.1719,
        0.4695,
        0.05
       ]
@@ -11728,7 +11738,7 @@
       "label": "22,176 params trained on 3,072,000 tokens = 138.5 tokens/param",
       "box": [
        0.282,
-       0.3129,
+       0.2504,
        0.4075,
        0.05
       ]
@@ -11738,7 +11748,7 @@
       "label": "35,712 params trained on 3,072,000 tokens = 86.0 tokens/param",
       "box": [
        0.282,
-       0.3915,
+       0.329,
        0.3643,
        0.05
       ]
@@ -11748,7 +11758,7 @@
       "label": "170,560 params trained on 3,072,000 tokens = 18.0 tokens/param",
       "box": [
        0.282,
-       0.4701,
+       0.4076,
        0.2626,
        0.05
       ]
@@ -11758,7 +11768,7 @@
       "label": "478,272 params trained on 3,072,000 tokens = 6.4 tokens/param",
       "box": [
        0.282,
-       0.5487,
+       0.4862,
        0.2085,
        0.05
       ]
@@ -11768,7 +11778,7 @@
       "label": "834,304 params trained on 3,072,000 tokens = 3.7 tokens/param",
       "box": [
        0.282,
-       0.6272,
+       0.5647,
        0.1735,
        0.05
       ]
@@ -11778,7 +11788,7 @@
       "label": "1,841,280 params trained on 3,072,000 tokens = 1.7 tokens/param",
       "box": [
        0.282,
-       0.7058,
+       0.6433,
        0.1219,
        0.05
       ]
@@ -11788,7 +11798,7 @@
       "label": "Chinchilla rule of thumb: about 20 training tokens per parameter for compute-optimal large web-text runs",
       "box": [
        0.1639,
-       0.1674,
+       0.1049,
        0.7132,
        0.6027
       ]
@@ -11798,7 +11808,7 @@
       "label": "redundant corpus: 256k tokens ≈ all 1.6M for the 171k model",
       "box": [
        0.1451,
-       0.8878,
+       0.8691,
        0.7097,
        0.0809
       ]

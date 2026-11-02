@@ -141,7 +141,7 @@ class Loss(VScene):
         ttl = self.T("loss on each next token of the story (real)", 26, MUTED).move_to(UP * 3.0)
         hard = [(k, a, b, p, l) for k, (a, b, p, l) in enumerate(TL) if l > 1]
         easy = sum(1 for *_, l in TL if l < 0.05)
-        with self.say(f"Here's every guess on our story. {easy} of the {n} are nearly free. The spikes are the real coin flips: "
+        with self.say(f"Every guess on our story: {easy} of the {n} are nearly free. The spikes are the real coin flips: "
                       f"which color Mia has, which toy, who comes next.",
                       scene=f"Bar chart of the real loss for each of the {n} next-token predictions in the story (labels = the "
                             f"token being predicted). {easy} cost under 0.05; the spikes (pink) are " +
@@ -261,7 +261,7 @@ class Loss(VScene):
             [ax3.c2p(s_, l_) for s_, l_ in zip(STEPS, VAL)]), num_dashes=110)
         leg = VGroup(VGroup(Line(ORIGIN, RIGHT * 0.5, color=YELLOW, stroke_width=4), self.T("train", 24, YELLOW)).arrange(RIGHT, buff=0.15),
                      VGroup(DashedLine(ORIGIN, RIGHT * 0.5, color=TEAL, stroke_width=2.5, dash_length=0.08),
-                            self.T("validation (unseen text)", 24, TEAL)).arrange(RIGHT, buff=0.15)).arrange(RIGHT, buff=0.5)
+                            self.T("held-out text", 24, TEAL)).arrange(RIGHT, buff=0.15)).arrange(RIGHT, buff=0.5)
         chance = DashedLine(ax3.c2p(0, ln256), ax3.c2p(3000, ln256), color=PINK, stroke_width=2, dash_length=0.12)
         chance_l = self.T(f"pure guessing {ln256:.2f}", 24, PINK).next_to(ax3.c2p(3000, ln256), DOWN, buff=0.12).align_to(ax3.c2p(3000, 0), RIGHT)
         i_below1 = next(i for i, l in enumerate(LOSS) if l < 1)
@@ -269,17 +269,22 @@ class Loss(VScene):
                     self.T(f"below 1 by step {STEPS[i_below1]} (perplexity {math.exp(LOSS[i_below1]):.1f})", 24, ORANGE))
         a1[1].next_to(a1[0], RIGHT, buff=0.25).shift(UP * 1.35)
         a2 = VGroup(Dot(ax3.c2p(3000, LOSS[-1]), color=YELLOW, radius=0.08),
-                    self.T(f"step 3000: {LOSS[-1]:.2f} · validation {VAL[-1]:.2f}", 24, YELLOW))
+                    self.T(f"step 3000: {LOSS[-1]:.2f} · held-out {VAL[-1]:.2f}", 24, YELLOW))
         a2[1].next_to(a2[0], UP, buff=0.45).shift(LEFT * 1.6)
         a0 = VGroup(Dot(ax3.c2p(0, LOSS[0]), color=PINK, radius=0.08), self.T(f"{LOSS[0]:.2f}", 24, PINK))
         a0[1].next_to(a0[0], RIGHT, buff=0.15).shift(UP * 0.2)
         leg.next_to(ax3, UP, buff=0.15).align_to(ax3, RIGHT)
+        # held-out split shares sentence templates with training, so also score freshly generated stories (new seed)
+        Xf, RF = corpus_chunks(3000, 123, T=65)
+        fresh = float(F.cross_entropy(RF["logits"].reshape(-1, 256), Xf[:, 1:].reshape(-1)))
+        fresh_t = self.T(f"freshly generated stories: {fresh:.2f}", 24, TEAL)
         with self.say(f"Here's the real run: {LOSS[0]:.2f} at the start, below one by step {STEPS[i_below1]}, then {LOSS[-1]:.2f}. "
-                      f"On unseen text, also {VAL[-1]:.2f}: it learned patterns, not pages. Some of what's left is coin flips "
-                      f"no model can beat.",
+                      f"Held-out text scores {VAL[-1]:.2f} too. The tiny world reuses sentence templates, so that isn't all new, but "
+                      f"freshly generated stories score {fresh:.2f}: it learned patterns, not pages. Some of what's left is coin "
+                      f"flips no model can beat.",
                       scene=f"The real training-loss curve from training.json ({len(STEPS)} points): {LOSS[0]:.2f} at step 0 on the "
                             f"pure-guessing line (ln 256 = {ln256:.2f}), {LOSS[i_below1]:.2f} at step {STEPS[i_below1]}, "
-                            f"{LOSS[-1]:.2f} at step 3000; validation loss on held-out text (dashed teal) ends at {VAL[-1]:.2f}. "
+                            f"{LOSS[-1]:.2f} at step 3000; held-out loss (dashed teal; shares sentence templates with training) ends at {VAL[-1]:.2f}; freshly generated stories (new seed) score {fresh:.2f}. "
                             "Part of the remaining loss is irreducible (random colors, names).",
                       chapter="The real curve"):
             self.unmark(*list(self._marks))
@@ -287,7 +292,7 @@ class Loss(VScene):
             self.play(Create(ax3), FadeIn(xl3), FadeIn(yl3), FadeIn(xt3), FadeIn(yt3), Create(chance), FadeIn(chance_l), run_time=0.7)
             self.play(FadeIn(a0), run_time=0.3)
             self.play(Create(trc), Create(vac), FadeIn(leg), run_time=2.2, rate_func=linear)
-            self.mark("val", vac, f"validation loss on held-out text: {VAL[0]:.3f} → {VAL[-1]:.3f}")
+            self.mark("val", vac, f"held-out loss (same sentence templates as training): {VAL[0]:.3f} → {VAL[-1]:.3f}")
             self.mark("curve", trc, f"real training loss: {LOSS[0]:.3f} at step 0 → {LOSS[-1]:.3f} at step 3000 (logged every 25 steps)")
             self.mark("chance", VGroup(chance, chance_l), f"uniform-guess loss ln 256 = {ln256:.3f}")
             self.mark("start", a0, f"step 0 loss {LOSS[0]:.4f}")
@@ -296,7 +301,11 @@ class Loss(VScene):
             self.mark("below1", a1, f"first logged loss below 1: step {STEPS[i_below1]}, loss {LOSS[i_below1]:.4f}")
             self.sync("then", 0.1)
             self.play(FadeIn(a2), run_time=0.4)
-            self.mark("end", a2, f"step 3000: train loss {LOSS[-1]:.4f} (perplexity {pplf:.2f}), validation {VAL[-1]:.4f}")
+            self.mark("end", a2, f"step 3000: train loss {LOSS[-1]:.4f} (perplexity {pplf:.2f}), held-out {VAL[-1]:.4f}")
+            self.sync("freshly generated", 0.1)
+            fresh_t.next_to(a2[1], UP, buff=0.15).align_to(a2[1], LEFT)
+            self.play(FadeIn(fresh_t, shift=UP * 0.1), run_time=0.4)
+            self.mark("fresh", fresh_t, f"mean loss on {Xf.shape[0] * 64:,} predictions in freshly generated stories (seed 123): {fresh:.4f}")
 
         # ------------------------------------------------------------ why averaging works
         hdr6 = self.header("6 · Why averaging works")
@@ -331,7 +340,7 @@ class Loss(VScene):
                             + ", ".join(f"{m:.3f}" for m in bmeans) + ".",
                       chapter="Why averaging works"):
             self.unmark(*list(self._marks))
-            self.play(FadeOut(VGroup(ax3, xl3, yl3, xt3, yt3, trc, vac, leg, chance, chance_l, a0, a1, a2)),
+            self.play(FadeOut(VGroup(ax3, xl3, yl3, xt3, yt3, trc, vac, leg, chance, chance_l, a0, a1, a2, fresh_t)),
                       ReplacementTransform(hdr5, hdr6), run_time=0.5)
             self.play(FadeIn(img), Create(imf), FadeIn(iml), FadeIn(iml2), run_time=0.8)
             self.mark("batch", Group(img, imf), f"per-token loss for one real batch of {N_pred:,} predictions; mean {bmeans[0]:.3f}")
@@ -356,7 +365,7 @@ class Loss(VScene):
         big = Arrow(org, org + 1.8 * mean_dir, buff=0, color=YELLOW, stroke_width=7, max_tip_length_to_length_ratio=0.2)
         toy_l = self.T("toy picture", 24, MUTED).next_to(smalls, UP, buff=0.15)
         vote = self.T("every token casts a small vote on each nudge", 26, FG).next_to(eq, DOWN, buff=0.15)
-        with self.say("Here's why that works. The gradient of an average is just the average of the gradients.",
+        with self.say("Why does that work? The gradient of an average is the average of the gradients.",
                       scene="Caption: gradient of the average = average of the gradients."):
             self.play(Group(img, imf, iml, iml2, ff).animate.shift(UP * 0.45 + LEFT * 0.0), run_time=0.4)
             self.play(FadeIn(eq, shift=UP * 0.2), run_time=0.6)
@@ -381,7 +390,7 @@ class Loss(VScene):
         back = CurvedArrow(pills[-1].get_bottom() + DOWN * 0.1, pills[0].get_bottom() + DOWN * 0.1, angle=-PI / 5,
                            color=MUTED, stroke_width=3)
         cta = self.T("now watch the loss fall in the Training lab →", 42, YELLOW, BOLD).move_to(DOWN * 2.5)
-        with self.say("Predict, score, average, nudge. That's the whole signal. Now watch the loss fall in the training lab.",
+        with self.say("Predict, score, average, nudge. Now watch the loss fall in the training lab.",
                       scene="Recap loop: predict the next token → score: −ln p → average everything → nudge, looping back. "
                             "CTA: watch the loss fall in the Training lab.", chapter="Recap"):
             self.unmark(*list(self._marks))
