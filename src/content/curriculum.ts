@@ -17,7 +17,7 @@ export const TRACKS: Track[] = [
 ];
 
 export const CHAPTERS: Chapter[] = [
-  { id: "big-picture", track: "inference", title: "The big picture: GPT in 100 seconds", level: "beginner", minutes: 6, video: "gpt-in-100s", lab: { href: "#/xray", label: "Open the X-ray" } },
+  { id: "big-picture", track: "inference", title: "The big picture: GPT, start to finish", level: "beginner", minutes: 6, video: "gpt-in-100s", lab: { href: "#/xray", label: "Open the X-ray" } },
   { id: "tokens", track: "inference", title: "Tokens: how a model reads", level: "beginner", minutes: 6, video: "tokens", lab: { href: "#/xray/tokens", label: "See your text tokenized" } },
   { id: "embeddings", track: "inference", title: "Embeddings: words as vectors", level: "beginner", minutes: 7, video: "embeddings", lab: { href: "#/xray/vectors", label: "Explore the meaning map" } },
   { id: "attention", track: "inference", title: "Attention: looking back for context", level: "intermediate", minutes: 8, video: "attention", lab: { href: "#/xray/attention", label: "Inspect all 12 heads" } },
@@ -25,7 +25,7 @@ export const CHAPTERS: Chapter[] = [
   { id: "residual-stream", track: "inference", title: "The residual stream & logit lens", level: "intermediate", minutes: 7, video: "residual-stream", lab: { href: "#/xray/layers", label: "Read the logit lens" } },
   { id: "next-token", track: "inference", title: "Next token: logits, softmax & sampling", level: "beginner", minutes: 6, video: "next-token", lab: { href: "#/xray/probs", label: "Play with temperature" } },
 
-  { id: "how-it-learned", track: "training", title: "How it learned, in 100 seconds", level: "beginner", minutes: 6, video: "training", lab: { href: "#/training", label: "Time-travel through training" } },
+  { id: "how-it-learned", track: "training", title: "How it learned", level: "beginner", minutes: 6, video: "training", lab: { href: "#/training", label: "Time-travel through training" } },
   { id: "loss", track: "training", title: "Loss: measuring surprise", level: "beginner", minutes: 6, video: "loss", lab: { href: "#/training", label: "See the real loss curve" } },
   { id: "backprop", track: "training", title: "Backpropagation, visually", level: "intermediate", minutes: 8, video: "backprop", lab: { href: "#/backprop", label: "Step through backprop" } },
   { id: "optimizers", track: "training", title: "Gradient descent, momentum & Adam", level: "intermediate", minutes: 8, video: "optimizers", lab: { href: "#/train", label: "Try learning rates live" } },

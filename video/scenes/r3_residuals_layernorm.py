@@ -126,7 +126,7 @@ class ResidualsLayerNorm(VScene):
         allv = [v for v in gb + gn if v > 0]
         ylo = 10 ** math.floor(math.log10(min(allv))); yhi = 10 ** math.ceil(math.log10(max(allv)))
         yt = [10 ** e for e in range(int(math.log10(ylo)), int(math.log10(yhi)) + 1, 3)]
-        pg = Plot([0, L], [ylo, yhi], width=7.6, height=4.3, ylog=True, xticks=list(range(0, L + 1, 4)), yticks=yt,
+        pg = Plot([0, L], [ylo, yhi], width=7.1, height=4.3, ylog=True, xticks=list(range(0, L + 1, 4)), yticks=yt,
                   xlabel="layer (0 = input embeddings)", ylabel=f"gradient reaching each layer, fresh {L}-layer model (log)",
                   yfmt=lambda v: f"1e{int(round(math.log10(v)))}").move_to(DOWN * 0.45 + LEFT * 1.6)
         lgb = pg.line(list(range(L + 1)), gb, TEAL, 4)
@@ -138,7 +138,7 @@ class ResidualsLayerNorm(VScene):
         an = INIT["no-residual"]["act_rms"]; sp = INIT["no-residual"]["token_spread"]
         side = VGroup(self.T("meanwhile, forward:", 22, MUTED),
                       self.M(f"signal size {an[1]:.2f}…{max(an[1:]):.2f}", 22, FG), self.T("(LayerNorm keeps it flat)", 20, MUTED),
-                      self.M(f"positions differ by {sp[-1]:.0e}", 22, PINK), self.T("(every token, same vector)", 20, MUTED)) \
+                      self.M(f"positions differ: {sp[-1]:.0e}", 22, PINK), self.T("(every token, same vector)", 20, MUTED)) \
             .arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(pg.ax, RIGHT, buff=0.35).shift(UP * 0.4)
         with self.say(f"Measured in a fresh {L}-layer model: without residuals, the gradient reaching the first layer is "
                       f"10 to the {round(math.log10(ratio))} times smaller than at the top. Forward, the signal keeps its size, "

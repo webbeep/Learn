@@ -122,11 +122,11 @@ class TrainYourOwn(VScene):
             wins.add(Rectangle(width=0.1, height=0.7, stroke_width=0, fill_color=YELLOW, fill_opacity=0.9)
                      .move_to(bar_tr.get_left() + RIGHT * (x + 0.05)))
         grid = VGroup(*[Square(0.075, stroke_width=0, fill_color=YELLOW, fill_opacity=0.85) for _ in range(B * T)])
-        grid.arrange_in_grid(rows=B, cols=T, buff=0.012).move_to(LEFT * 2.7 + DOWN * 1.55)
+        grid.arrange_in_grid(rows=B, cols=T, buff=0.012).move_to(LEFT * 2.7 + DOWN * 1.3)
         gl = self.T(f"{B} windows × {T} tokens = {PER_STEP:,} predictions", 26, YELLOW).next_to(grid, UP, buff=0.2)
         loop = VGroup(*[pill(t, c, 26) for t, c in [("average loss", PINK), ("gradient", ORANGE),
                                                      ("nudge every weight", TEAL)]]).arrange(DOWN, buff=0.45)
-        loop.move_to(RIGHT * 3.9 + DOWN * 1.55)
+        loop.move_to(RIGHT * 3.9 + DOWN * 1.25)
         la = VGroup(*[Arrow(loop[i].get_bottom(), loop[i + 1].get_top(), buff=0.08, color=MUTED, stroke_width=3)
                       for i in range(2)])
         into = Arrow(grid.get_right(), loop[0].get_left(), buff=0.25, color=MUTED, stroke_width=3)

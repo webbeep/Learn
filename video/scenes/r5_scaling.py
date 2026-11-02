@@ -155,7 +155,7 @@ class Scaling(VScene):
                 front.append(None); who.append(None)
         fpts = [(g, f) for g, f in zip(grid, front) if f is not None]
         fr = pc.line([g for g, _ in fpts], [f for _, f in fpts], FG, 8, opacity=0.45)
-        frc = self.T("caveat: checkpoints of fixed-length runs; a run scheduled for each budget would do a bit better",
+        frc = self.T("caveat: mid-run checkpoints; a run planned for each budget does a bit better",
                      22, MUTED).to_edge(DOWN, buff=0.4)
         winners = []
         for g, w in zip(grid, who):
