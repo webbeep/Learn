@@ -1,0 +1,95 @@
+{
+ "id": "train-your-own",
+ "lines": [
+  {
+   "orig": "Here's the whole recipe for training your own model: data, batches, steps, and two numbers to watch.",
+   "visuals": "Title 'training your own model' and four pills joined by arrows: data → batches → steps → watch the loss.",
+   "keep": [
+    "data,"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Start with text. Ours is 5.2 million characters, which the tokenizer turns into 1.69 million tokens. Hold back the last five percent of documents. The model never trains on them. That's your validation set.",
+   "visuals": "A long bar of 1,686,858 tokens split into train (1,602,516, blue, 95%) and validation (84,342, teal, 5%) from 5,177,530 characters of corpus.",
+   "keep": [
+    "tokenizer",
+    "Hold back",
+    "validation set"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "One catch. Our tiny world reuses the same sentence templates, so 55 percent of the validation stories also appear word for word in training. Real projects deduplicate before splitting. So we also test on the 1,359 stories that are new combinations.",
+   "visuals": "Leakage check: 1,642 of 3,001 validation lines (54.7%) appear verbatim in the training text (pink squares); the 1,359 that do not (48,444 tokens, teal) form a deduplicated validation set. Every validation sentence pattern still occurs in training.",
+   "keep": [
+    "Our",
+    "Real projects",
+    "So we also"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each step grabs 32 random windows of 64 tokens, predicts the next token at every position, averages the loss, and nudges every weight once.",
+   "visuals": "32 yellow windows light up at random spots of the training bar and drop into a 32×64 grid (2,048 predictions); then average loss → gradient → nudge every weight = one step.",
+   "keep": [
+    "averages",
+    "nudges"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "An epoch is one full pass over the training data: about 782 steps here. Our 1,500-step runs see each token about twice, on average. Windows are random, so some tokens get seen more, and some never.",
+   "visuals": "Equation: 1,602,516 training tokens ÷ 2,048 tokens per step ≈ 782 steps per epoch; 1,500 steps ≈ 1.9 epochs.",
+   "keep": [
+    "Our",
+    "Windows are"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now watch two numbers. Training loss: how well it does on text it studies. Validation loss: held-out text. With all the data they move together, and the deduplicated set lands at 0.51. Here, unseen means new combinations of familiar sentences.",
+   "visuals": "Real curves, all 1,602,516 training tokens, 1500 steps, loss axis 0–6: train (yellow), validation (pink) and deduplicated validation (dashed blue) start at 5.56 and end at 0.483 / 0.488 / 0.514.",
+   "keep": [
+    "Validation loss",
+    "deduplicated"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now the same model and the same 1,500 steps, but only 4,096 tokens of training data. That's 750 epochs. Training loss dives to 0.07. Validation loss bottoms out around step 200, then climbs.",
+   "visuals": "Real overfitting run (axis zoomed to 0–3): 4,096 training tokens (750 epochs). Train loss (yellow) → 0.067; validation loss (pink) is best (1.156) at step 200 and ends at 1.728 (deduplicated validation: 1.784).",
+   "keep": [
+    "Training loss dives",
+    "Validation loss"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "It memorized those few thousand tokens instead of learning the language. That widening gap is overfitting.",
+   "visuals": "A pink arrow spans the gap between train 0.07 and validation 1.73 at step 1500: overfitting (memorizing, not generalizing).",
+   "keep": [
+    "overfitting"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Give it more data and the gap closes. 1.7 with four thousand tokens, and by 256 thousand it's already gone. This corpus repeats itself a lot.",
+   "visuals": "Four real runs side by side (4k tokens, 32k tokens, 256k tokens, all 1.6M tokens), each with train (yellow) and validation (pink) curves; final gaps (val − train): 1.662, 0.185, 0.005, 0.005.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "While yours trains, check four things. First loss near log of the vocab size. A fast drop, then a slow grind. Validation following training. And no spikes.",
+   "visuals": "Checklist: 1) step-0 loss ≈ ln(256) = 5.55 (ours 5.56); 2) fast drop then slow grind; 3) validation follows training (gap → more data / smaller model / early stop); 4) no spikes or NaN (else lower the learning rate).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "That's the whole recipe. Now train one in your browser.",
+   "visuals": "Final card: 'now train one in your browser →'.",
+   "keep": [],
+   "new": ""
+  }
+ ]
+}

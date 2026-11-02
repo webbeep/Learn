@@ -1,0 +1,82 @@
+{
+ "id": "frontier",
+ "lines": [
+  {
+   "orig": "Want to invent a new kind of model? Here's a map of where people are pushing. Each idea changes one part of the engine TinyGPT runs on.",
+   "visuals": "A map: TinyGPT's parts in the centre (tokens & positions, attention, MLP, next-token loss, generation loop) with ten research directions around it, grouped into clusters: long sequences & fast inference (RoPE, efficient attention, state-space/Mamba, grouped-query attention), more model per FLOP (mixture of experts, distillation), knowledge outside the weights (retrieval), new ways to generate (diffusion LMs, test-time compute), how it learns (better training). Dashed lines show which part each idea changes.",
+   "keep": [
+    "Here",
+    "Each idea"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "RoPE rotates queries and keys by their position, so attention sees relative distance. It helps stretch context, but using very long contexts well is still hard.",
+   "visuals": "Positions & long context (RoPE) (replaces the position table in TinyGPT). Idea: rotate each query and key by angles set by its position, so position enters the score as relative distance. Open question: stretching past the training length only partly works; using very long contexts well is still hard. Refs: RoFormer (Su et al. 2021) · Chen et al. 2023 · Lost in the Middle (Liu et al. 2023).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Efficient attention approximates or restricts attention, like sliding windows, to dodge the quadratic cost, often losing some quality. FlashAttention instead stays exact and just runs faster.",
+   "visuals": "Linear / efficient attention (changes attention in TinyGPT). Idea: approximate or restrict attention (kernel tricks, sparse or sliding windows) so cost grows ~linearly. Open question: approximations often cost quality; FlashAttention instead stays exact and just runs faster. Refs: Katharopoulos et al. 2020 · Longformer (2020) · FlashAttention (Dao et al. 2022).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "State-space models like Mamba replace attention with a recurrence that carries a fixed-size state, so cost grows linearly with length. Open question: how much exact detail that state can hold.",
+   "visuals": "State-space models (Mamba) (replaces attention (Mamba: the whole block) in TinyGPT). Idea: a recurrence carries a fixed-size state along the sequence, yet still trains in parallel; Mamba makes its updates depend on the input. Open question: how much exact detail a fixed-size state can recall; hybrids that keep some attention are popular. Refs: S4 (Gu et al. 2021) · Mamba (Gu & Dao 2023).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Grouped-query attention lets several query heads share one key and value head. That shrinks the KV cache and speeds up generation, usually with little quality loss.",
+   "visuals": "Grouped-query attention (changes attention and the KV cache in TinyGPT). Idea: several query heads share one key/value head, so far less has to be cached per token. Open question: how much sharing before quality drops; one shared K/V head (multi-query) is the extreme. Refs: multi-query attention (Shazeer 2019) · GQA (Ainslie et al. 2023).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Mixture of experts swaps the MLP for many expert MLPs, with a router picking a few per token: more parameters, without proportionally more compute. Balancing the experts is the hard part.",
+   "visuals": "Mixture of experts (replaces the MLP in TinyGPT). Idea: many expert MLPs; a learned router sends each token to a few: more parameters, not proportionally more compute. Open question: balancing load across experts; the memory to hold them all. Refs: Shazeer et al. 2017 · Switch Transformer (Fedus et al. 2021) · Mixtral (2024).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Distillation trains a small student on a big teacher's outputs: its full probabilities, or text it generated. How much skill survives the shrink is the open question.",
+   "visuals": "Distillation & small models (changes the training target in TinyGPT). Idea: train a small student on a big teacher's outputs: its full probabilities, or text it generated. Open question: how much capability survives the shrink. Refs: Hinton, Vinyals & Dean 2015 · DistilBERT (Sanh et al. 2019).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Retrieval-augmented models look things up, putting relevant documents into the context. Knowledge can stay fresh without retraining, if retrieval finds the right text and the model uses it.",
+   "visuals": "Retrieval-augmented models (adds to the input (what it reads) in TinyGPT). Idea: look up relevant documents in an external store and put them into the context. Open question: finding the right text, and making the model actually use it. Refs: RAG (Lewis et al. 2020) · RETRO (Borgeaud et al. 2021).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Diffusion language models drop left-to-right: start fully masked, and refine every position over a number of steps. Whether they match autoregressive quality at scale is still open.",
+   "visuals": "Diffusion language models (replaces the left-to-right generation loop in TinyGPT). Idea: start from a fully masked sequence and refine every position over a number of steps. Open question: whether they match autoregressive quality and efficiency at scale is still being studied. Refs: D3PM (Austin et al. 2021) · masked diffusion LMs (e.g. Sahoo et al. 2024).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Test-time compute spends more thinking per question: write out reasoning steps, or sample several answers and vote. Some recent models are trained with reinforcement learning to reason longer.",
+   "visuals": "Test-time compute & reasoning (changes how the generation loop is used in TinyGPT). Idea: spend more compute per question: write out steps, or sample several answers and vote. Open question: when extra thinking pays off, what it costs, and whether written steps reflect the real computation. Refs: chain of thought (Wei et al. 2022) · self-consistency (Wang et al. 2022) · DeepSeek-R1 (2025).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "And if you'd rather invent a training framework: optimizers, data quality and curricula, new objectives like predicting several tokens at once, RL after pretraining, and lower-precision math are all active areas.",
+   "visuals": "Better training (changes how it learns, not what it is in TinyGPT). Idea: the optimizer, the data and its order, the objective, RL after pretraining, the number format. Open question: many reported gains shrink at larger scale or against a well-tuned baseline. Refs: Adam (Kingma & Ba 2015) · Micikevicius et al. 2018 · multi-token: Gloeckle et al. 2024.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Every one of these changes one box. Pick a box, form a hypothesis, and run the loop.",
+   "visuals": "Back to the full map: TinyGPT's five parts with the ten directions around them. CTA: pick a box, form a hypothesis, run the loop (Invent lab).",
+   "keep": [
+    "Pick a box"
+   ],
+   "new": ""
+  }
+ ]
+}

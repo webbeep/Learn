@@ -1,0 +1,97 @@
+{
+ "id": "optimizers",
+ "lines": [
+  {
+   "orig": "Same model, same data, same 1,000 steps. Only one number changed: the learning rate. And it decides everything.",
+   "visuals": "Real validation-loss curves of TinyGPT trained 1000 steps with AdamW at 7 learning rates (1e-4 … 0.1): lr 1e-4 → 1.74, lr 3e-4 → 0.81, lr 1e-3 → 0.66, lr 3e-3 → 0.55, lr 0.01 → 0.55, lr 0.03 → 1.13, lr 0.1 → 3.72.",
+   "keep": [
+    "decides"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Picture the loss as a landscape and the weights as a ball. The gradient is the slope under the ball. Step downhill by the learning rate times the slope. Repeat.",
+   "visuals": "Toy 1-D loss landscape (illustration) with a yellow ball, an orange tangent showing the slope, and the update rule w ← w − lr × slope; the ball takes 8 steps downhill.",
+   "keep": [
+    "The gradient",
+    "Step downhill"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Too small: you crawl. Just right: you settle in a few steps. Too big: every step overshoots, bouncing higher and higher.",
+   "visuals": "Three toy bowls (illustration): too small (creeps), just right (settles), too big (overshoots, bouncing out of the valley).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "The real runs agree. Learning rate one e minus four is still crawling at 1.74. three e minus three reaches 0.55. At 0.1, it thrashes around and ends at 3.72.",
+   "visuals": "Real AdamW validation curves: lr 1e-4 (too small) ends at 1.74, lr 3e-3 (best) ends at 0.55, lr 0.1 (too big) ends at 3.72.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Loss landscapes often have long, narrow valleys. Plain gradient descent zigzags across the walls and creeps along the floor. Momentum adds up past gradients: the back-and-forth parts cancel, and the steady downhill part builds speed.",
+   "visuals": "Toy 2-D elongated valley (illustration, contour ellipses), same learning rate 0.19 for both. Top: plain gradient descent zigzags for all 30 steps and ends 1.41 from the minimum; bottom: with momentum (β=0.5, v = 0.5·v + gradient) the zigzag dies out within ~8 steps and it ends 0.32 from the minimum.",
+   "keep": [
+    "Plain",
+    "Momentum adds"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "On the real model, the best plain SGD ends at 0.74. With momentum, 0.57, at a lower learning rate, since momentum sums gradients.",
+   "visuals": "Real runs, best learning rate of each: SGD (lr 1) → 0.74, SGD + momentum 0.9 (lr 0.3) → 0.57.",
+   "keep": [
+    "Plain",
+    "With momentum"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Here's the catch. At step zero, typical gradient sizes differ 274 times between weight tensors. One learning rate can't suit them all.",
+   "visuals": "Real per-weight gradient size (RMS of the gradient) for 8 of TinyGPT's tensors at initialisation, log scale: from 7.1e-05 (blocks.0.ln1.weight) to 1.9e-02 (blocks.0.attn_out.bias), a 274× spread.",
+   "keep": [
+    "differ"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Adam keeps two running averages for every weight: the gradient, which is momentum, and the gradient squared. Dividing one by the square root of the other gives each weight its own step size.",
+   "visuals": "Adam's update: step = lr × avg(gradient) / √avg(gradient²). Top term = momentum (smoothed direction); bottom = each weight's own typical gradient size, so each weight moves at most about lr per step. PyTorch defaults β1 0.9, β2 0.999, + ε.",
+   "keep": [
+    "The gradient",
+    "the gradient,",
+    "gradient squared",
+    "Dividing"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "AdamW adds weight decay, a small shrink of every weight each step, applied directly to the weights. In this one sweep its good range spans 10 times; momentum SGD's, 3; plain SGD never got close. That forgiveness is a big reason it's the usual default.",
+   "visuals": "Grid of every real sweep run (learning rate → final val loss). Teal boxes are within 25% of the best (0.68): AdamW 3/7, SGD+momentum 2/4, SGD 0/4.",
+   "keep": [
+    "Plain"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Our real recipe also uses a schedule: warm up for 100 steps while Adam's averages are still noisy, then decay along a cosine so the model settles. The sweep kept the rate constant on purpose.",
+   "visuals": "Real learning-rate schedule of the shipped TinyGPT recipe (train/train.py): linear warm-up over 100 steps to 0.003, then cosine decay to 0 at step 3000; plus gradient clipping at norm 1.0. The sweep in this video used a constant rate instead.",
+   "keep": [
+    "warm up",
+    "then decay"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "So: start with AdamW, sweep the learning rate in steps of three, warm up then decay, and if the loss spikes, turn it down.",
+   "visuals": "Recap pills: start with AdamW; sweep the learning rate ×3 at a time; warm up, then decay; loss spikes → lower it.",
+   "keep": [
+    "warm up",
+    "then decay"
+   ],
+   "new": ""
+  }
+ ]
+}

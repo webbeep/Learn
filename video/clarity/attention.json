@@ -1,0 +1,96 @@
+{
+ "id": "attention",
+ "lines": [
+  {
+   "orig": "How does the word 'the' know to look back at 'red'? Attention. Let's build it from three arrows.",
+   "visuals": "The prompt start 'mia has a red ball' … 'tom has the' with a yellow curved arrow from the last ' the' back to ' red' and a question mark.",
+   "keep": [
+    "Attention."
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Every token turns its vector into three new ones. A query that asks, what am I looking for. A key that says, here's what I've got. And a value, the info it hands over if it gets picked.",
+   "visuals": "The token ' the' spawns three arrows: query (blue) 'what am I looking for?', key (teal) 'what do I contain?', value (orange) 'what do I hand over if picked?'. Note: each = the token's vector × its own learned matrix (W_Q, W_K, W_V).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "To score a match, take the dot product of a query with each earlier key. Pointing the same way scores high. At right angles, zero. Opposite, negative.",
+   "visuals": "Toy 2-D plane: a blue query arrow and a teal key arrow sweeping around it; a live readout of q · k goes high when aligned, 0 at right angles, negative when opposite.",
+   "keep": [
+    "same way",
+    "right angles",
+    "Opposite"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Do it for every earlier token, and you get one score each. Red's key lines up with the query, so it scores highest.",
+   "visuals": "Three toy keys for ' red', ' mia', ' ball' drawn in the plane; a table of dot products: ' red' +4.8, ' mia' +0.2, ' ball' −0.8.",
+   "keep": [
+    "scores highest"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Divide by the square root of the vector size. Real heads here use 16 numbers, so divide by 4. That stops scores from growing with size and saturating the softmax. Then softmax turns every score into a positive weight, and the weights add up to one.",
+   "visuals": "Score bars drawn from a zero line (q·k/√2: ' red' +3.39 and ' mia' +0.14 to the right, ' ball' −0.57 to the left) morph into softmax weight bars: ' red' 94.5%, ' mia' 3.7%, ' ball' 1.8%. Note: d is the key size, 2 in the toy, 16 in TinyGPT's heads.",
+   "keep": [
+    "Then softmax"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The output is the weighted sum of the values, so it's mostly the value of whatever matched best. One more matrix mixes the heads' outputs, and the result gets added onto the token's vector.",
+   "visuals": "Left: the three weights shrink to the side. Right: toy value vectors (orange) for ' red', ' mia', ' ball'; scaled by their weights and added tip to tail, they give the yellow output arrow, almost exactly red's value (red's value arrow stays visible on top). Caption: one more matrix (W_O) mixes the heads and the result is added onto the token's vector.",
+   "keep": [
+    "weighted sum",
+    "One more matrix"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Every token asks its own query at the same time, one row each. One rule. No peeking at the future. A causal mask blocks each token from looking at anything after itself, which keeps next-token training honest.",
+   "visuals": "The real 23×23 attention matrix of layer 2 head 4 on the prompt (rows = query positions 0–22, columns = key positions 0–22): lower triangle colored by weight, the upper triangle (future positions) blocked in dark red and outlined along the cell edges.",
+   "keep": [
+    "A causal mask"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now the real thing. Layer two, head four, on our prompt. From the final 'the', it puts 93 percent of its attention on 'red', way back at position three.",
+   "visuals": "All 23 prompt tokens in a column; lines fan from the final ' the' (query) to the tokens so far. The line to ' red' (position 3) is thick and yellow, labeled score 4.28 → 93%; the other lines are thin and unlabeled (each under 3%).",
+   "keep": [
+    "93"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "So red's value gets carried forward, right to the spot where the model has to name a color. Switch this one head off, and red drops from 87 percent to 2. Nobody programmed that. It fell out of training.",
+   "visuals": "An orange 'value' dot travels from ' red' along the yellow line into the final ' the'. Real ablation (this head's output zeroed): P(' red') 87.1% → 2.2%. Flash: 'nobody programmed this'.",
+   "keep": [
+    "Switch this",
+    "Nobody"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each layer has four heads, and each one learns its own habit. Layer one, head four stares at 'now'. Layer two, head one looks at 'ball'. Twelve heads, twelve habits.",
+   "visuals": "A 3×4 grid of all 12 heads. Each panel shows that head's real attention from the final ' the' over the 23 positions as a mini bar chart, plus its top target (e.g. L1H4 → ' now' 87%, L2H1 → ' ball' 60%, L2H4 → ' red' 93%).",
+   "keep": [
+    "Layer one, head four",
+    "Layer two, head one"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Many heads, many habits, all running in parallel. Go find your favorite head in the X-ray.",
+   "visuals": "The 12-head grid stays up; final card: 'go find your favorite head in the X-ray'.",
+   "keep": [
+    "Go find"
+   ],
+   "new": ""
+  }
+ ]
+}

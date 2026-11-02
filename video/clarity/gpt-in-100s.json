@@ -1,0 +1,104 @@
+{
+ "id": "gpt-in-100s",
+ "lines": [
+  {
+   "orig": "Now Tom has the... what? This tiny GPT says red. 87 percent sure. Nobody told it the rules.",
+   "visuals": "The prompt 'mia has a red ball. tom has a blue kite. mia gives the ball to tom. now tom has the ___' appears line by line; the blank fills with 'red' and an 87% badge.",
+   "keep": [
+    "says red",
+    "87"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Three layers. 170 thousand parameters. Trained for 80 seconds on a CPU. About a million times smaller than GPT-3.",
+   "visuals": "Three stat cards: 3 layers, 170,560 parameters, ~80 s of training on a CPU. Punchline flash: about 1,000,000x smaller than GPT-3.",
+   "keep": [
+    "a million"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Step one, chop the text into tokens. Spaces stick to the front of words, and every chunk gets an ID number. 23 tokens.",
+   "visuals": "The four prompt lines turn into 23 colored token chips (one row per sentence), each with its ID underneath; the leading space shows as ␣.",
+   "keep": [
+    "Spaces",
+    "23 tokens"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each ID grabs a row of 64 numbers from a lookup table, its embedding. Add a position vector, and every token becomes a point in 64-dimensional space.",
+   "visuals": "The ' red' chip (id 157) is pulled out; below it a strip of 64 colored cells (its real embedding: orange positive, blue negative), plus the position-3 vector, equals the input vector.",
+   "keep": [
+    "Add a position"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Squash those 64 numbers down to two, and you can see what it learned. Names land in one neighborhood. Colors land in another. Nobody told it that.",
+   "visuals": "A 2-D PCA map of all 256 real token embeddings: names (teal) cluster at the bottom, colors (pink) form a tight cluster near the things (yellow); other tokens are faint gray dots. Caveat on screen: these 2 axes keep only 13% of the spread.",
+   "keep": [
+    "Names",
+    "Colors land"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now the tokens talk. In every attention layer, each token looks back at the tokens so far, itself included, and pulls in whatever looks useful.",
+   "visuals": "The 23 tokens slide into a column; on the right, the last token ' the' is the query. Lines fan out from it to the tokens so far, itself included (on-screen caption: layer 2, averaged over its 4 heads; line thickness = attention weight).",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "One head in layer two, looking from the last 'the', puts 93 percent of its attention on 'red'. Switch that head off, and red drops from 87 percent to 2. On stories like this, it fetches the handed-over item's color.",
+   "visuals": "Only layer 2 head 4 remains: a thick yellow line from the final ' the' to ' red' (position 3) labeled 93%, and two thin unlabeled lines (each under 3%) to '.' and ' ball'. Flash: 'head off: red 87% → 2%' (real ablation: this head's output zeroed).",
+   "keep": [
+    "93",
+    "Switch that",
+    "87"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Attention moves information between tokens. Then a small MLP works on each token alone. Each one adds its result onto the token's vector, the residual stream. That pair is a layer, and this model stacks three.",
+   "visuals": "Diagram: vectors → three layer panels, each with a '+ attention' and a '+ MLP' box → scores. Caption: residual stream, each block adds its output onto the token's vector (x = x + attention(x), x = x + MLP(x)).",
+   "keep": [
+    "Then a small",
+    "Each one adds",
+    "stacks three"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Peek at its best guess after each layer. Layer one says 'the', layer two says 'white', and only the final MLP locks in red, at 87 percent. Layer two fetched the color, MLP three turns it into the answer.",
+   "visuals": "Under each layer panel, the model's top guess for the next token if we stopped there (logit lens): layer 1 ' the' 33%, layer 2 ' white' 12%, layer 3 ' red' 87%.",
+   "keep": [
+    "87"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The final vector is scored against all 256 tokens, and softmax turns the scores into probabilities. Red 87 percent, white 6, purple 5, crumbs for the rest.",
+   "visuals": "Horizontal probability bars for the next token: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%, ' black' 0.28%, ' ava' 0.15%, all 251 others combined 1.54%.",
+   "keep": [
+    "87"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Take the top pick, append it, run it again. Red. Ball. Period. Newline. Once upon a time. Always taking the top pick is greedy. Rolling weighted dice is sampling.",
+   "visuals": "Greedy decoding: the context '… now tom has the' gets the model's top pick appended each step (' red', ' ball', '.', newline, 'once', ' upon', ' a', ' time', with their probabilities); the row slides left as it grows, with a loop arrow feeding the output back in.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "That's GPT. Text in, probabilities out, one token at a time. Now go poke it in the X-ray.",
+   "visuals": "Summary pipeline: text → tokens → vectors → 3 × (attention + MLP) → probs → pick, with a 'repeat' arrow looping back. Final card: 'now go poke it in the X-ray'.",
+   "keep": [
+    "Now go poke"
+   ],
+   "new": ""
+  }
+ ]
+}

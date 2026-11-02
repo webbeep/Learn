@@ -1,0 +1,88 @@
+{
+ "id": "mlp",
+ "lines": [
+  {
+   "orig": "Attention lets tokens share information. Then every token goes off alone, through a small network called the MLP. It holds two thirds of each layer's weights.",
+   "visuals": "One transformer layer: an attention box ('tokens share information') above an MLP box ('each token thinks alone'). A bar splits each layer's weights: attention 16,640 vs MLP 33,088 (67%).",
+   "keep": [
+    "Then every",
+    "The MLP",
+    "two thirds"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Inside, three steps. Expand the 64 numbers into 256 neurons. Pass each through GELU, which lets positive signals through and squashes negatives to nearly zero. Then project back to 64, and add the result to the token's vector.",
+   "visuals": "Network diagram: 64 inputs (blue) fan out to 256 hidden neurons (yellow; drawn 2 per dot) then back to 64 outputs (teal). Inset: the real GELU curve (negative in → ~0, positive in → passes). The output is added back to the token's vector.",
+   "keep": [
+    "Expand",
+    "Pass each",
+    "Then project"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Here are the real 256 neuron values in layer 3, for the last word of our story. Most stay quiet. Only 18 percent fire above 0.1.",
+   "visuals": "Bar chart of the 256 real post-GELU activations in layer 3 at the final ' the' of 'mia has a red ball … now tom has the'. Most are ≈0 (gray); 18% exceed 0.1 (yellow); the largest is neuron #212 at 2.17.",
+   "keep": [
+    "Only"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each neuron's input weights are a pattern it's looking for. Here's one we found by browsing: neuron 1 in layer 1. It fires on 'a' after 'has': right before the thing being owned. Here, a color.",
+   "visuals": "The 23 story tokens as chips; each chip glows yellow by how strongly layer 1 neuron #1 fires on it. It fires on both ' a' tokens (1.21, 1.64), right before ' red' and ' blue'; elsewhere it is near zero.",
+   "keep": [
+    "Input weights",
+    "fires on",
+    "Right before"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "In 400 fresh stories, 200 of its 200 strongest firings came right before a color word. And its output weights push, roughly, toward red, purple, black, green. In these stories, a 'color comes next' detector that nobody designed.",
+   "visuals": "Left: real top contexts for layer 1 neuron #1 in 400 freshly generated stories, e.g. '…zoe has[ a] →  red'; '…nora has[ a] →  blue'; 200/200 of its strongest firings are followed by a color. Right: tokens its output weights push toward (projected through the unembedding, roughly): red, purple, black, green, white.",
+   "keep": [
+    "Right before",
+    "And its output",
+    "Output weights"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The five neurons firing hardest in layer 3, on the final 'the': Number 212 pushes toward so, red and purple. Number 77, toward says and word fragments. Most of them look mixed, with unrelated tokens at the top. That's often called polysemantic.",
+   "visuals": "The five most active real layer-3 neurons at the final ' the', each with its activation bar and the 4 tokens its output weights push toward (roughly): #212 (2.17) → so, red, i, purple; #77 (1.88) → says, bl, lo, j; #228 (1.79) → white, fo, py, ing; #72 (1.64) → ed, oo, she, t; #203 (1.61) → g, p, l, k. Colors are highlighted pink; most of these look mixed, with unrelated tokens near the top (often called polysemantic).",
+   "keep": [
+    "polysemantic"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Attention in layer 2 already fetched red from earlier in the story. This MLP turns that into the prediction. Just before it, red had 1.9 percent. Right after it, 87.",
+   "visuals": "Two bars for P(' red') read out with the logit lens: 1.9% just before layer 3's MLP vs 87.1% right after it. Note: before the MLP the top guess was 'e' at 28.3%. Layer 2's attention fetched ' red' (head 4); layer 3's MLP turns it into the prediction.",
+   "keep": [
+    "Right after"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "So where do facts live? One leading view: an MLP works like a key-value memory. Input weights are keys that recognize a situation. Output weights are values that write an answer. Researchers have changed facts a model states with one targeted edit to a single MLP layer. Strong evidence, but not the whole story.",
+   "visuals": "Diagram: key (input weights: recognize a situation) → value (output weights: write an answer). Example from this model: '… has a' → push toward colors (layer 1 neuron #1). Footnote: one leading view (Geva et al. 2021; Meng et al. 2022), not the whole story.",
+   "keep": [
+    "key-value",
+    "Input weights",
+    "Output weights"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Attention moves information between tokens. The MLP transforms it, inside each token. Stack both three times, and the vector at 'the' reads as red. Go poke the neurons in the X-ray.",
+   "visuals": "Recap cards: attention (blue) moves information between tokens (an arc from ' red' to ' the'); the MLP (teal) transforms each token on its own (the vector at ' the' → MLP → now reads as ' red'). CTA: poke the neurons in the X-ray.",
+   "keep": [
+    "The MLP",
+    "Go poke"
+   ],
+   "new": ""
+  }
+ ]
+}

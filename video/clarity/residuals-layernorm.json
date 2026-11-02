@@ -1,0 +1,82 @@
+{
+ "id": "residuals-layernorm",
+ "lines": [
+  {
+   "orig": "Delete the x plus from every block of TinyGPT. Same data, same 3,000 steps. The normal model reaches 0.45. The edited one stalls at 4.50: about the unigram level. It only learned which words are common.",
+   "visuals": "Code 'x = x + attn(LN(x))' with 'x +' struck out. Real validation curves, 3-layer TinyGPT trained 3000 steps: with residuals (teal) → 0.450; without (pink) stalls at 4.502, close to the unigram baseline 4.556 (dashed: a model that only knows word frequencies).",
+   "keep": [
+    "The normal",
+    "The edited",
+    "the unigram"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "And it ignores you. Three different prompts, almost the same words back.",
+   "visuals": "Real samples from the no-residual model for three different prompts: ' daym a. one the toam the a..ied pink no' | ' day hill a. one the toam the a..i\\n. now' | ' daym a.ed say toam the a..ied. now.. bl'.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Why? Training sends a gradient backward through every layer. Without the plus, each layer multiplies it by its own slope. In a deep plain stack that's about times 0.2 per layer, and twenty-four of those leave almost nothing.",
+   "visuals": "Backward pass as a chain of ×0.19 pills (the real average per-layer shrink of the gradient in a 24-layer no-residual TinyGPT at init); 0.19^24 = 4.0e-18.",
+   "keep": [
+    "twenty-four"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Measured in a fresh 24-layer model: without residuals, the gradient reaching the first layer is 10 to the 17 times smaller than at the top. Forward, the signal keeps its size, but every position ends up holding the same vector. With residuals, the gradient is nearly flat.",
+   "visuals": "Real measurement, a separate 24-layer TinyGPT at initialisation: RMS of the gradient reaching each layer (log scale). Without residuals (pink) it falls from 4.9e-04 at the top to 2.0e-21 at the input (×10^-17); with residuals (teal) it stays ≈ 5.5e-05–4.3e-05. Side note: without residuals the forward signal RMS stays 0.04–0.05, but positions become identical (spread 1.4e-07).",
+   "keep": [
+    "without residuals",
+    "Forward",
+    "With residuals"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Our 3-layer model isn't that deep: its gradient shrinks only about 130 times. So how stuck it gets depends on the starting weights. With the standard small init, it stalls. Start the blocks larger, and the same plain stack does learn. Residuals make depth easy to train, whatever the init.",
+   "visuals": "Real: 3-layer TinyGPT without residuals at init, gradient shrinks 130× from top to embeddings. Two 600-step runs (batch 32): block init std 0.02 → val 4.569 (stalled), std 0.125 → 2.947 and still falling.",
+   "keep": [
+    "standard small",
+    "Start the"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The plus sign builds a highway. The signal travels straight along it, and each block reads from it and adds an edit back. On the way back, every plus passes the gradient through unchanged, so even the first layer gets a strong signal.",
+   "visuals": "Diagram: a yellow 'residual stream' arrow left to right; attention and MLP blocks branch off it and add their output back through '+' nodes; a pink arrow below shows the gradient flowing straight back through every +.",
+   "keep": [
+    "each block",
+    "On the way back"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "As blocks keep adding edits, the stream itself grows. LayerNorm doesn't shrink it. It hands each block a rescaled copy: subtract the mean, divide by the spread, per token, then a learned gain and bias. Every block reads inputs of a sane size.",
+   "visuals": "Illustration: a 12-number vector (orange, mean 0.7, std 1.5) passes through LayerNorm, (x − mean)/std (→ mean 0, std 1), then a learned gain and bias. Applied per token across its 64 numbers, to the copy each block reads; the residual stream itself is unchanged.",
+   "keep": [
+    "It hands",
+    "each block"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "In real trained 12-layer models, the stream grows about 12 times from bottom to top even with LayerNorm. Without it, 165 times, and validation loss ends at 0.69 instead of 0.62. Remove the residuals instead: 4.57.",
+   "visuals": "Left: real RMS of the hidden state at each layer of trained 12-layer models: with LayerNorm 0.15 → 1.75; without 0.07 → 12.35. Right: real validation curves (1000 steps): residual+LN 0.620, no LN 0.693, no residual 4.569.",
+   "keep": [
+    "validation loss"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "So every block is two lines: read a normalized copy, add the result back. Virtually every modern transformer keeps both ideas: a residual stream and a normalization layer, LayerNorm or its simpler cousin RMSNorm.",
+   "visuals": "Recap: the pre-LN block is x = x + attn(LN(x)); x = x + mlp(LN(x)). '+' = the highway that keeps gradients alive; LN = keeps every layer's input at a sane scale.",
+   "keep": [
+    "add the result"
+   ],
+   "new": ""
+  }
+ ]
+}

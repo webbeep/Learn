@@ -1,0 +1,67 @@
+{
+ "id": "research-loop",
+ "lines": [
+  {
+   "orig": "Inventing a new model isn't one big idea. It's a loop: a hypothesis, the smallest experiment that could test it, a baseline, one change, an honest comparison, and only then, scale up what wins. Let's run it, for real, on TinyGPT.",
+   "visuals": "The research loop as six pills around a circle: hypothesis → smallest experiment → baseline → change ONE thing → compare across seeds → scale up what wins → back to hypothesis.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Hypothesis: TinyGPT doesn't need its position embeddings. Attention by itself ignores word order, but the causal mask leaks some: each token sees a different number of tokens before it. So maybe it can work out positions on its own.",
+   "visuals": "TinyGPT's input = token embedding + position embedding, with the position embedding crossed out: 'what if TinyGPT had no position embeddings?'. A 6×6 causal mask: token k sees k tokens, so some order information leaks in.",
+   "keep": [
+    "but the causal",
+    "So maybe"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The smallest test: short runs of 600 steps, a few minutes at most on two CPU threads. Same code, same data, same batches, same seed. The baseline is unchanged TinyGPT; the only difference is one line.",
+   "visuals": "Experiment setup (real): both runs use 600 steps, batch 64×64, AdamW lr 0.003, cosine schedule, seed 0, identical batches, CPU with 2 threads (30–235 s per run). Baseline: x = tok(idx) + pos(t). Variant: x = tok(idx).",
+   "keep": [
+    "The baseline",
+    "the only difference"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Then compare, on held-out text, measured on the exact same batches. Baseline: 0.65. No positions: 0.68. Removing them hurt, by about 0.03.",
+   "visuals": "Real validation-loss curves from step 200 to 600 (y axis zoomed to 0.62–0.92): baseline (blue) ends at 0.6524, no-positions (pink) ends at 0.6837; gap +0.0313. Evaluated on the same 24 held-out batches (98,304 tokens).",
+   "keep": [
+    "Baseline:",
+    "No positions",
+    "Removing"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "But one seed could be luck. So we ran two more seeds per arm, each with its own initial weights and batch order. Both numbers move, yet every seed agrees: no positions is worse, by 0.03 to 0.04. That gap beats the seed-to-seed spread.",
+   "visuals": "Number line of val loss at step 600 for seeds 0, 1, 2: baseline 0.6524, 0.6566, 0.6538; no positions 0.6837, 0.6879, 0.6971. Paired gaps +0.0313, +0.0313, +0.0433, mean +0.0353, sd 0.0069. Each seed changes the initial weights and the batch order; eval batches are fixed.",
+   "keep": [
+    "So we ran",
+    "yet every seed",
+    "No positions"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Three classic traps. Different compute: compare against the released model, trained five times longer, and the gap looks 7 times bigger than it is. Unfair tuning: the learning rate was picked for the baseline, not the variant. And leakage: 55 percent of held-out lines, 39 percent of the text, also appear in training.",
+   "visuals": "Three trap cards. Different compute: comparing the 600-step no-positions run (0.684) to the released 3,000-step model (0.452, same eval batches) suggests a 0.232 gap, 7.4× the real 0.031. Unfair tuning: lr 0.003 was chosen for the baseline. Data leakage: 1,642 of 3,001 held-out lines (54.7%) appear verbatim in the training split: all 1,579 short templated lines (Q&A, counting, pets, days, facts) but only 8 of 526 trade stories; 38.5% of held-out characters.",
+   "keep": [
+    "The baseline"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "So at 600 steps, positions win. Now scale it up. The app's full 3,000-step ablation finds the gap all but closes: 0.450 versus 0.451. And papers report causal models can learn position without embeddings. Scaling is where ideas live or die. Your turn: pick a hypothesis.",
+   "visuals": "Scale-up ladder: more seeds → longer runs → bigger model → does the gap hold? At 600 steps (mean of 3 seeds) baseline 0.6543 vs no positions 0.6896; at 3,000 steps (the app's ablation, 1 seed) 0.4502 vs 0.4511: the gap nearly closes. Haviv et al. 2022: causal LMs without positional encodings still learn position. CTA: Invent lab.",
+   "keep": [
+    "The app",
+    "And papers",
+    "Your turn"
+   ],
+   "new": ""
+  }
+ ]
+}

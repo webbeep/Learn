@@ -1,0 +1,98 @@
+{
+ "id": "loss",
+ "lines": [
+  {
+   "orig": "How do you learn from raw text with no labels? Hide the next token and make the model guess. Every position becomes a free quiz question.",
+   "visuals": "Tokens of 'mia has a red ball.' on top; under each, the next token is hidden behind a '?' card, then revealed. Caption: our 26-token story = 25 free quiz questions.",
+   "keep": [
+    "Hide",
+    "make the model guess",
+    "Every position"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each guess is scored with cross-entropy: minus the natural log of the probability it gave the right token. Sure and right is nearly free. Unsure costs more. Badly wrong costs a lot.",
+   "visuals": "Formula: loss = −ln(p[right token]) (natural log); its curve; four real guesses from the story placed on it: ' now' → ' tom' p = 99.70%, loss 0.003; ' the' → ' red' p = 87.07%, loss 0.138; ' a' → ' red' p = 12.43%, loss 2.085; '.' → ' tom' p = 4.52%, loss 3.096.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Every guess on our story: 16 of the 25 are nearly free. The spikes are the real coin flips: which color Mia has, which toy, who comes next.",
+   "visuals": "Bar chart of the real loss for each of the 25 next-token predictions in the story (labels = the token being predicted). 16 cost under 0.05; the spikes (pink) are ' red' (2.08), ' ball' (2.68), ' tom' (3.10), ' blue' (2.11), ' kite' (2.37).",
+   "keep": [
+    "The spikes"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The first red is a pure guess. Only 8 colors can follow 'a', since orange takes 'an', so the best possible is 12.5 percent. The model gives 12.4: essentially perfect. The last red follows from the story: 87 percent. Averaged, the story's loss is 0.52.",
+   "visuals": "Two callouts: 'mia has a' → 'red' p = 12.43% (loss 2.085); 8 colors can follow 'a' (orange takes 'an'), so the best possible is 1/8 = 12.5% (loss 2.079): the model is essentially optimal. 'now tom has the' → 'red' p = 87.1% (loss 0.14). Average over all 25 predictions = 0.520.",
+   "keep": [
+    "The last red",
+    "Averaged"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now rewind. With random weights, the model spreads its bets evenly over 256 tokens: a loss of 5.55 per guess. The real step-zero loss: 5.56.",
+   "visuals": "256 equal bars (illustration of a uniform guess, 0.39% each). Every guess costs ln 256 = 5.545; the real step-0 training loss from training.json is 5.5593.",
+   "keep": [
+    "a loss of",
+    "The real step"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Take e to the loss, and you get perplexity: roughly how many tokens it's choosing between. At step zero, about 260. After training, 1.6 on average: near one for most tokens, more for a fresh color or name.",
+   "visuals": "Perplexity = e^loss ≈ the effective number of choices. Step 0: e^5.56 ≈ 260 squares (≈ the 256-token vocabulary). Step 3000: e^0.46 ≈ 1.58: one full square plus a partial one; an average: ~1 for most tokens, several for a fresh color or name.",
+   "keep": [
+    "At step zero",
+    "After training"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Here's the real run: 5.56 at the start, below one by step 150, then 0.46. Held-out text scores 0.46 too. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45: it learned patterns, not pages. Some of what's left is coin flips no model can beat.",
+   "visuals": "The real training-loss curve from training.json (121 points): 5.56 at step 0 on the pure-guessing line (ln 256 = 5.55), 0.99 at step 150, 0.46 at step 3000; held-out loss (dashed teal; shares sentence templates with training) ends at 0.46; freshly generated stories (new seed) score 0.45. Part of the remaining loss is irreducible (random colors, names).",
+   "keep": [
+    "below one",
+    "then",
+    "freshly generated"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each step averages 4,096 guesses: 64 snippets of 64 tokens. Single tokens are wildly uneven: 73 percent are nearly free, while the hard 18 percent carry 92 percent of the loss. Yet the batch average barely moves.",
+   "visuals": "Heatmap of real per-token losses for one 64×64 batch of fresh tiny-world text (brighter = higher loss). Stats over 82,944 fresh predictions: 73.2% cost < 0.1; 18.0% cost > 1 and carry 92.2% of the total. Six random batch averages: 0.476, 0.452, 0.426, 0.459, 0.458, 0.437.",
+   "keep": [
+    "Single tokens",
+    "while",
+    "Yet the batch"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Why does that work? The gradient of an average is the average of the gradients.",
+   "visuals": "Caption: gradient of the average = average of the gradients.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "So every token casts a small vote on how to nudge each weight. The votes disagree, but their average points somewhere steady.",
+   "visuals": "Toy picture (illustration): twelve thin gray arrows (per-token gradient directions) scattered around one thick yellow arrow (their average). Caption: every token casts a small vote on each nudge.",
+   "keep": [
+    "their"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Predict, score, average, nudge. Now watch the loss fall in the training lab.",
+   "visuals": "Recap loop: predict the next token → score: −ln p → average everything → nudge, looping back. CTA: watch the loss fall in the Training lab.",
+   "keep": [
+    "Now watch"
+   ],
+   "new": ""
+  }
+ ]
+}

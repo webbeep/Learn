@@ -1,0 +1,104 @@
+{
+ "id": "backprop",
+ "lines": [
+  {
+   "orig": "TinyGPT guessed red at 87 percent. Which of its 170,560 weights deserve the blame, and how much? Backprop answers for all of them, in one sweep backwards.",
+   "visuals": "The end of the probe prompt '… tom has the' → ' red' at 87.1%, loss 0.138; below, a grid of dots standing for the model's 170,560 weights with the question 'which ones are to blame?'.",
+   "keep": [
+    "Which of",
+    "one sweep"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "A toy version first. Forward: two times three is six, plus one is seven. That misses the target five by two. Squared, the loss is four.",
+   "visuals": "Toy computational graph (labelled toy): x = 2 and w = 3 feed a × node giving a = 6; a and b = 1 feed a + node giving z = 7; (z − t)² with target t = 5 gives loss L = 4. Forward values in teal.",
+   "keep": [
+    "two times",
+    "Plus one",
+    "That misses",
+    "Squared"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now backwards. The slope at z is twice the miss: four. A plus node passes blame straight through: a and b get four. A times node scales it by the other input: w gets eight, x gets twelve.",
+   "visuals": "Backward pass on the toy graph, arrows reversed, gradients in orange flowing right-to-left: ∂L/∂z = 2(z − 5) = 4; the + node copies it: ∂L/∂a = 4, ∂L/∂b = 4; the × node multiplies by the other input: ∂L/∂w = 4 × 2 = 8, ∂L/∂x = 4 × 3 = 12.",
+   "keep": [
+    "slope",
+    "plus node",
+    "times node",
+    "w gets",
+    "x gets"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Brute-force check: nudge w by a hair, and the loss moves eight times as much. Each node just multiplies the blame from above by its own local slope.",
+   "visuals": "Finite-difference check of the toy gradient: (L(w+ε) − L(w−ε))/2ε with ε = 0.0001 gives 8.0000, matching ∂L/∂w = 8. Rule shown on top: blame in = blame from above × local slope.",
+   "keep": [
+    "Each node",
+    "slope"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now the real thing. Each output logit's blame is its probability, minus one for the right answer. Red: minus 0.13, push up. White and purple: plus, push down.",
+   "visuals": "Real gradient of the loss w.r.t. TinyGPT's output logits on the probe prompt (target ' red'): ∂loss/∂logit = p − onehot. ' red' -0.129 (teal, push up), ' white' +0.059, ' purple' +0.051, ' black' +0.0028, ' ava' +0.0015 (orange, push down); the other 251 are each between 0 and +0.0011.",
+   "keep": [
+    "Red:",
+    "White and"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "That blame flows down through all three layers. Where paths merge, like the residual stream, blames add up. From this one prediction, 167,744 weights get some blame.",
+   "visuals": "Real gradient norms per part of TinyGPT for this one prediction, top (output) to bottom (input): final LayerNorm 0.10, layer 3 MLP 0.84, layer 3 attention 1.06, layer 2 MLP 1.93, layer 2 attention 2.82, layer 1 MLP 3.34, layer 1 attention 5.09, position embedding 2.14, token embedding (tied) 2.84. 167,744 of 170,560 weights have a nonzero gradient; the 192 attention key biases and 2,624 unused position weights get exactly zero.",
+   "keep": [
+    "Where paths"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "One real weight: gradient minus 0.07. Negative means: increase me, and the loss drops. A plain step at learning rate 0.003 adds 0.0002.",
+   "visuals": "Heat map of the real gradient of layer 3's MLP output matrix (64×256). Highlighted: row 57, column 212, weight 0.0974, gradient -0.0702 (finite-difference check -0.0702). Gradient step at lr 0.003: −lr × grad = +0.00021, new weight 0.0976. Labelled as a toy: plain gradient descent on one prediction.",
+   "keep": [
+    "A plain step"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Take that step on every weight at once, and it overshoots: red falls to 51 percent. TinyGPT's training clips gradients longer than one, and this one is 7.95. Clipped, red rises to 87.5.",
+   "visuals": "Two real outcomes of one gradient step at lr 0.003 on all 170,560 weights: raw gradient (length 7.95) → p(red) 87.1% → 50.6% (overshoot); gradient clipped to length 1 (train.py clips whenever the length exceeds 1) → 87.1% → 87.5%.",
+   "keep": [
+    "Clipped,"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "And real training averages blame over 4,096 predictions per batch, uses 0.003 only as a cosine schedule's peak, and lets AdamW set each weight's step.",
+   "visuals": "Real training differs from the toy step: averages over 4,096 predictions per batch, clips the gradient only when its length exceeds 1, uses lr 0.003 as the peak of a warmup + cosine schedule, and AdamW adapts each weight's step size.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Why does backward cost about twice forward? Each forward matrix multiply needs two going back: blame for its inputs, and for its weights. So a training step is roughly three forward passes.",
+   "visuals": "Matrix diagram: forward Y = X·W (one multiply); backward dX = dY·Wᵀ (blame for inputs) and dW = Xᵀ·dY (blame for weights): two multiplies. Tally: forward ≈ 1, backward ≈ 2, training step ≈ 3 units (approximate). Note: activations must be stored for the backward pass.",
+   "keep": [
+    "blame for its inputs",
+    "and for its weights",
+    "So a training"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Forward, backward, nudge. In PyTorch, loss dot backward does the middle step for you. Go watch the gradients flow.",
+   "visuals": "Recap loop: forward (get the loss) → backward (share the blame) → nudge every weight, looping back, × 3,000 steps. Final card: 'watch the gradients in the Backprop lab'.",
+   "keep": [
+    "In PyTorch",
+    "Go watch"
+   ],
+   "new": ""
+  }
+ ]
+}

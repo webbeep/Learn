@@ -1,0 +1,90 @@
+{
+ "id": "training",
+ "lines": [
+  {
+   "orig": "At step zero, this model wrote this. 80 seconds of training later, it wrote this. What happened in between?",
+   "visuals": "Two real samples from the prompt 'mia has a red ball. tom': at step 0 the continuation is gibberish ('sh hill w timog say litam…'); at step 3000 it is a coherent story ending 'now tom has the red ball.'",
+   "keep": [
+    "80 seconds"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Most weights start as tiny random noise. So at first, it spreads its bets almost evenly over all 256 tokens. Its loss is 5.56, almost exactly what pure guessing scores.",
+   "visuals": "256 near-equal bars (each ≈ 0.39%): the untrained model's flat guess. Below: real loss at step 0 = 5.56 vs ln 256 = 5.55 for uniform guessing.",
+   "keep": [
+    "Its loss"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Training is one game. At every position, predict the next token. The score is cross-entropy, minus the log of the probability you gave the right answer.",
+   "visuals": "Tokens of 'mia has a red ball.' on top, each with an arrow down to the token that follows it (the target). Formula: cross-entropy loss = −log(p[correct next token]).",
+   "keep": [
+    "Predict",
+    "The score"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Give the right token 87 percent, and the loss is 0.14. Give it one in 256, and it's 5.55. Confidently wrong is the most expensive of all.",
+   "visuals": "Plot of loss = −log p: p = 0.87 → 0.14 (pink), p = 1/256 → 5.55 (blue), p = 0.001 → 6.91 (orange, 'confidently wrong').",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Backpropagation works out which way to nudge each of the 170,560 weights to shrink the loss. Gradient descent takes a small step that way, and repeats. Like a ball rolling downhill. The real optimizer, AdamW, is a smarter version of that step.",
+   "visuals": "A bumpy 1-D loss curve (illustration). A yellow ball takes gradient steps downhill, each step shown with a slope arrow, settling near a low point. Note: the real optimizer is AdamW, learning rate 0.003.",
+   "keep": [
+    "That",
+    "Like a ball",
+    "The real optimizer"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Each step grades 64 random snippets of 64 tokens at once. That's 4,096 predictions per step, for 3000 steps. That's about 7.7 passes over the training text.",
+   "visuals": "A 64×64 grid of tiny squares = 4,096 next-token predictions per training step; × 3,000 steps ≈ 12.3 million graded guesses ≈ 7.7 passes over the 1,602,516-token training split.",
+   "keep": [
+    "That",
+    "for 3000",
+    "passes"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Here's the real loss curve, on a log scale. It starts at 5.56, right at chance, crashes below 1 by step 150, then keeps grinding down to about 0.46. The dashed line is held-out text it doesn't train on. The tiny world reuses sentence templates, so that isn't all new, but freshly generated stories score 0.45, so it learned patterns, not pages.",
+   "visuals": "The real training curve from training.json (121 points every 25 steps), log-scale loss axis: train loss (yellow) and held-out loss (dashed teal; 54.7% of held-out lines also occur verbatim in training, since the tiny world reuses templates) start at 5.56 next to the 'pure guessing' line (5.55), drop to 0.99 by step 150 and keep falling to 0.46 (held-out 0.46) at step 3000. Note: freshly generated stories (new seed) score 0.45.",
+   "keep": [
+    "grinding",
+    "The dashed line",
+    "That",
+    "freshly"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "And here's what it wrote along the way, one sample each from the same prompt. Step zero is word salad, though it's made of real words, because many tokens are whole words. Step 100, broken grammar. Step 300, actual sentences.",
+   "visuals": "One panel morphing through real samples (one draw each at temperature 0.8): step 0 (loss 5.56) gibberish built from real word tokens → step 100 (loss 1.82) broken grammar → step 300 (loss 0.69) well-formed sentences.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "At step 1000, it still handed Tom the yellow ball. Wrong. By step 3000, it's the red ball. Correct, and nobody told it why.",
+   "visuals": "Step 1000 sample ends 'now tom has the yellow ball' (highlighted pink — wrong, mia gave him the red ball); step 3000 sample ends 'now tom has the red ball' (highlighted teal — correct).",
+   "keep": [
+    "By step 3000"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Nobody wrote a single rule. Predict, measure the miss, nudge, repeat. Next up, train your own.",
+   "visuals": "The training loop as pills: predict → measure the miss → nudge the weights → repeat, with an arrow looping back. Final card: 'next: train your own'.",
+   "keep": [
+    "Predict",
+    "Next up"
+   ],
+   "new": ""
+  }
+ ]
+}

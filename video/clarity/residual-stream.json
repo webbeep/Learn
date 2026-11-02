@@ -1,0 +1,94 @@
+{
+ "id": "residual-stream",
+ "lines": [
+  {
+   "orig": "Every token carries one vector through the model: the residual stream. Think of it as a whiteboard. Blocks never wipe it. Each one reads it, then adds a note, which can even cancel what's there.",
+   "visuals": "A long horizontal arrow (the residual stream) runs from the token ' the' to the readout. Six blocks sit above it (attention 1, MLP 1, … MLP 3); each has a gray 'read' arrow up from the stream and a colored 'add' arrow back down with a + sign.",
+   "keep": [
+    "whiteboard",
+    "reads it",
+    "adds a note"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "In code it's one line per block. x equals x, plus something. Nothing is overwritten, only added.",
+   "visuals": "The two lines of code that define the stream: x = x + attention(LayerNorm(x)); x = x + MLP(LayerNorm(x)), repeated for each of the 3 layers. A dot travels along the stream picking up each block's note.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Here's the real stream for the last word of our story. It starts as token plus position. Block by block, notes pile up, and its length grows from 1.19 to 3.23.",
+   "visuals": "Seven real 64-cell strips for the final ' the' (orange positive, blue negative): token + position, then after each block. Their lengths: token + position 1.19, + attention 1 1.73, + MLP 1 1.63, + attention 2 1.70, + MLP 2 1.92, + attention 3 2.00, + MLP 3 3.23.",
+   "keep": [
+    "Block by block"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Notes add as arrows, not lengths: MLP 1's note even makes the board shorter. Most are around length one, but the last MLP writes a big one, 3.68, larger than the whole board before it.",
+   "visuals": "Next to each strip, the size (length) of the note that block added: attention 1 1.25, MLP 1 1.19, attention 2 1.24, MLP 2 1.34, attention 3 1.00, MLP 3 3.68. MLP 3's note (3.68) is larger than the stream before it (2.00). Caption: notes add as arrows, not lengths.",
+   "keep": [
+    "But the last"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Because every block shares one board, you can read it at any depth with the model's own final readout. That's the logit lens: a rough peek, since early layers were never trained to be read this way.",
+   "visuals": "Four checkpoints on the stream (token + position, after layer 1, after layer 2, after layer 3) will each be decoded with the model's final LayerNorm + unembedding + softmax: the logit lens.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "Straight after embedding, it just says 'the', 100 percent: the readout reuses the embedding table, so it sees the token it's sitting on. After layer 1, still 'the', 33. After layer 2, 'white', 12. After layer 3, red, 87.",
+   "visuals": "Logit-lens top-3 at each checkpoint for the final ' the': token + position: ' the' 100.0%, ' tom' 0.0%, ' mia' 0.0%; after layer 1: ' the' 32.6%, ' black' 9.2%, ' purple' 8.3%; after layer 2: ' white' 11.6%, 'day' 11.2%, ' ho' 8.8%; after layer 3: ' red' 87.1%, ' white' 5.9%, ' purple' 5.1%.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "One catch: the board's scale drifts. Averaged over the story, its length grows from 1.3 to 7.3. So before any block reads it, LayerNorm re-centres the vector and rescales it to a standard size. Only the copy a block reads gets normalized; the board itself stays a plain running sum.",
+   "visuals": "Line chart of the real average stream length over the 23 story tokens at each stage: embed 1.34, attn1 1.62, mlp1 2.70, attn2 2.75, mlp2 4.65, attn3 4.52, mlp3 7.34. Right: the final stream vector before and after LayerNorm (subtract the mean, divide by the spread; then a learned scale and shift).",
+   "keep": [
+    "Averaged",
+    "So before",
+    "reads it",
+    "Only the copy"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The final readout needs one too. Skip it, and red drops from 87 percent to 6, but it's still the top guess: LayerNorm mostly sets the confidence.",
+   "visuals": "P(' red') at the end: 87.1% with the final LayerNorm vs 5.7% if the raw stream is fed straight into the unembedding.",
+   "keep": [
+    "Skip it"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "For interpretability, every note is just a vector you can measure, read, or erase. Erase layer 3's MLP note, and red falls to 2 percent. Erase layer 2's attention, home of the color-copying head, and it falls to 4.",
+   "visuals": "Real knockouts: P(' red') with nothing removed vs with one block's output erased (zeroed at every position): nothing removed 87.1%, attention 1 0.1%, MLP 1 0.1%, attention 2 4.0%, MLP 2 32.9%, attention 3 57.4%, MLP 3 1.9%.",
+   "keep": [
+    "Erase layer 3",
+    "Erase layer 2"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "For design: because blocks add instead of overwrite, gradients flow straight back through the plus signs, a big part of why deep networks can train at all. Many newer architectures keep the whiteboard and change what writes on it.",
+   "visuals": "Two design takeaways: 'add, don't overwrite' (gradients flow straight back through the additions, which lets very deep networks train) and 'keep the board, swap the writers' (e.g. mixture-of-experts MLPs, new kinds of token mixing).",
+   "keep": [
+    "Many newer",
+    "whiteboard"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "One shared board. Six notes. One readout. Go watch it fill up in the X-ray.",
+   "visuals": "Recap: the stream arrow with the logit-lens guesses along it (' the' → ' the' → ' white' → ' red'). CTA: watch the board fill up in the X-ray.",
+   "keep": [
+    "Go watch"
+   ],
+   "new": ""
+  }
+ ]
+}

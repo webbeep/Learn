@@ -1,0 +1,100 @@
+{
+ "id": "embeddings",
+ "lines": [
+  {
+   "orig": "To this model, red is just token 157. A row number. So how does a number come to mean anything?",
+   "visuals": "A big token chip '␣red' with its id 157 underneath and the question 'what does 157 mean?'.",
+   "keep": [
+    "So how"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "The very first step is a lookup table. 256 rows, one per token, 64 numbers in each row. Token 157 just grabs row 157. That row is its embedding.",
+   "visuals": "The real 256×64 embedding table as a heatmap (orange positive, blue negative). Row 157 is outlined and slides out as a strip of 64 cells; its first values are -0.17, -0.14, -0.18, +0.07 … -0.19.",
+   "keep": [],
+   "new": ""
+  },
+  {
+   "orig": "All 16,384 numbers started as random noise. And the same table is reused at the very end, to score every possible next token. So training pulls tokens that fit the same slots toward similar rows.",
+   "visuals": "Same view; captions: 'started random → shaped by training' and 'reused at the end to score every next token (weight tying)'. The table holds 16,384 of the model's 170,560 parameters.",
+   "keep": [
+    "And the same",
+    "So training"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "No single number means red. What matters is the direction the whole row points. We compare directions with cosine similarity: one means same way, zero means unrelated.",
+   "visuals": "Toy 2-D picture: arrows for ' red' and ' purple' point almost the same way, ' tom' points elsewhere. Text: cosine similarity = how aligned two arrows are (+1 same way, 0 unrelated, −1 opposite).",
+   "keep": [
+    "direction",
+    "We compare",
+    "one means"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Now the real thing. Red's nearest neighbours: purple at 0.92, white, black. Tom's neighbours are names. Cat's are animals. Park's are places. A random pair of tokens scores about 0.1.",
+   "visuals": "Four real nearest-neighbour lists (cosine similarity over all 64 dims): 'red' → purple 0.92, white 0.85, black 0.84, yellow 0.75; 'tom' → max 0.63, finn 0.59, leo 0.58, zoe 0.58; 'cat' → bear 0.59, fish 0.57, dog 0.56, owl 0.54; 'park' → river 0.75, school 0.73, forest 0.71, house 0.71. Average token pair: 0.12.",
+   "keep": [
+    "A random"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Squash all 256 rows from 64 dimensions down to two, with PCA, and plot them. The names split off into their own island. Colors, animals, objects and places crowd together.",
+   "visuals": "Real 2-D PCA of all 256 token embeddings (axes keep 12.6% of the variance). Names (teal) form a separate island at the bottom; colors, animals, objects and places bunch together on the right; other tokens are faint gray dots.",
+   "keep": [
+    "names split",
+    "Colors"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Re-run PCA on just these 48 words. Names sit far away. Colors and places get their own patches. Animals and objects overlap: they fill the same slot, nouns after 'the', and often after a color. And in the full 64 dimensions, 48 out of 48 words have their nearest neighbour in their own group.",
+   "visuals": "Real PCA of only the 48 group words (names, colors, animals, objects, places): names far off, colors and places in their own patches, animals and objects overlapping (both fill the same noun slot: after 'the', often after a color). Verdict: 48/48 words have their nearest cosine neighbour (in 64-D) in their own group.",
+   "keep": [
+    "Colors",
+    "And in the full"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "But red at position 3 and red at position 20 would look identical. So a second table holds one learned vector per position, and it's simply added on.",
+   "visuals": "Three real 64-cell strips: the ' red' token embedding (length 1.18) + the learned position-3 embedding (length 0.59) = the vector layer 1 actually sees.",
+   "keep": [
+    "So a second",
+    "and it"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Compare all 64 position vectors with each other. Next-door positions point almost the same way, about 0.95. Far-apart ones drift apart, even opposite. A smooth, learned sense of where.",
+   "visuals": "Real 64×64 cosine-similarity heatmap of the learned position embeddings: a bright diagonal band (neighbours average 0.95) fading to blue far from it (position 0 vs 63: -0.74). Position vectors average length 0.40 vs 1.12 for token vectors.",
+   "keep": [
+    "Next-door",
+    "Far-apart"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "Sixty-four numbers is tiny. GPT-3's largest version uses 12,288 per token, 192 times the room. More directions means more distinctions it can keep apart at once.",
+   "visuals": "TinyGPT's 64-number embedding as one row of 64 squares vs GPT-3's (largest) 12,288: 30 visible rows of 64 squares and a note that 162 more rows would be needed (192× more room).",
+   "keep": [
+    "GPT-3",
+    "192"
+   ],
+   "new": ""
+  },
+  {
+   "orig": "An embedding is a learned row of numbers whose meaning lives in its direction. Go find them in the X-ray.",
+   "visuals": "Recap: token id 157 → its 64-number row (+ position) → a direction in space. Card: 'now find them in the X-ray'.",
+   "keep": [
+    "direction",
+    "Go find"
+   ],
+   "new": ""
+  }
+ ]
+}
