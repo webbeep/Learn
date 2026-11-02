@@ -27,10 +27,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, ".cache")
 BUILD = os.path.join(HERE, "build")
 
-VOICE = os.environ.get("VIDEO_VOICE", "orion")
-TEMPO = 1.08          # slight speed-up for Fireship pacing
-AUDIO_PIPE = "v2"   # bump when the post-processing chain below changes
-GAP = 0.22            # breathing room after each line
+import narrate  # noqa: E402  (speech synthesis, mastering, word alignment)
+
+VOICE = f"{narrate.ENGINE}:{narrate.voice()}"
+GAP = 0.38            # a natural breath between lines
+CHAPTER_BREATH = 0.45  # a little extra at each new chapter
 
 # ---- palette ---------------------------------------------------------------
 BG = "#0b0e17"
@@ -55,47 +56,16 @@ def _ffprobe_dur(path: str) -> float:
     return float(out.strip())
 
 
-def tts(text: str, voice: str = VOICE) -> tuple[str, float]:
-    """Return (wav_path, duration) for a narration line, generating + caching on demand."""
-    os.makedirs(CACHE, exist_ok=True)
-    key = hashlib.sha1(f"{voice}|{TEMPO}|{text}".encode()).hexdigest()[:20]
-    wav = os.path.join(CACHE, f"{key}_{AUDIO_PIPE}.wav")
-    if not os.path.exists(wav):
-        raw = os.path.join(CACHE, f"{key}.mp3")
-        if not os.path.exists(raw):
-            acct = os.environ["CLOUDFLARE_ACCOUNT_ID"]
-            url = f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/@cf/deepgram/aura-2-en"
-            body = json.dumps({"text": text, "speaker": voice}).encode()
-            for attempt in range(5):
-                try:
-                    req = urllib.request.Request(url, data=body, method="POST", headers={
-                        "Authorization": "Bearer " + os.environ["CLOUDFLARE_API_TOKEN"],
-                        "content-type": "application/json"})
-                    with urllib.request.urlopen(req, timeout=90) as r:
-                        data = r.read()
-                    if len(data) < 1000:
-                        raise RuntimeError("tiny TTS response")
-                    open(raw, "wb").write(data)
-                    break
-                except Exception as e:  # noqa: BLE001
-                    print(f"[tts] retry {attempt + 1}: {type(e).__name__}")
-                    time.sleep(2 + 3 * attempt)
-            else:
-                raise RuntimeError("TTS failed for: " + text[:60])
-        trim = "silenceremove=start_periods=1:start_threshold=-50dB"
-        # cap long TTS pauses (colons, list items) at ~0.6 s, trim both ends, speed up slightly
-        cap = "silenceremove=stop_periods=-1:stop_duration=0.3:stop_threshold=-40dB:stop_silence=0.3:detection=peak"
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw, "-af",
-                        f"{trim},{cap},areverse,{trim},areverse,atempo={TEMPO}", "-ar", "48000", "-ac", "1", wav],
-                       check=True)
-    return wav, _ffprobe_dur(wav)
+def tts(text: str) -> tuple[str, float]:
+    """Return (wav_path, duration) for a narration line (see narrate.py)."""
+    return narrate.tts(text)
 
 
 class Narration:
     """Handle yielded by VScene.say()."""
 
-    def __init__(self, scene, text, start, dur):
-        self.scene, self.text, self.start, self.dur = scene, text, start, dur
+    def __init__(self, scene, text, start, dur, wav=None):
+        self.scene, self.text, self.start, self.dur, self.wav = scene, text, start, dur, wav
 
     @property
     def elapsed(self):
@@ -109,6 +79,14 @@ class Narration:
         i = self.text.lower().find(phrase.lower())
         if i < 0:
             raise ValueError(f"phrase {phrase!r} not in line")
+        if self.wav:  # exact time from word alignment when available
+            t = narrate.phrase_time(narrate.words(self.wav), phrase)
+            if t is not None:
+                return min(t, self.dur)
+        sp = getattr(self, "spoken", self.text)
+        j = sp.lower().find(phrase.lower())
+        if j >= 0:
+            return self.dur * j / max(1, len(sp))
         return self.dur * i / max(1, len(self.text))
 
 
@@ -124,12 +102,16 @@ class VScene(Scene):
     # -- narration ---------------------------------------------------------------
     @contextmanager
     def say(self, text: str, scene: str = "", chapter: str | None = None, gap: float = GAP):
-        path, dur = tts(text)
+        spoken = narrate.natural(text)   # flowing spoken version of the script line (also the caption)
+        path, dur = tts(spoken)
+        if chapter and self.renderer.time > 1.0:
+            self.wait(CHAPTER_BREATH)
         start = self.renderer.time
         self.add_sound(path)
         if chapter:
             self._chapters.append({"t": round(start, 2), "title": chapter})
-        line = Narration(self, text, start, dur)
+        line = Narration(self, text, start, dur, path)
+        line.spoken = spoken
         self._line = line
         yield line
         rest = dur + gap - line.elapsed
@@ -138,7 +120,7 @@ class VScene(Scene):
         elif rest < -0.3:
             print(f"[say] animations overran audio by {-rest:.2f}s: {text[:50]!r}")
         end = self.renderer.time
-        self._segments.append({"start": round(start, 2), "end": round(end, 2), "text": text,
+        self._segments.append({"start": round(start, 2), "end": round(end, 2), "text": spoken,
                                "scene": scene, "objects": self._snapshot()})
         self._line = None
 

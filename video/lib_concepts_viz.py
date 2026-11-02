@@ -16,8 +16,6 @@ def _visible(m):
 class CScene(VScene):
     @contextmanager
     def say(self, text, **kw):
-        if kw.get("chapter") and self.renderer.time > 1.0:
-            self.wait(0.5)   # a breath at every chapter change
         with super().say(text, **kw) as line:
             yield line
             self._layout_check(text)
